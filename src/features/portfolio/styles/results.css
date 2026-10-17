@@ -1,0 +1,353 @@
+.qw-run-summary {
+  min-height: 70px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 13px;
+  border-bottom: 1px solid #d7dbe0;
+  flex-wrap: wrap;
+}
+.qw-summary-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.qw-results-layout {
+  background: var(--qw-bg);
+  padding: 24px 20px;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 20px;
+  min-height: calc(100vh - 203px);
+}
+.qw-results-layout aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.qw-results-layout aside > a {
+  height: 40px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #7a828c;
+  font-size: 12px;
+  text-decoration: none;
+}
+.qw-results-layout aside > a.active {
+  color: #fff;
+  background: var(--qw-blue);
+}
+.qw-results-layout aside > a:hover:not(.active) {
+  background: #dfe5ed;
+}
+.qw-sidebar-meta {
+  border-top: 1px solid #ccd3dc;
+  margin-top: 18px;
+  padding: 15px 14px;
+  color: #8a949f;
+  font-size: 11px;
+}
+.qw-sidebar-meta p {
+  margin: 10px 0 3px;
+}
+.qw-sidebar-meta time {
+  font-size: 10px;
+}
+.qw-sidebar-meta code {
+  font-size: 10px;
+}
+.qw-result-panel {
+  background: #fff;
+  border: 1px solid #d7dbe0;
+  min-width: 0;
+  min-height: 650px;
+}
+.qw-app .qw-panel-heading {
+  height: 44px;
+  background: #f7f7f7;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 16px;
+  color: #203040;
+  border-bottom: 1px solid #f0f1f3;
+}
+.qw-result-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(100px, 1fr));
+  row-gap: 28px;
+  padding: 22px 24px 26px;
+}
+.qw-result-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.qw-result-metrics span {
+  font-size: 12px;
+  color: #8c9298;
+}
+.qw-result-metrics strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: #292e33;
+}
+.qw-up {
+  color: #d95e65 !important;
+}
+.qw-down {
+  color: #69a062 !important;
+}
+.qw-chart-caption {
+  border-top: 1px solid #e4e6e9;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 24px 2px;
+  color: #87909a;
+  font-size: 12px;
+}
+.qw-chart {
+  height: 480px;
+  width: 100%;
+  padding: 0 12px;
+}
+.qw-chart.compact {
+  height: 300px;
+}
+.qw-metric-note {
+  font-size: 11px;
+  color: #89939e;
+  padding: 8px 24px 14px;
+}
+.qw-curve-values {
+  font-size: 12px;
+  color: #728098;
+  padding: 0 24px 16px;
+}
+.qw-curve-values summary {
+  padding: 10px 0;
+}
+.qw-table-tools {
+  padding: 15px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+  min-height: 54px;
+}
+.qw-table-tools > span:last-child {
+  color: #929aa4;
+  margin-left: auto;
+}
+.qw-result-panel th,
+.qw-result-panel td {
+  text-align: right;
+}
+.qw-result-panel th:first-child,
+.qw-result-panel td:first-child {
+  text-align: left;
+}
+.qw-result-panel td {
+  font-size: 13px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.qw-result-panel tr:nth-child(even) {
+  background: #fafafa;
+}
+.qw-result-logs {
+  background: #141414;
+  color: #b5bac3;
+  min-height: 530px;
+  padding: 14px 20px;
+  font:
+    12px/1.8 Monaco,
+    monospace;
+  max-height: 75vh;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.qw-result-logs p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+.qw-result-logs time {
+  color: #858f9f;
+}
+.qw-result-logs b {
+  color: #8cbbc3;
+  font-weight: 400;
+}
+.qw-version-details {
+  padding: 22px 24px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.qw-version-details p {
+  margin-bottom: 12px;
+}
+.qw-version-details details {
+  margin: 16px 0;
+}
+.qw-result-code {
+  height: 490px;
+  display: flex;
+}
+.qw-result-code .qw-editor {
+  min-height: 490px;
+}
+.qw-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 20px;
+  background: #f6f8fc;
+  border-bottom: 1px solid #e0e6ef;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #627a9e;
+}
+.qw-progress small {
+  width: 100%;
+  font-size: 12px;
+}
+.qw-progress progress {
+  width: 140px;
+  height: 7px;
+  accent-color: #4e73a5;
+}
+.qw-rejection {
+  padding: 14px 24px;
+  font-size: 12px;
+  color: #b45555;
+}
+@media (min-width: 1600px) {
+  .qw-result-metrics {
+    grid-template-columns: repeat(6, minmax(140px, 1fr));
+    row-gap: 26px;
+  }
+  .qw-chart {
+    height: 520px;
+  }
+}
+@media (max-width: 1150px) {
+  .qw-results-layout {
+    grid-template-columns: 170px minmax(0, 1fr);
+    padding: 18px 14px;
+    gap: 14px;
+  }
+  .qw-result-metrics {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .qw-run-summary {
+    gap: 12px;
+  }
+  .qw-summary-actions {
+    margin-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  .qw-results-layout {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+  .qw-results-layout aside {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .qw-results-layout aside > a {
+    height: 36px;
+    padding: 8px 10px;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .qw-sidebar-meta {
+    display: none;
+  }
+  .qw-result-panel {
+    min-height: 520px;
+  }
+  .qw-run-summary {
+    padding: 14px;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .qw-summary-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .qw-summary-actions button {
+    font-size: 12px;
+    padding: 5px 8px;
+    flex: 1;
+  }
+  .qw-result-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 18px 14px;
+    gap: 22px 10px;
+  }
+  .qw-result-metrics span {
+    font-size: 10px;
+  }
+  .qw-result-metrics strong {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .qw-chart-caption {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .qw-chart {
+    height: 380px;
+    padding: 0;
+  }
+  .qw-metric-note {
+    padding: 8px 14px;
+  }
+  .qw-table-tools {
+    padding: 12px;
+    gap: 12px;
+  }
+  .qw-table-tools > span:last-child {
+    margin-left: 0;
+  }
+  .qw-version-details {
+    padding: 16px;
+  }
+  .qw-result-logs {
+    padding: 14px;
+    font-size: 11px;
+  }
+  .qw-curve-values {
+    padding: 0 14px 12px;
+  }
+}
+.qw-result-metrics strong {
+  overflow-wrap: anywhere;
+}
+.qw-subheading {
+  font-size: 13px;
+  color: #62758b;
+  margin: 0;
+  padding: 16px 24px 8px;
+}
+.qw-result-panel table details pre {
+  max-width: 500px;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  text-align: left;
+}
+@media (max-width: 500px) {
+  .qw-result-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

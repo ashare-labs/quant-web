@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { money, time, canonical } from '../../src/shared/format.mjs';
+import { money, time, canonical } from '../../src/shared/format.ts';
 test('financial strings retain all digits and trailing decimals', () => {
   for (const value of ['9007199254740993.12345678', '0.00', '9000.00']) assert.equal(money(value), value);
   assert.equal(money(null), '—');

@@ -1,6 +1,6 @@
 import type { components } from '../../generated/tasks';
 import { ApiError, requestJson } from '../../shared/http';
-import { canonical } from '../../shared/format.mjs';
+import { canonical } from '../../shared/format.ts';
 import contract from '../../../contracts/tasks.openapi.json';
 import pin from '../../../contracts/tasks.identity.json';
 

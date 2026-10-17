@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { resolveRoute } from './routes.mjs';
+import { resolveRoute } from './routes.ts';
 export function useHashRoute() {
   const [hash, setHash] = useState(location.hash);
   useEffect(() => {

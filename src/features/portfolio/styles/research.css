@@ -1,0 +1,39 @@
+.qw-app .qw-scope-note {
+  background: #f2f6fb;
+  border-left: 3px solid #7892b8;
+  padding: 10px 14px;
+  margin: 8px 0 12px;
+  color: #5b708a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.qw-app .qw-scope-note.diagnostic {
+  background: #fff7e7;
+  border-color: #bc914a;
+  color: #8a6833;
+}
+.qw-scope-note strong {
+  font-weight: 600;
+}
+.qw-app .qw-scope-note p {
+  margin-top: 5px;
+}
+.qw-scope-note small {
+  display: block;
+  margin-top: 5px;
+}
+.qw-result-panel > .qw-scope-note {
+  margin: 0;
+  border-top: 0;
+}
+.qw-source-assumption {
+  padding: 8px 10px;
+  border-left: 2px solid #a7afba;
+  background: #f4f5f7;
+  color: #66717d;
+}
+.qw-source-assumption pre {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+}

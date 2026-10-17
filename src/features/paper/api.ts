@@ -1,6 +1,6 @@
 import pin from '../../../contracts/paper.identity.json';
 import schema from '../../../contracts/paper.openapi.json';
-import { canonical } from '../../shared/format.mjs';
+import { canonical } from '../../shared/format.ts';
 import type { components } from '../../generated/paper';
 
 export type Failure = { code: string; message: string; detail?: string; next_action?: string };

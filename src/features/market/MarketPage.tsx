@@ -1,5 +1,5 @@
 import { api } from '../execution/api';
-import { canonical } from '../../shared/format.mjs';
+import { canonical } from '../../shared/format.ts';
 import { usePoll } from '../../shared/usePoll';
 import { useOnline } from '../../shared/useOnline';
 import { MarketBrowser } from './MarketBrowser';

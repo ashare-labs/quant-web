@@ -9,9 +9,11 @@ npm run build
 npm run package
 ```
 
-`check` 运行 TypeScript、命名与路径边界检查、文档链接检查、契约生成一致性和单元测试。`build` 校验并构建静态资源，检查本机路径没有进入公开 JS。`package` 验证 `.local/packages/quant-web-0.2.0.tgz` 的白名单与解包后资源；这是静态交付包，开发依赖从源码安装。
+`check` 运行严格 TypeScript 检查（包含所有业务模块和 `tests/types` 的错误调用断言）、命名与路径边界检查、文档链接检查、契约生成一致性和单元测试。`build` 校验并构建静态资源，检查本机路径没有进入公开 JS。`package` 验证 `.local/packages/quant-web-0.2.0.tgz` 的白名单与解包后资源；这是静态交付包，开发依赖从源码安装。
 
 构建生成 `dist/release.json`，记录前端版本、当前源码快照摘要、配对 AQ 版本与源码摘要。摘要覆盖源码、契约、脚本、测试、文档和根构建配置，不包含 Git 元数据或本机状态；在干净源码副本中可重复得到。独审状态始终为 `not_reviewed`，本机测试不改写历史验收。
+
+`src` 只接受 TypeScript/TSX；不得用 `allowJs` 绕过业务类型检查。根 `scripts` 和 Node 单元测试保留原生 ESM `.mjs`，直接测试迁移后的 `.ts` 模块。
 
 `tests/fixtures` 仅包含人工构造的最小边界样例，每次测试创建独立对象。不复制真实市场输入、账户、数据库、历史 PID、运行日志或封存结果。测试不依赖 `output`、原验收工作树或旧服务状态。
 
@@ -24,3 +26,22 @@ npm run verify:portfolio -- http://127.0.0.1:18839 .local/portfolio-check
 父目录须存在，目标目录必须是新的。此脚本不启动或取消任务。生成报告含该服务的任务响应，应留在本机授权位置。人工检查响应式页面时，在已运行的开发服务打开 `/scripts/responsive.html`；默认提供 390 和 1024 像素视口。
 
 发布前还需配对 AQ/AD 候选联验：创建任务、重复提交原幂等请求、取消/恢复、数据绑定变更、错误与离线状态、paper 同一账户接续、逐日与逐笔结果，以及桌面和窄屏可用性。静态构建和人工 fixture 测试不代替这些联验；新版未继承任何旧验收结论。
+
+
+## 修改页面时从哪里开始
+
+页面文件负责组合视图；请求、持久化和并发状态留在对应功能的 hook 中。组合页的 controller 持续挂载，因此在策略、编辑器、列表与结果间切换时，草稿和各自的搜索条件仍然保留。
+
+| 目的 | 实现位置 |
+|---|---|
+| 组合页路由与视图组合 | [PortfolioPage](../src/features/portfolio/PortfolioPage.tsx)、[controller](../src/features/portfolio/usePortfolioController.ts) |
+| 草稿恢复、自动保存与范围变更 | [draft](../src/features/portfolio/draft.ts)、[usePortfolioDraft](../src/features/portfolio/usePortfolioDraft.ts) |
+| 读取轮询、预检查与服务身份 | [usePortfolioSnapshot](../src/features/portfolio/usePortfolioSnapshot.ts)、[usePortfolioPreflight](../src/features/portfolio/usePortfolioPreflight.ts) |
+| 跨标签页请求记录、提交和原请求重试 | [usePortfolioOperation](../src/features/portfolio/usePortfolioOperation.ts)、[usePortfolioActions](../src/features/portfolio/usePortfolioActions.ts) |
+| 策略定义、运行设置、列表与结果 | `PortfolioDefinition`、`PortfolioRunSettings`、`PortfolioLists`、`PortfolioRun`；指标与曲线在 `PortfolioOverview` |
+| 组合页样式 | [portfolio.css](../src/features/portfolio/portfolio.css) 统一导入 `styles`：基础、导航、编辑器、列表、结果、共享反馈和研究说明；媒体规则归属相同视图 |
+| 日频与模拟快照 | [useTasksController](../src/features/tasks/useTasksController.ts)、`TaskOverview`、`TaskEvidenceTabs`；创建表单使用 `useDailyTaskComposer` |
+| 连续模拟 | [usePaperController](../src/features/paper/usePaperController.ts)、`PaperScope`、`PaperControls`、`PaperEvidence` |
+| 执行演练与行情 | `RunForm`、`RunDetail`、`RunProjection`、`RunEvidence`；行情请求在 `useMarketQuery`，响应在 `MarketResults` |
+
+改变数据范围必须清除预检查确认。提交前先保存冻结请求；不确定响应保留原幂等键；重连和重试必须重新核对服务身份。样式拆分需要核对同一数据下的计算样式、元素位置和响应式视口，尤其注意共享规则与具体组件规则的覆盖顺序。浏览器截图与 API 回归产物存入忽略的 `.local`，不提交到仓库。

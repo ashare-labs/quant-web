@@ -1,0 +1,146 @@
+.qw-list-page {
+  min-height: calc(100vh - 164px);
+  padding: 20px 28px;
+}
+.qw-list-page.strategy-list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 30px 35px;
+}
+.qw-list-heading {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eceef0;
+  padding-bottom: 10px;
+  gap: 20px;
+}
+.qw-list-heading h2 {
+  font-size: 16px;
+  font-weight: 400;
+}
+.qw-list-heading input {
+  margin-left: auto;
+  width: 260px;
+  height: 30px;
+  font-size: 12px;
+}
+.qw-list-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+}
+.qw-list-summary {
+  margin-left: auto;
+  color: #798697;
+  font-size: 12px;
+}
+.qw-type {
+  background: #e4ecf8;
+  color: #486d9d;
+  padding: 2px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.qw-muted {
+  color: #89929c;
+  font-size: 12px;
+}
+.qw-list-page p.qw-muted {
+  padding: 0 8px 8px;
+}
+.qw-app .qw-table-scroll {
+  width: 100%;
+  overflow: auto;
+}
+.qw-app .qw-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--qw-blue);
+  font-size: 13px;
+  min-height: 24px;
+}
+.qw-link .fa {
+  color: #95afd0;
+  font-size: 21px;
+  margin-right: 9px;
+}
+.qw-status {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #637992;
+}
+.qw-status.succeeded {
+  color: #528451;
+}
+.qw-status.failed {
+  color: #bd4d4d;
+}
+.qw-status.running {
+  color: #416fa9;
+}
+.qw-status.cancelled {
+  color: #929ba5;
+}
+.qw-status.cancelling {
+  color: #b98235;
+}
+.qw-status .fa {
+  font-size: 12px;
+}
+.qw-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 42px 0 12px;
+  color: #667687;
+  font-size: 12px;
+}
+.qw-pagination span {
+  border-top: 1px solid var(--qw-line);
+  border-bottom: 1px solid var(--qw-line);
+  height: 32px;
+  min-width: 60px;
+  padding: 6px 12px;
+}
+.qw-pagination small {
+  margin-left: 16px;
+  color: #89939e;
+}
+@media (max-width: 760px) {
+  .qw-list-page,
+  .qw-list-page.strategy-list {
+    padding: 20px 14px;
+    min-height: calc(100vh - 175px);
+  }
+  .qw-list-heading {
+    flex-wrap: wrap;
+  }
+  .qw-list-heading input {
+    width: 100%;
+    margin: 0;
+  }
+  .qw-list-tools {
+    flex-wrap: wrap;
+  }
+  .qw-list-summary {
+    margin-left: 0;
+    width: 100%;
+    padding-top: 10px;
+  }
+  .qw-pagination {
+    margin-top: 25px;
+  }
+  .qw-app .qw-table-scroll table {
+    min-width: 700px;
+  }
+}
+.qw-app .task-list {
+  max-width: none;
+  margin: 0;
+}
+.qw-app td:last-child {
+  max-width: none;
+}

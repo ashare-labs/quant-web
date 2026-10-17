@@ -1,7 +1,7 @@
 import { api as paper, bootstrap, verify, pin as paperPin, type View, type Report, type Session } from '../paper/api';
 import { tasks, taskSchema, taskService, taskPin, type Task } from './api';
-import { canonical } from '../../shared/format.mjs';
-import { requireSamePaperRevision, validatePaperDay, validateTaskEvidence } from './evidence.mjs';
+import { canonical } from '../../shared/format.ts';
+import { requireSamePaperRevision, validatePaperDay, validateTaskEvidence } from './evidence.ts';
 
 export type Source = 'paper' | 'daily';
 export type Choice = { id: string; title: string; version: string; mode: string };

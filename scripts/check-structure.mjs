@@ -16,6 +16,7 @@ const failures = [];
 const domains = ['api', 'tasks', 'portfolio', 'paper'];
 for (const file of files) {
   const name = basename(file);
+  if (file.startsWith('src/') && /\.(?:[cm]?js|jsx)$/.test(name)) failures.push(`${file}: business modules must be TypeScript and pass strict type checking`);
   if (file.startsWith('contracts/') && ![...domains.map(domain => `${domain}.openapi.json`), 'api.identity.json', 'tasks.identity.json', 'paper.identity.json'].includes(name)) failures.push(`${file}: unexpected contract or historical identity`);
   if (file.startsWith('src/generated/') && !domains.some(domain => name === `${domain}.d.ts`)) failures.push(`${file}: no corresponding functional contract`);
   if (/^(?:src|scripts|tests|docs)\//.test(file) && dirname(file).split('/').some(part => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(part))) failures.push(`${file}: directory must use kebab-case`);

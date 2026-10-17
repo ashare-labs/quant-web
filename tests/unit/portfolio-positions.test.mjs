@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { positionRows } from "../../src/features/portfolio/positions.mjs";
+import { positionRows } from "../../src/features/portfolio/positions.ts";
 
 test("zero settled shares retain cash receivable and pending shares at exact source precision", () => {
   const days = [{ date: "2020-02-05", positions: { "000001.XSHE": {

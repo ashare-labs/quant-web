@@ -1,0 +1,219 @@
+.qw-app {
+  --qw-blue: #345b9d;
+  --qw-navy: #252f5a;
+  --qw-line: #d9dce1;
+  --qw-bg: #e9edf2;
+  position: relative;
+  min-height: 100vh;
+  background: #fff;
+  color: #26333f;
+  font:
+    14px/1.45 "Microsoft Yahei",
+    "Open Sans",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+  letter-spacing: 0;
+}
+body:has(.qw-app) {
+  margin: 0;
+  background: #fff;
+  min-width: 0;
+}
+.qw-app * {
+  box-sizing: border-box;
+}
+.qw-app h1,
+.qw-app h2,
+.qw-app p {
+  margin: 0;
+}
+.qw-app a {
+  color: var(--qw-blue);
+  text-decoration: none;
+}
+.qw-app a:hover {
+  text-decoration: underline;
+}
+.qw-app button,
+.qw-app input,
+.qw-app select,
+.qw-app textarea {
+  font:
+    13px/1.4 "Microsoft Yahei",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  letter-spacing: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.qw-app button,
+.qw-app .qw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  height: auto;
+  padding: 5px 12px;
+  border: 1px solid var(--qw-line);
+  background: #fff;
+  color: #4c5866;
+  white-space: nowrap;
+  cursor: pointer;
+  font-weight: 400;
+  transition: background 0.12s;
+}
+.qw-app button:hover:not(:disabled),
+.qw-app .qw-button:hover {
+  background: #f2f5f9;
+  border-color: #a8bedc;
+  text-decoration: none;
+}
+.qw-app button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.qw-app input,
+.qw-app select,
+.qw-app textarea {
+  width: auto;
+  height: 32px;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--qw-line);
+  background: #fff;
+  color: #333;
+  margin: 0;
+}
+.qw-app input:focus,
+.qw-app textarea:focus,
+.qw-app select:focus {
+  outline: 1px solid #6286bd;
+  outline-offset: 0;
+}
+.qw-app button:focus-visible,
+.qw-app a:focus-visible,
+.qw-app summary:focus-visible {
+  outline: 2px solid #6995d8;
+  outline-offset: 2px;
+}
+.qw-app input[readonly],
+.qw-app select:disabled {
+  color: #717b87;
+  background: #f7f8fa;
+}
+.qw-app input[type="checkbox"] {
+  height: 14px;
+  width: 14px;
+  margin: 0;
+  accent-color: #345b9d;
+}
+.qw-app textarea {
+  height: 85px;
+  width: 100%;
+  font-family: Monaco, monospace;
+}
+.qw-app .qw-primary {
+  background: var(--qw-blue);
+  border-color: var(--qw-blue);
+  color: #fff;
+}
+.qw-app .qw-primary:hover:not(:disabled) {
+  background: #284e8d;
+  border-color: #284e8d;
+}
+.qw-app code {
+  font:
+    12px/1.6 Monaco,
+    Consolas,
+    monospace;
+  overflow-wrap: anywhere;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.qw-app label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  margin: 0;
+  font-size: 12px;
+  color: #66717d;
+}
+.qw-app pre {
+  background: #f5f6f8;
+  color: #33404c;
+  padding: 16px;
+  font:
+    12px/1.7 Monaco,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 0;
+}
+.qw-app details > summary {
+  cursor: pointer;
+}
+.qw-app .fa {
+  font-size: 14px;
+}
+.qw-app .qw-primary .fa {
+  color: inherit;
+}
+.qw-app .ace-monokai {
+  background: #141414;
+  color: #f8f8f2;
+  line-height: 20px;
+}
+.qw-app .ace-monokai .ace_gutter {
+  background: #232323;
+  color: #b7b7b7;
+}
+.qw-app .ace-monokai .ace_marker-layer .ace_active-line {
+  background: #1f1f1f;
+}
+.qw-app .ace-monokai .ace_scroller {
+  border: 0;
+}
+.qw-app table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  table-layout: auto;
+  font-size: 13px;
+}
+.qw-app th {
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  color: #818b97;
+  background: #f7f7f8;
+  padding: 11px 16px;
+  border-bottom: 1px solid #e1e3e7;
+  white-space: nowrap;
+}
+.qw-app td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #eceef1;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 21px;
+}
+.qw-app tbody tr:hover {
+  background: #f6f8fb;
+}
+.qw-app .strategy-list th {
+  background: #fff;
+  padding: 8px 10px;
+}
+.qw-app .strategy-list td {
+  height: 48px;
+  padding: 10px;
+}
+.qw-app .strategy-list td:first-child {
+  width: 35%;
+}

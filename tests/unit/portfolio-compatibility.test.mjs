@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { verifyCompatibility, assertSameService, operationKeyFor } from "../../src/features/portfolio/compatibility.mjs";
-import { restoreOperation } from "../../src/features/portfolio/state.mjs";
+import { verifyCompatibility, assertSameService, operationKeyFor } from "../../src/features/portfolio/compatibility.ts";
+import { restoreOperation } from "../../src/features/portfolio/state.ts";
 
 const schema = JSON.parse(readFileSync(new URL("../../contracts/portfolio.openapi.json", import.meta.url)));
 const fixture = () => ({
@@ -75,4 +75,13 @@ test("compatible services cannot mix frozen evidence or retry each other's store
   assert.equal(restoreOperation(storage, newKey, b.source_sha256), null);
   assert.throws(() => restoreOperation(storage, oldKey, b.source_sha256), /不同服务/);
   assert.equal(restoreOperation(storage, oldKey, a.source_sha256).body.idempotency_key, "original-request");
+});
+
+test("compatible JSON pointers may traverse arrays of schemas", () => {
+  const f = fixture();
+  f.schema.components.schemas.PortfolioPosition.properties.future_stage = { $ref: "#/components/schemas/FutureStage/anyOf/0" };
+  f.schema.components.schemas.FutureStage = { anyOf: [{ type: "string" }, { type: "number" }] };
+  check(f);
+  f.schema.components.schemas.PortfolioPosition.properties.future_stage.$ref = "#/components/schemas/FutureStage/anyOf/2";
+  assert.throws(() => check(f), /PORTFOLIO_CONTRACT_MISMATCH/);
 });

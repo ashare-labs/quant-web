@@ -3,9 +3,9 @@
 import assert from "node:assert/strict";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { verifyCompatibility, assertSameService } from "../src/features/portfolio/compatibility.mjs";
-import { validatePortfolioEvidence } from "../src/features/portfolio/evidence.mjs";
-import { positionRows } from "../src/features/portfolio/positions.mjs";
+import { verifyCompatibility, assertSameService } from "../src/features/portfolio/compatibility.ts";
+import { validatePortfolioEvidence } from "../src/features/portfolio/evidence.ts";
+import { positionRows } from "../src/features/portfolio/positions.ts";
 import { loopbackUrl } from './proxy-config.mjs';
 
 const [base, destination, ...expectedConflicts] = process.argv.slice(2);

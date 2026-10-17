@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { decimal, normalizeParameters, createRequest } from '../../src/features/tasks/parameters.mjs';
+import { decimal, normalizeParameters, createRequest } from '../../src/features/tasks/parameters.ts';
 const schema = JSON.parse(readFileSync(new URL('../../contracts/tasks.openapi.json', import.meta.url)));
 const properties = schema.components.schemas.JobCatalogue.properties;
 const limits = properties.parameter_limits.default, defaults = properties.parameters.default;

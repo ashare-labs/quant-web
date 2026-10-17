@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectionOf, validatePreflight, validatePortfolioEvidence } from "../../src/features/portfolio/evidence.mjs";
-import { validPortfolioCash, validVolumeRatio } from "../../src/features/portfolio/state.mjs";
+import { selectionOf, validatePreflight, validatePortfolioEvidence } from "../../src/features/portfolio/evidence.ts";
+import { validPortfolioCash, validVolumeRatio } from "../../src/features/portfolio/state.ts";
 
 import { evidence } from '../fixtures/portfolio.mjs';
 const validate = e => validatePortfolioEvidence(e.id,e.job,e.manifest,e.logs,e.result);
@@ -54,4 +54,13 @@ test("portfolio amount and participation validation preserve supported exact tex
   for(const value of ["0","01","1e6","-1","1.000000001","9".repeat(41)]) assert.equal(validPortfolioCash(value),false);
   for(const value of ["","0.0001","1","1.00"]) assert.equal(validVolumeRatio(value),true);
   for(const value of ["0","0.00","1.01",".5","1e-2","-0.1"]) assert.equal(validVolumeRatio(value),false);
+});
+
+
+test("unknown native receipt objects are narrowed before account and trade access", () => {
+  for (const change of [value => { value.manifest.session.details = null; }, value => { value.result.receipt.final_account = []; }, value => { value.result.receipt.trades = [null]; }]) {
+    const value = evidence();
+    change(value);
+    assert.throws(() => validatePortfolioEvidence(value.job.job_id, value.job, value.manifest, value.logs, value.result), /PORTFOLIO_(JOB|RESULT)_CONFLICT/);
+  }
 });

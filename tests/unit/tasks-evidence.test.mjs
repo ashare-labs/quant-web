@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { paperRevision, requireSamePaperRevision, validatePaperDay, curveGeometry, pendingMatches, validateTaskEvidence } from '../../src/features/tasks/evidence.mjs';
+import { paperRevision, requireSamePaperRevision, validatePaperDay, curveGeometry, pendingMatches, validateTaskEvidence } from '../../src/features/tasks/evidence.ts';
 
 const view = { session_id: 'one', identity: 'same', head: 'head', config: { data_mode: 'historical_research', cash_dividend_policy: 'gross_zero_withholding_0900' }, days: [{ day: '2022-03-01', status: 'committed', checkpoint_sha: 'check', intent_id: 'intent' }], selected_day: '2022-03-01', decision: {}, report: {} };
 const report = { session_id: 'one', schema: 'paper-report.v1', day: '2022-03-01', data_mode: 'historical_research', checkpoint_sha256: 'check', intent_id: 'intent', native: { reconciliation: { status: 'passed' }, opening_reconciliation: { status: 'passed' } } };

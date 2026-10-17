@@ -1,27 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  validCash,
-  parseParameters,
+  validPortfolioCash,
+  validVolumeRatio,
   restoreOperation,
   completeOperation,
   actionSatisfied,
   canCancel,
-} from "../../src/features/portfolio/state.mjs";
+} from "../../src/features/portfolio/state.ts";
 
-test("cash uses exact supported decimal text; rejects rounded/unsafe input", () => {
-  for (const v of ["0.01", "100000", "10000.20"])
-    assert.equal(validCash(v), true);
-  for (const v of ["0", "-1", "1e4", "1.001", "01", "NaN", "1000000000000"])
-    assert.equal(validCash(v), false);
-});
-test("Python parameters preserve decimals as strings and reject nested values", () => {
-  assert.deepEqual(
-    parseParameters('{"price":"0.3","shares":100,"allow":true}'),
-    { price: "0.3", shares: 100, allow: true },
-  );
-  for (const v of ['{"price":0.3}', '{"nested":{}}', "[1]", "null"])
-    assert.throws(() => parseParameters(v));
+test("portfolio cash and participation preserve exact supported decimal text", () => {
+  for (const value of ["0.00000001", "100000", "10000.20000000", "1".repeat(40)]) assert.equal(validPortfolioCash(value), true);
+  for (const value of ["0", "-1", "1e4", "1.000000001", "01", "NaN", "1".repeat(41), 1000]) assert.equal(validPortfolioCash(value), false);
+  for (const value of ["", "0.1", "1", "1.000"]) assert.equal(validVolumeRatio(value), true);
+  for (const value of ["0", "0.0", "1.01", "-0.1", "1e-1", 1]) assert.equal(validVolumeRatio(value), false);
 });
 test("reload restores exact uncertain request and refuses another service identity", () => {
   const value = {

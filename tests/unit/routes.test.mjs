@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRoute, defaultRoute } from '../../src/app/routes.mjs';
+import { resolveRoute, defaultRoute } from '../../src/app/routes.ts';
 import { createProxy, frontendPort, loopbackUrl } from '../../scripts/proxy-config.mjs';
 
 test('functional navigation resolves nested task and run IDs without accepting prefix collisions', () => {

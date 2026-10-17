@@ -1,8 +1,8 @@
 import type { components } from "../../generated/portfolio";
 import { requestJson, ApiError } from "../../shared/http";
-import { canonical } from "../../shared/format.mjs";
-import { validatePortfolioEvidence } from "./evidence.mjs";
-import { assertSameService, verifyCompatibility } from "./compatibility.mjs";
+import { canonical } from "../../shared/format.ts";
+import { validatePortfolioEvidence } from "./evidence.ts";
+import { assertSameService, verifyCompatibility } from "./compatibility.ts";
 import contract from "../../../contracts/portfolio.openapi.json";
 
 export type PortfolioModel<K extends keyof components["schemas"]> =
