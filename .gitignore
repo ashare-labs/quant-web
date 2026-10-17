@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.local/
+.playwright-cli/
+*.tsbuildinfo
+.DS_Store
+__pycache__/
+output/
+.env
+.env.*
+*.tgz
