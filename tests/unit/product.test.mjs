@@ -139,6 +139,26 @@ test('ordinary source gaps stay actionable and do not enable publication from ra
   for (const text of ['600519.XSHG', '2024-01-09', 'upper_limit', 'STATE_UNKNOWN', '来源未覆盖该日涨停价', 'gross_cash_no_tax', '不会自动改为价格诊断', '参考来源绑定']) assert.ok(html.includes(text), text);
 });
 
+test('coverage assumptions show Chinese meaning while preserving raw known and unknown IDs', () => {
+  const labels = [
+    ['dated_name_history_status', '日期名称状态延续'],
+    ['gross_cash_zero_withholding', '税前现金、零预扣'],
+    ['retrospective_daily_status', '回溯日状态'],
+    ['scoped_action_absence', '来源范围内无行动'],
+    ['shared_market_calendar', '共同市场日历'],
+    ['standard_mainboard_limits', '普通主板派生限幅'],
+  ];
+  const assumptions = [...labels.map(([id]) => id), 'future_model_assumption'];
+  const html = renderToStaticMarkup(createElement(ProductCoverage, { coverage: { ...coverage, assumptions } }));
+  const visible = html.slice(0, html.indexOf('<details>'));
+  for (const [id, label] of labels) {
+    assert.ok(visible.includes(`<span title="${id}">${label}：`), id);
+    assert.ok(html.slice(html.indexOf('<details>')).includes(id), `raw receipt: ${id}`);
+  }
+  assert.ok(visible.includes('<span>future_model_assumption</span>'));
+  assert.deepEqual(assumptions, [...labels.map(([id]) => id), 'future_model_assumption']);
+});
+
 test('ordinary release transfers its declared mode and preserves corporate evidence; it cannot be converted to diagnosis', () => {
   const next = draftFromRelease(config, released, ordinary, false);
   assert.equal(next.mode, 'covered_research');

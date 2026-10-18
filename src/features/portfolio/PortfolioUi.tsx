@@ -13,6 +13,18 @@ export const algorithmNames: Record<string, string> = {
   "momentum-low-volatility": "动量低波动",
 };
 export const algorithmName = (value: string) => algorithmNames[value] || value;
+const assumptionLabels = new Map<string, string>([
+  ["dated_name_history_status", "日期名称状态延续：根据已采集的官方更名记录延续有日期的状态锚点。"],
+  ["gross_cash_zero_withholding", "税前现金、零预扣：分红按税前现金入账，预扣税设为零。"],
+  ["retrospective_daily_status", "回溯日状态：日状态按 09:00 回放，未证明当时已送达。"],
+  ["scoped_action_absence", "来源范围内无行动：无行动结论限于已采集的行动台账与参考数据、因子校验。"],
+  ["shared_market_calendar", "共同市场日历：使用节假日公告与独立日期交叉印证的范围内日历。"],
+  ["standard_mainboard_limits", "普通主板派生限幅：按普通主板规则推导涨跌停价，未认证交易所特殊调整。"],
+]);
+function AssumptionText({ text }: { text: string }) {
+  const label = assumptionLabels.get(text);
+  return <span title={label ? text : undefined}>{label ?? text}</span>;
+}
 export function Table({
   headers,
   rows,
@@ -58,7 +70,7 @@ export function ResearchAssumptions({ values }: { values: unknown[] }) {
         if (!value || typeof value !== "object" || Array.isArray(value))
           return (
             <p key={i}>
-              {typeof value === "string" ? value : JSON.stringify(value)}
+              {typeof value === "string" ? <AssumptionText text={value} /> : JSON.stringify(value)}
             </p>
           );
         const item = value as Record<string, unknown>;
@@ -68,7 +80,7 @@ export function ResearchAssumptions({ values }: { values: unknown[] }) {
               <p>
                 <strong>仅供来源追溯，不作为本次执行规则。</strong>
               </p>
-              {typeof item.text === "string" && <p>{item.text}</p>}
+              {typeof item.text === "string" && <p><AssumptionText text={item.text} /></p>}
               <details>
                 <summary>查看来源原始假设（不用于本次执行）</summary>
                 <pre>{JSON.stringify(item, null, 2)}</pre>
@@ -78,7 +90,7 @@ export function ResearchAssumptions({ values }: { values: unknown[] }) {
         }
         return (
           <p key={i}>
-            {typeof item.text === "string" ? item.text : JSON.stringify(item)}
+            {typeof item.text === "string" ? <AssumptionText text={item.text} /> : JSON.stringify(item)}
           </p>
         );
       })}
