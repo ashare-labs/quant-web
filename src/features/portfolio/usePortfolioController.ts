@@ -8,6 +8,7 @@ import { usePortfolioLists } from "./usePortfolioLists";
 import { usePortfolioOperation } from "./usePortfolioOperation";
 import { usePortfolioPreflight } from "./usePortfolioPreflight";
 import { usePortfolioSnapshot } from "./usePortfolioSnapshot";
+import { requestIdentity } from "./api";
 
 // Keep draft, request and list state mounted while only the route's view changes.
 export function usePortfolioController(route: string) {
@@ -31,16 +32,19 @@ export function usePortfolioController(route: string) {
     restored,
     storageError,
     setStorageError,
+    environmentError,
   } = draftState;
   const serviceSource = identity?.source_sha256 || "";
+  const operationIdentity = index ? requestIdentity(index) : "";
   const operations = usePortfolioOperation(
-    serviceSource,
+    operationIdentity,
     refresh,
     setStorageError,
+    serviceSource,
   );
   const { operation, operationSource } = operations;
   const current =
-    online && !error && !busy && restored && operationSource === serviceSource
+    online && !error && !busy && restored && operationSource === operationIdentity
       ? index
       : null;
   const preflight = usePortfolioPreflight(
@@ -85,6 +89,7 @@ export function usePortfolioController(route: string) {
     operation?.state !== "pending" &&
     operation?.state !== "done" &&
     !storageError &&
+    !environmentError &&
     !checking;
   const actions = usePortfolioActions({
     current,
@@ -92,7 +97,7 @@ export function usePortfolioController(route: string) {
     draft,
     storageError,
     ...operations,
-    serviceSource,
+    operationIdentity,
     currentPreflight,
     selection: preflight.selection,
     runReady,
@@ -129,6 +134,7 @@ export function usePortfolioController(route: string) {
     update,
     saveDraft,
     storageError,
+    environmentError,
     operation,
     busy,
     actionError,

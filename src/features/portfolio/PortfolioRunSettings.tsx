@@ -6,9 +6,10 @@ import {
   icon,
   short,
 } from "./PortfolioUi";
-import { base, type Draft } from "./draft";
+import { base, draftPublication, type Draft } from "./draft";
 import { validPortfolioCash as validCash, validVolumeRatio } from "./state.ts";
 import type { PortfolioController } from "./usePortfolioController";
+import { environmentKey } from "../../shared/product-config";
 
 type Props = Pick<
   PortfolioController,
@@ -37,6 +38,7 @@ type Props = Pick<
   | "feeModel"
   | "matched"
   | "runReady"
+  | "environmentError"
 >;
 export function PortfolioRunSettings({
   index,
@@ -64,7 +66,9 @@ export function PortfolioRunSettings({
   feeModel,
   matched,
   runReady,
+  environmentError,
 }: Props) {
+  const publication = draftPublication(draft);
   return (
     <section className="qw-run-pane" aria-label="回测设置">
       <div className="qw-run-toolbar">
@@ -114,6 +118,14 @@ export function PortfolioRunSettings({
         </button>
       </div>
       <div className="qw-config">
+        <p>当前环境：{index?.configuration.profile || "未连接"} · <a href="#/data">从正式主库选择股票与窗口</a></p>
+        {environmentError && <p className="qw-error-text" role="alert">{environmentError}</p>}
+        {publication && <section aria-label="正式发布来源" className="qw-assumptions">
+          <strong>正式发布来源</strong>
+          <p>实际来源：{JSON.stringify(publication.selected_sources ?? "未提供")}</p>
+          <p>选源窗口：{JSON.stringify(publication.source_selection_scope ?? "未提供")}</p>
+          <details><summary>发布清单与来源回执</summary><pre>{JSON.stringify(publication, null, 2)}</pre></details>
+        </section>}
         <div className="qw-config-row">
           <label>
             数据窗口
@@ -126,6 +138,7 @@ export function PortfolioRunSettings({
                 );
                 update({
                   dataset: e.target.value,
+                  environment: index ? environmentKey(index.configuration) : "",
                   securities: [],
                   start: d?.trading_dates[0] || "",
                   end: d?.trading_dates.at(-1) || "",
@@ -133,6 +146,7 @@ export function PortfolioRunSettings({
               }}
             >
               <option value="">选择已导入数据</option>
+              {draft.dataset && !dataset && <option value={draft.dataset} disabled>草稿数据集不在当前环境 · {short(draft.dataset)}</option>}
               {index?.catalogue.datasets.map((d) => (
                 <option key={d.dataset_id} value={d.dataset_id}>
                   {d.name} · {d.trading_dates[0]}—{d.trading_dates.at(-1)}
@@ -341,7 +355,7 @@ export function PortfolioRunSettings({
         )}
         {current && !current.catalogue.datasets.length && (
           <p className="qw-error-text">
-            尚无导入数据，请按本地启动说明导入授权数据。
+            尚无发布数据，请从 <a href="#/data">正式数据与回测</a> 选择主库股票并发布窗口。
           </p>
         )}
         {operation?.state === "done" && (

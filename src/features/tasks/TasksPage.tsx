@@ -49,12 +49,12 @@ export function TasksPage({ route }: { route: string }) {
           <h1>任务与结果</h1>
           <p>选定版本，再核对同一份证据中的账户、成交与数据边界。</p>
         </div>
-        <a href="#/tasks/daily">新建日频任务</a>
+        <a href="#/tasks/daily">固定日频评测</a>
         <a href="#/paper">模拟操作</a>
         <a href="#/portfolio">组合回测</a>
       </header>
       <main>
-        {source === "daily" && !id && <DailyTaskComposer online={online} />}
+        {source === "daily" && !id && <><p className="task-boundary">独立固定日频评测。正式股票和任意已有行情窗口请从 <a href="#/data">正式数据与回测</a> 进入组合回测。</p><DailyTaskComposer online={online} /></>}
         <section className="task-selection" aria-label="验收对象">
           <label>
             证据来源

@@ -4,6 +4,7 @@ import { parseJson } from "../../shared/json.ts";
 import { algorithmName } from "./PortfolioUi";
 import {
   readPortfolio,
+  requestIdentity,
   request,
   type Detail,
   type Index,
@@ -28,7 +29,7 @@ type ActionsInput = {
   storageError: string;
   operation: Operation | null;
   operationKey: string;
-  serviceSource: string;
+  operationIdentity: string;
   currentPreflight: PortfolioModel<"PortfolioPreflight"> | null;
   selection: PortfolioModel<"PortfolioSelection">;
   runReady: boolean;
@@ -48,7 +49,7 @@ export function usePortfolioActions({
   storageError,
   operation,
   operationKey,
-  serviceSource,
+  operationIdentity,
   currentPreflight,
   selection,
   runReady,
@@ -74,6 +75,7 @@ export function usePortfolioActions({
         fresh.catalogue.service_identity,
         current.catalogue.service_identity,
       );
+      if (requestIdentity(fresh) !== operationIdentity) throw Error("运行环境或状态库已变化，请重新读取。");
       const version = await request<Strategy>("/strategies", definition);
       if (!fresh.strategies.some((s) => s.version_id === version.version_id))
         setNotice("已注册新策略版本；已有任务保留原版本。");
@@ -109,6 +111,7 @@ export function usePortfolioActions({
     update({
       name: r.name,
       dataset: r.dataset_id,
+      environment: current?.configuration.configuration_id || "",
       securities: r.securities,
       start: r.start_date,
       end: r.end_date,
@@ -134,7 +137,7 @@ export function usePortfolioActions({
           const existing = restoreOperation(
             localStorage,
             operationKey,
-            serviceSource,
+            operationIdentity,
           );
           if (existing?.state === "pending")
             throw Error("另一标签页有请求待确认，请先核对原请求。");
@@ -172,7 +175,7 @@ export function usePortfolioActions({
           const existing = restoreOperation(
             localStorage,
             operationKey,
-            serviceSource,
+            operationIdentity,
           );
           let op: Operation;
           if (retry) {
@@ -190,7 +193,7 @@ export function usePortfolioActions({
                   "请核对版本、证券、日期、资金，并完成本次预检查和假设确认。",
                 );
               op = {
-                pin: serviceSource,
+                pin: operationIdentity,
                 action,
                 body: {
                   name: draft.name.trim(),
@@ -208,7 +211,7 @@ export function usePortfolioActions({
             } else {
               if (!active) throw Error("请先选择任务。");
               op = {
-                pin: serviceSource,
+                pin: operationIdentity,
                 action,
                 body: {},
                 jobId: active.job_id,
@@ -224,7 +227,7 @@ export function usePortfolioActions({
             fresh.catalogue.service_identity,
             current.catalogue.service_identity,
           );
-          if (op.pin !== fresh.catalogue.service_identity.source_sha256)
+          if (op.pin !== requestIdentity(fresh))
             throw Error(
               "PORTFOLIO_SERVICE_CHANGED · 原请求属于其他服务，已停止重发。",
             );

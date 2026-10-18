@@ -3,7 +3,8 @@ import { canonical } from "../../shared/format.ts";
 import { errorText } from "../../shared/http";
 import { readPortfolio, request, type Index, type PortfolioModel } from "./api";
 import { assertSameService } from "./compatibility.ts";
-import type { Draft } from "./draft";
+import { draftEnvironmentError, type Draft } from "./draft";
+import { assertSameEnvironment } from "../../shared/product-config";
 import { validatePreflight } from "./evidence.ts";
 
 export function usePortfolioPreflight(
@@ -36,6 +37,7 @@ export function usePortfolioPreflight(
   };
   const selectionReady =
     !!dataset &&
+    !!index && !draftEnvironmentError(draft, index.configuration, !!dataset) &&
     draft.securities.length > 0 &&
     new Set(draft.securities).size === draft.securities.length &&
     draft.securities.every((s) => dataset.securities.includes(s)) &&
@@ -60,6 +62,7 @@ export function usePortfolioPreflight(
         fresh.catalogue.service_identity,
         current.catalogue.service_identity,
       );
+      assertSameEnvironment(fresh.configuration, current.configuration);
       const value = await request<PortfolioModel<"PortfolioPreflight">>(
         "/preflight",
         checkedSelection,

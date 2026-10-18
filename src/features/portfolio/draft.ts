@@ -1,5 +1,6 @@
 import { canonical } from "../../shared/format.ts";
 import { isRecord, parseJson } from "../../shared/json.ts";
+import { environmentKey, type ProductConfig } from "../../shared/product-config.ts";
 export const base = "#/portfolio";
 export const draftKey = "quant-web.portfolio.portfolio-draft.v1";
 const defaultRules = JSON.stringify(
@@ -12,6 +13,8 @@ export type Draft = {
   code: string;
   version: string;
   dataset: string;
+  environment: string;
+  publication: string;
   securities: string[];
   start: string;
   end: string;
@@ -28,6 +31,8 @@ export function freshDraft(): Draft {
     code: defaultRules,
     version: "",
     dataset: "",
+    environment: "",
+    publication: "",
     securities: [],
     start: "",
     end: "",
@@ -89,6 +94,23 @@ export function safeCanonical(value: string) {
   }
 }
 export const changesScope = (patch: Partial<Draft>) =>
-  ["dataset", "securities", "start", "end", "mode", "retrospective"].some(
+  ["dataset", "environment", "securities", "start", "end", "mode", "retrospective"].some(
     (key) => key in patch,
   );
+
+export function draftEnvironmentError(draft: Draft, config: ProductConfig, datasetExists: boolean) {
+  if (!draft.dataset) return "";
+  if (!draft.environment) return "已有草稿未记录运行环境，已停止提交。请明确重选当前环境的数据窗口，或从正式数据入口重新发布。策略代码已保留。";
+  if (draft.environment !== environmentKey(config)) return `已有草稿属于另一运行环境，当前为 ${config.profile}。已停止提交并保留原选择；请切回原环境，或明确选择当前环境的数据。`;
+  if (!datasetExists) return "草稿数据集不在当前状态库中，已停止提交。请恢复对应数据与状态，或明确重新选择；不会改用首个数据集。";
+  return "";
+}
+
+export function draftPublication(draft: Draft) {
+  if (!draft.publication) return null;
+  try {
+    const value = parseJson(draft.publication);
+    return isRecord(value) && value.dataset_id === draft.dataset && value.environment === draft.environment && isRecord(value.manifest)
+      ? value.manifest : null;
+  } catch { return null; }
+}

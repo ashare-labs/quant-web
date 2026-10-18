@@ -4,6 +4,7 @@ import { canonical } from "../../shared/format.ts";
 import { validatePortfolioEvidence } from "./evidence.ts";
 import { assertSameService, verifyCompatibility } from "./compatibility.ts";
 import contract from "../../../contracts/portfolio.openapi.json";
+import { assertSameEnvironment, environmentKey, readProductConfig } from "../../shared/product-config.ts";
 
 export type PortfolioModel<K extends keyof components["schemas"]> =
   components["schemas"][K];
@@ -15,16 +16,19 @@ export const request = <T>(
   signal?: AbortSignal,
 ) => requestJson<T>("/portfolio-api", path, body, signal);
 export async function readPortfolio(signal?: AbortSignal) {
-  const [catalogue, schema, service, listing, strategies] =
+  const [catalogue, schema, service, listing, strategies, configuration] =
     await Promise.all([
       request<PortfolioModel<"PortfolioCatalogue">>("/catalogue", undefined, signal),
       request<unknown>("/openapi.json", undefined, signal),
       request<PortfolioModel<"PortfolioServiceStatus">>("/service", undefined, signal),
       request<PortfolioModel<"PortfolioJobList">>("/jobs", undefined, signal),
       request<Strategy[]>("/strategies", undefined, signal),
+      readProductConfig(signal),
     ]);
   verifyCompatibility(catalogue, schema, service, contract);
+  assertSameEnvironment(await readProductConfig(signal), configuration);
   return {
+    configuration,
     catalogue,
     service,
     jobs: listing.items.sort((a, b) =>
@@ -36,6 +40,7 @@ export async function readPortfolio(signal?: AbortSignal) {
   };
 }
 export type Index = Awaited<ReturnType<typeof readPortfolio>>;
+export const requestIdentity = (index: Index) => `${index.catalogue.service_identity.source_sha256}:${environmentKey(index.configuration)}`;
 export async function readDetail(id: string, identity: PortfolioModel<"PortfolioIdentity">, signal?: AbortSignal) {
   if (!/^m2job-[a-f0-9]{32}$/.test(id))
     throw new ApiError(

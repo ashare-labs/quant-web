@@ -3,6 +3,7 @@ import type { Index } from "./api";
 import {
   changesScope,
   draftKey,
+  draftEnvironmentError,
   freshDraft,
   restoreDraft,
   type Draft,
@@ -33,24 +34,13 @@ export function usePortfolioDraft(index: Index | null) {
       setStorageError(`草稿无法保存：${String(e)}。已停止提交。`);
     }
   }, [draft, restored]);
-  useEffect(() => {
-    if (!index || draft.dataset) return;
-    const d =
-      index.catalogue.datasets.find(
-        (d) => d.action_coverage.status === "source_covered",
-      ) || index.catalogue.datasets[0];
-    if (d)
-      setDraft((v) => ({
-        ...v,
-        dataset: d.dataset_id,
-        start: d.trading_dates[0] || "",
-        end: d.trading_dates.at(-1) || "",
-      }));
-  }, [index, draft.dataset]);
+  const environmentError = index ? draftEnvironmentError(draft, index.configuration,
+    index.catalogue.datasets.some(d => d.dataset_id === draft.dataset)) : "";
   const updateDraft = (value: Partial<Draft>) =>
     setDraft((d) => ({
       ...d,
       ...value,
+      ...(("dataset" in value || "environment" in value) && !("publication" in value) ? { publication: "" } : {}),
       ...(changesScope(value) ? { ack: "" } : {}),
       updatedAt: new Date().toISOString(),
     }));
@@ -71,5 +61,6 @@ export function usePortfolioDraft(index: Index | null) {
     restored,
     storageError,
     setStorageError,
+    environmentError,
   };
 }

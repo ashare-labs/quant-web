@@ -9,7 +9,8 @@ import {
   type Query,
   type Read,
   record,
-  securities,
+  descriptorSecurities,
+  parseSecurities,
   type Security,
 } from "./model";
 export function useMarketQuery(enabled: boolean) {
@@ -18,7 +19,8 @@ export function useMarketQuery(enabled: boolean) {
   const [aliasesRevision, setAliasesRevision] = useState(0);
   const [alias, setAlias] = useState("");
   const [dataset, setDataset] = useState("");
-  const [selected, setSelected] = useState<Security[]>(securities);
+  const [selected, setSelected] = useState<Security[]>([]);
+  const [securityInput, setSecurityInput] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [mode, setMode] = useState<"range" | "count">("range");
@@ -53,7 +55,7 @@ export function useMarketQuery(enabled: boolean) {
         if (live) {
           setAliases(value);
           setAlias((previous) =>
-            value.includes(previous) ? previous : value[0] || "",
+            value.includes(previous) ? previous : "",
           );
         }
       })
@@ -67,6 +69,8 @@ export function useMarketQuery(enabled: boolean) {
   useEffect(() => {
     generation.current++;
     setDescription(undefined);
+    setSelected([]);
+    setSecurityInput("");
     setRead(undefined);
     setCoverage(undefined);
     setError(undefined);
@@ -141,7 +145,13 @@ export function useMarketQuery(enabled: boolean) {
       : !!start && !!end) &&
     (visibility === "snapshot" || !!asOf);
   const source = record(description?.descriptor).source;
+  const securities = [...new Set([...descriptorSecurities(description?.descriptor), ...selected])].sort();
   const blocked = !enabled || busy || !validIdentity;
+
+  function applySecurities() {
+    try { setSelected(parseSecurities(securityInput)); setRead(undefined); setCoverage(undefined); setError(undefined); }
+    catch (e) { setError(e); }
+  }
 
   return {
     aliases,
@@ -153,6 +163,10 @@ export function useMarketQuery(enabled: boolean) {
     setDataset,
     selected,
     setSelected,
+    securities,
+    securityInput,
+    setSecurityInput,
+    applySecurities,
     start,
     setStart,
     end,

@@ -329,6 +329,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/product/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalogue */
+        get: operations["catalogue_api_v1_product_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuration View */
+        get: operations["configuration_view_api_v1_product_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prices */
+        post: operations["prices_api_v1_product_prices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product/releases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish */
+        post: operations["publish_api_v1_product_releases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/rqalpha/scenarios": {
         parameters: {
             query?: never;
@@ -1103,11 +1171,8 @@ export interface components {
             money?: string | null;
             /** Open */
             open?: string | null;
-            /**
-             * Security
-             * @enum {string}
-             */
-            security: "600000.XSHG" | "000001.XSHE";
+            /** Security */
+            security: string;
             /**
              * Source Date
              * Format: date
@@ -2948,10 +3013,10 @@ export interface components {
             contract_version: "portfolio-jobs.v1";
             /**
              * Dataset Registration
-             * @default local_cli_only
+             * @default local_cli_or_product_publication
              * @constant
              */
-            dataset_registration: "local_cli_only";
+            dataset_registration: "local_cli_or_product_publication";
             /** Datasets */
             datasets: components["schemas"]["PortfolioDataset"][];
             /** Fee Models */
@@ -3654,6 +3719,90 @@ export interface components {
              */
             status: "available";
         };
+        /** ProductConfiguration */
+        ProductConfiguration: {
+            /** Assets */
+            assets: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Capabilities */
+            capabilities: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Configuration Id */
+            configuration_id: string | null;
+            /** Configured */
+            configured: boolean;
+            /** Data Owner */
+            data_owner: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Default Dataset Id */
+            default_dataset_id: string | null;
+            error: components["schemas"]["ErrorBody"] | null;
+            /** Kind */
+            kind: string | null;
+            /** Limitations */
+            limitations: string[];
+            /** Profile */
+            profile: string;
+            /**
+             * Schema Version
+             * @default product-configuration.v1
+             * @constant
+             */
+            schema_version: "product-configuration.v1";
+        };
+        /** ProductRelease */
+        ProductRelease: {
+            dataset: components["schemas"]["PortfolioDataset"];
+            /** Release */
+            release: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** ProductReleaseRequest */
+        ProductReleaseRequest: {
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Name */
+            name?: string | null;
+            /** Securities */
+            securities: string[];
+            /**
+             * Source
+             * @default auto
+             */
+            source: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
+        /** ProductSelection */
+        ProductSelection: {
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Securities */
+            securities: string[];
+            /**
+             * Source
+             * @default auto
+             */
+            source: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
         /** PythonCapabilities */
         PythonCapabilities: {
             /**
@@ -3928,7 +4077,7 @@ export interface components {
              */
             end: string;
             /** Securities */
-            securities: ("600000.XSHG" | "000001.XSHE")[];
+            securities: string[];
             /**
              * Start
              * Format: date
@@ -3985,7 +4134,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default 8fcce56df5c9cf8d448b9ee535787933f00689f1
+             * @default f45839460f3da2a65ca1e25088fd9b7bc70195aa
              */
             commit: string | null;
             /**
@@ -3996,7 +4145,7 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 874e43b5aef4ebaa7d9bd3e90c4e7ba1e9c4729b
+             * @default 79eafd226340a5f3283ad9950dc89db81f6405c3
              */
             tree: string | null;
             /**
@@ -4006,7 +4155,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default 5f79b450e7660527f94e0acbf359994889fe0dbc9299a4563fbb6254e9ed2a16
+             * @default 6bc093644bcd9049748f0e8185ad6d5e16df4fef996b803837a48c94f01f0954
              */
             wheel_sha256: string;
         };
@@ -4056,7 +4205,7 @@ export interface components {
              */
             require_tradable: boolean;
             /** Securities */
-            securities: ("600000.XSHG" | "000001.XSHE")[];
+            securities: string[];
             /** Start */
             start?: string | null;
             /**
@@ -6184,6 +6333,318 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PortfolioStrategyVersion"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    catalogue_api_v1_product_catalogue_get: {
+        parameters: {
+            query?: {
+                query?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    configuration_view_api_v1_product_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductConfiguration"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    prices_api_v1_product_prices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductSelection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    publish_api_v1_product_releases_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductReleaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductRelease"];
                 };
             };
             /** @description Forbidden */

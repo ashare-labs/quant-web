@@ -297,10 +297,10 @@ export interface components {
             contract_version: "portfolio-jobs.v1";
             /**
              * Dataset Registration
-             * @default local_cli_only
+             * @default local_cli_or_product_publication
              * @constant
              */
-            dataset_registration: "local_cli_only";
+            dataset_registration: "local_cli_or_product_publication";
             /** Datasets */
             datasets: components["schemas"]["PortfolioDataset"][];
             /** Fee Models */

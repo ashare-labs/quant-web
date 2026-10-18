@@ -2,7 +2,7 @@ import "./market.css";
 
 import { MarketResults } from "./MarketResults";
 import { ReadError } from "./MarketUi";
-import { fields, type Query, securities } from "./model";
+import { fields, type Query } from "./model";
 import { useMarketQuery } from "./useMarketQuery";
 export function MarketBrowser({ enabled }: { enabled: boolean }) {
   const model = useMarketQuery(enabled);
@@ -16,6 +16,10 @@ export function MarketBrowser({ enabled }: { enabled: boolean }) {
     setDataset,
     selected,
     setSelected,
+    securities,
+    securityInput,
+    setSecurityInput,
+    applySecurities,
     start,
     setStart,
     end,
@@ -48,13 +52,13 @@ export function MarketBrowser({ enabled }: { enabled: boolean }) {
         <div className="section-head">
           <div>
             <span className="kicker">01 / 只读查询</span>
-            <h2>来源日线快照</h2>
+            <h2>已发布研究与固定评测快照</h2>
           </div>
           <span className="tag">READ ONLY</span>
         </div>
         <p className="notice">
           公开 API
-          读取已保存样本。此页不采集、不写入、不补数，也不提交策略运行。
+          读取已保存数据。可从描述符选择证券，或输入完整标识；此页不采集、不写入、不补数，也不提交策略运行。
         </p>
         <ReadError error={aliasError} />
         {!aliases && !aliasError && (
@@ -109,6 +113,7 @@ export function MarketBrowser({ enabled }: { enabled: boolean }) {
         <fieldset disabled={busy}>
           <div className="checks" role="group" aria-label="证券">
             <h3>证券</h3>
+            {!securities.length && <p>先读取快照身份以获取实际证券，或在下方输入完整证券标识。</p>}
             {securities.map((s) => (
               <label key={s}>
                 <input
@@ -126,6 +131,8 @@ export function MarketBrowser({ enabled }: { enabled: boolean }) {
               </label>
             ))}
           </div>
+          <label>证券标识（空格或逗号分隔）<input aria-label="研究证券标识" value={securityInput} placeholder="例如 600519.XSHG 000002.XSHE" onChange={e => setSecurityInput(e.target.value)}/></label>
+          <button onClick={applySecurities} disabled={!securityInput.trim()}>使用输入证券</button>
           <label>
             价格查询范围
             <select

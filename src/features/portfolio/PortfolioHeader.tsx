@@ -148,6 +148,7 @@ export function PortfolioHeader({
             编辑并注册组合算法定义，选择真实数据、证券集合、日期与资金，通过预检查并确认假设后运行。代码编辑器仅编辑注册定义；任意
             Python 暂不受此接口支持。任务由独立 worker 执行，刷新不会重新提交。
           </p>
+          <p><a href="#/data">正式数据与回测</a> 可搜索主库股票、发布窗口并带入此页。固定日频评测单独保留。</p>
           <p>
             本应用为独立的 quant-web，与聚宽官方无关联。当前服务：
             {current?.catalogue.service_identity.backend_version ||

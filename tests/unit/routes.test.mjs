@@ -5,8 +5,16 @@ import { createProxy, frontendPort, loopbackUrl } from '../../scripts/proxy-conf
 
 test('functional navigation resolves nested task and run IDs without accepting prefix collisions', () => {
   assert.equal(resolveRoute('').route,defaultRoute);
-  for (const [route,feature] of [['#/portfolio/results/id','portfolio'],['#/tasks/daily/id/details','tasks'],['#/paper','paper'],['#/market','market'],['#/execution/runs/id','execution']]) assert.equal(resolveRoute(route).feature,feature);
+  assert.equal(defaultRoute, '#/data');
+  for (const [route,feature] of [['#/data','product'],['#/portfolio/results/id','portfolio'],['#/tasks/daily/id/details','tasks'],['#/paper','paper'],['#/market','market'],['#/execution/runs/id','execution']]) assert.equal(resolveRoute(route).feature,feature);
   for (const route of ['#/portfolio-old','#/m2','#/br1','#/acceptance','#/workbench']) assert.equal(resolveRoute(route).feature,'not-found');
+});
+test('deployment exports one API origin for product and task state with explicit overrides', () => {
+  const proxy = createProxy({ ASHARE_API_URL: 'http://127.0.0.1:19999', ASHARE_PAPER_URL: 'http://127.0.0.1:19998', TASKS_API_URL: 'http://127.0.0.1:19000' });
+  for (const prefix of ['/portfolio-api/', '/execution-api/']) assert.equal(proxy[prefix].target, 'http://127.0.0.1:19999');
+  assert.equal(proxy['/paper-api/'].target, 'http://127.0.0.1:19998');
+  assert.equal(proxy['/tasks-api/'].target, 'http://127.0.0.1:19000');
+  assert.equal(proxy['/execution-api/'].rewrite('/execution-api/product/config'), '/api/v1/product/config');
 });
 test('proxies route each current domain to its declared backend path', () => {
   const proxy=createProxy({TASKS_API_URL:'http://localhost:19000'});

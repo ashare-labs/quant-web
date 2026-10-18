@@ -19,7 +19,8 @@ export function frontendPort(value = '41839') {
 }
 export function createProxy(env = process.env) {
   return Object.fromEntries(services.map(service => [service.prefix + '/', {
-    target: loopbackUrl(env[`${service.domain.toUpperCase()}_API_URL`] || `http://127.0.0.1:${service.port}`),
+    target: loopbackUrl(env[`${service.domain.toUpperCase()}_API_URL`] ||
+      (service.domain === 'paper' ? env.ASHARE_PAPER_URL : env.ASHARE_API_URL) || `http://127.0.0.1:${service.port}`),
     changeOrigin: true,
     rewrite: path => service.backend + path.slice(service.prefix.length),
   }]));
