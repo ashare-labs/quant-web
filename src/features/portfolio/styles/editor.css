@@ -138,6 +138,7 @@
   font-size: 12px;
   color: #6f7882;
   margin: 5px 0 9px;
+  overflow-wrap: anywhere;
 }
 .qw-assumptions p {
   margin: 6px 0;

@@ -32,8 +32,12 @@
   background: #f4f5f7;
   color: #66717d;
 }
-.qw-source-assumption pre {
+.qw-source-assumption pre,
+.qw-initial-entitlements pre {
   max-height: 220px;
   overflow: auto;
   white-space: pre-wrap;
+}
+.qw-initial-entitlements caption {
+  text-align: left;
 }

@@ -1,5 +1,6 @@
 import { isRecord } from "../../shared/json";
 import { ResearchAssumptions } from "../portfolio/PortfolioUi";
+import { InitialAccountNote } from "../portfolio/InitialEntitlements";
 import type { Coverage } from "./api";
 
 const valueText = (value: unknown) => value == null ? "未提供" : typeof value === "string" ? value : JSON.stringify(value);
@@ -21,6 +22,8 @@ export function ProductCoverage({ coverage }: { coverage: Coverage }) {
     </tbody></table></div>}
     <div className="notice"><strong>本次模型假设</strong><ResearchAssumptions values={coverage.assumptions}/>
       {!coverage.assumptions.length && <p>来源未提供模型假设。</p>}</div>
+    <div className="notice"><strong>新任务账户规则</strong><InitialAccountNote />
+      <p>公司行动来源日程仍完整保留；本次事件与执行假设以组合精确预检为准。</p></div>
     <details><summary>参考来源绑定、限制与完整覆盖回执</summary>
       {coverage.limitations.map((value, i) => <p key={i}>{value}</p>)}
       <pre>{JSON.stringify(coverage, null, 2)}</pre>

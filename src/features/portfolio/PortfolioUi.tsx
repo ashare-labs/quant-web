@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Job } from "./api";
 import { labels } from "./state.ts";
+import { InitialEntitlements, isInitialEntitlements } from "./InitialEntitlements";
 
 export const short = (s?: string) => (s ? s.slice(0, 12) : "—");
 export const algorithmNames: Record<string, string> = {
@@ -88,6 +89,7 @@ export function ResearchAssumptions({ values }: { values: unknown[] }) {
             </div>
           );
         }
+        if (isInitialEntitlements(item)) return <InitialEntitlements key={i} assumption={item} />;
         return (
           <p key={i}>
             {typeof item.text === "string" ? <AssumptionText text={item.text} /> : JSON.stringify(item)}

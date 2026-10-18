@@ -11,6 +11,7 @@ import { validPortfolioCash as validCash, validVolumeRatio } from "./state.ts";
 import type { PortfolioController } from "./usePortfolioController";
 import { environmentKey } from "../../shared/product-config";
 import { declaredMode } from "./dataset-mode";
+import { isInitialEntitlements } from "./InitialEntitlements";
 
 type Props = Pick<
   PortfolioController,
@@ -72,6 +73,8 @@ export function PortfolioRunSettings({
   modeError,
 }: Props) {
   const publication = draftPublication(draft);
+  const initialEntitlements = currentPreflight?.assumptions.filter(isInitialEntitlements) ?? [];
+  const otherAssumptions = currentPreflight?.assumptions.filter(value => !isInitialEntitlements(value)) ?? [];
   return (
     <section className="qw-run-pane" aria-label="回测设置">
       <div className="qw-run-toolbar">
@@ -294,12 +297,13 @@ export function PortfolioRunSettings({
                 <pre>{JSON.stringify(currentPreflight.gaps, null, 2)}</pre>
               </details>
             )}
+            <ResearchAssumptions values={initialEntitlements} />
             <details className="qw-assumptions">
               <summary>
-                本次研究假设与限制 · {currentPreflight.assumptions.length}{" "}
+                {initialEntitlements.length ? "其他研究假设与限制" : "本次研究假设与限制"} · {otherAssumptions.length}{" "}
                 项假设
               </summary>
-              <ResearchAssumptions values={currentPreflight.assumptions} />
+              <ResearchAssumptions values={otherAssumptions} />
               <ResearchLimitations
                 values={currentPreflight.limitations}
                 mode={draft.mode}
