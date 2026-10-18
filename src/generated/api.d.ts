@@ -363,6 +363,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/product/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Coverage */
+        post: operations["coverage_api_v1_product_coverage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/product/prices": {
         parameters: {
             query?: never;
@@ -3112,10 +3129,21 @@ export interface components {
             };
             /** Dataset Id */
             dataset_id: string;
+            /**
+             * Diagnostic Allowed
+             * @default true
+             */
+            diagnostic_allowed: boolean;
             /** Input Sha256 */
             input_sha256: string;
             /** Limitations */
             limitations: string[];
+            /**
+             * Mode
+             * @default covered_research
+             * @enum {string}
+             */
+            mode: "covered_research" | "price_only_no_limits";
             /** Name */
             name: string;
             /** Real Market Data */
@@ -3739,6 +3767,8 @@ export interface components {
             } | null;
             /** Default Dataset Id */
             default_dataset_id: string | null;
+            /** Default Reference Set */
+            default_reference_set?: string | null;
             error: components["schemas"]["ErrorBody"] | null;
             /** Kind */
             kind: string | null;
@@ -3747,11 +3777,40 @@ export interface components {
             /** Profile */
             profile: string;
             /**
+             * Reference Sets
+             * @default []
+             */
+            reference_sets: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /**
              * Schema Version
              * @default product-configuration.v1
              * @constant
              */
             schema_version: "product-configuration.v1";
+        };
+        /** ProductCoverageRequest */
+        ProductCoverageRequest: {
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Reference Set */
+            reference_set?: string | null;
+            /** Securities */
+            securities: string[];
+            /**
+             * Source
+             * @default auto
+             */
+            source: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
         };
         /** ProductRelease */
         ProductRelease: {
@@ -3768,8 +3827,16 @@ export interface components {
              * Format: date
              */
             end: string;
+            /**
+             * Mode
+             * @default covered_research
+             * @enum {string}
+             */
+            mode: "covered_research" | "price_only_no_limits";
             /** Name */
             name?: string | null;
+            /** Reference Set */
+            reference_set?: string | null;
             /** Securities */
             securities: string[];
             /**
@@ -4134,7 +4201,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default f45839460f3da2a65ca1e25088fd9b7bc70195aa
+             * @default 5205c52b48b1e1d2933af659a0be2e76ff50e4b7
              */
             commit: string | null;
             /**
@@ -4145,17 +4212,17 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 79eafd226340a5f3283ad9950dc89db81f6405c3
+             * @default e8b93e1b5deca06ac8d8884973a417ff1e2b6a5d
              */
             tree: string | null;
             /**
              * Version
-             * @default 0.10.0.dev3
+             * @default 0.10.0.dev4
              */
             version: string;
             /**
              * Wheel Sha256
-             * @default 6bc093644bcd9049748f0e8185ad6d5e16df4fef996b803837a48c94f01f0954
+             * @default 3df888cf0765d08ef64568fa2b70401cbd8b73049bceea6fa8fa8cbefebae0c5
              */
             wheel_sha256: string;
         };
@@ -4227,7 +4294,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev3
+             * @default 0.12.0.dev4
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -6487,6 +6554,86 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductConfiguration"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    coverage_api_v1_product_coverage_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductCoverageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Forbidden */

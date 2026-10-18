@@ -25,6 +25,6 @@ export function App() {
        feature === 'market' ? <MarketPage/> :
        <main><h1>页面不存在</h1><a href="#/data">打开正式数据与回测</a></main>}
     </Suspense>
-    <footer>quant-web 0.2 · 新版前端待独立联验；结果中的历史身份与审阅结论保持原值。</footer>
+    <footer>quant-web 0.3 · 新版前端待独立联验；结果中的历史身份与审阅结论保持原值。</footer>
   </>;
 }

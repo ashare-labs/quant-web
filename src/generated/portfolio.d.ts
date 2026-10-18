@@ -396,10 +396,21 @@ export interface components {
             };
             /** Dataset Id */
             dataset_id: string;
+            /**
+             * Diagnostic Allowed
+             * @default true
+             */
+            diagnostic_allowed: boolean;
             /** Input Sha256 */
             input_sha256: string;
             /** Limitations */
             limitations: string[];
+            /**
+             * Mode
+             * @default covered_research
+             * @enum {string}
+             */
+            mode: "covered_research" | "price_only_no_limits";
             /** Name */
             name: string;
             /** Real Market Data */

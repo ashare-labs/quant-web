@@ -6,10 +6,11 @@ import {
   icon,
   short,
 } from "./PortfolioUi";
-import { base, draftPublication, type Draft } from "./draft";
+import { base, draftPublication } from "./draft";
 import { validPortfolioCash as validCash, validVolumeRatio } from "./state.ts";
 import type { PortfolioController } from "./usePortfolioController";
 import { environmentKey } from "../../shared/product-config";
+import { declaredMode } from "./dataset-mode";
 
 type Props = Pick<
   PortfolioController,
@@ -39,6 +40,7 @@ type Props = Pick<
   | "matched"
   | "runReady"
   | "environmentError"
+  | "modeError"
 >;
 export function PortfolioRunSettings({
   index,
@@ -67,6 +69,7 @@ export function PortfolioRunSettings({
   matched,
   runReady,
   environmentError,
+  modeError,
 }: Props) {
   const publication = draftPublication(draft);
   return (
@@ -120,10 +123,14 @@ export function PortfolioRunSettings({
       <div className="qw-config">
         <p>当前环境：{index?.configuration.profile || "未连接"} · <a href="#/data">从正式主库选择股票与窗口</a></p>
         {environmentError && <p className="qw-error-text" role="alert">{environmentError}</p>}
+        {modeError && <div className="qw-error-text" role="alert"><p>{modeError}</p>
+          {declaredMode(dataset) && <button onClick={() => update({ mode: declaredMode(dataset)!, retrospective: false })}>使用此数据声明的模式</button>}
+        </div>}
         {publication && <section aria-label="正式发布来源" className="qw-assumptions">
           <strong>正式发布来源</strong>
           <p>实际来源：{JSON.stringify(publication.selected_sources ?? "未提供")}</p>
           <p>选源窗口：{JSON.stringify(publication.source_selection_scope ?? "未提供")}</p>
+          <p>参考数据组：{JSON.stringify(publication.reference_set ?? "未提供")} · 模式：{draft.mode === "covered_research" ? "普通回测" : "价格诊断"}</p>
           <details><summary>发布清单与来源回执</summary><pre>{JSON.stringify(publication, null, 2)}</pre></details>
         </section>}
         <div className="qw-config-row">
@@ -139,6 +146,8 @@ export function PortfolioRunSettings({
                 update({
                   dataset: e.target.value,
                   environment: index ? environmentKey(index.configuration) : "",
+                  mode: declaredMode(d) || "covered_research",
+                  retrospective: false,
                   securities: [],
                   start: d?.trading_dates[0] || "",
                   end: d?.trading_dates.at(-1) || "",
@@ -238,21 +247,20 @@ export function PortfolioRunSettings({
         )}
         <div className="qw-config-row">
           <label>
-            研究模式
+            数据声明模式
             <select
               aria-label="研究模式"
               value={draft.mode}
-              onChange={(e) =>
-                update({ mode: e.target.value as Draft["mode"] })
-              }
+              disabled
             >
-              <option value="covered_research">来源覆盖的条件研究</option>
+              <option value="covered_research">普通回测（有来源覆盖）</option>
               <option value="price_only_no_limits">
                 价格诊断（无限价、无公司行动）
               </option>
             </select>
           </label>
         </div>
+        <p>模式随已发布数据固定。独立价格诊断需从正式数据页另行选择并确认；不能剥离公司行动来源转换。</p>
         <ScopeNote mode={draft.mode} scope={currentPreflight?.economic_scope} />
         <label className="qw-check qw-retrospective">
           <input
@@ -328,6 +336,7 @@ export function PortfolioRunSettings({
                   dataset_id: dataset.dataset_id,
                   input_sha256: dataset.input_sha256,
                   state_mode: dataset.state_mode,
+                  mode: declaredMode(dataset),
                   action_coverage: dataset.action_coverage,
                   source_refs: dataset.source_refs,
                   limitations: dataset.limitations,

@@ -1,8 +1,9 @@
-import type { PortfolioModel } from "../portfolio/api";
 import type { components } from "../../generated/api";
 import { ApiError, requestJson } from "../../shared/http";
 import { isRecord } from "../../shared/json";
 import { assertSameEnvironment, readProductConfig, requireProduct, type ProductConfig } from "../../shared/product-config";
+import type { DeclaredDataset, ResearchMode } from "../portfolio/dataset-mode";
+import { validateCoverage, validateRelease } from "./selection";
 
 export type Security = {
   security: string; name: string; first_bar: string | null; last_bar: string | null;
@@ -13,13 +14,27 @@ export type Catalogue = {
   securities: Security[]; receipt: unknown; limitations: string[];
 };
 export type Selection = components["schemas"]["ProductSelection"];
+export type CoverageSelection = Selection & { reference_set: string | null };
+export type ReleaseSelection = CoverageSelection & { mode: ResearchMode };
+export type Coverage = {
+  schema: "ad-local-daily-coverage.v1";
+  scope: Selection;
+  ready: boolean;
+  gaps: unknown[];
+  assumptions: unknown[];
+  limitations: string[];
+  reference_set: { name: string; kind: string } | null;
+  source_bindings: Record<string, unknown>;
+  coverage_sha256: string;
+};
 export type Prices = {
   rows: Record<string, unknown>[]; gaps: unknown[]; coverage: unknown; receipt: unknown;
   limitations?: string[];
 };
 export type Release = {
-  release: { dataset_id: string; portfolio_input_path: string; manifest: unknown };
-  dataset: PortfolioModel<"PortfolioDataset">;
+  release: { dataset_id: string; mode: ResearchMode; reference_set: unknown; portfolio_input_path: string;
+    corporate_schedule_path?: string | null; source_bindings?: unknown; coverage_sha256?: string; manifest: unknown };
+  dataset: DeclaredDataset;
 };
 
 const request = <T>(path: string, body?: unknown, signal?: AbortSignal) =>
@@ -53,12 +68,18 @@ export async function readPrices(config: ProductConfig, selection: Selection) {
   });
 }
 
-export async function publishSelection(config: ProductConfig, selection: Selection) {
+export async function readCoverage(config: ProductConfig, selection: CoverageSelection) {
+  return inEnvironment(config, async () => {
+    const value = await request<Coverage>("/coverage", selection);
+    validateCoverage(config, selection, value);
+    return value;
+  });
+}
+
+export async function publishSelection(config: ProductConfig, selection: ReleaseSelection) {
   return inEnvironment(config, async () => {
     const value = await request<Release>("/releases", selection);
-    if (!value.release?.dataset_id || !value.dataset?.dataset_id || !Array.isArray(value.dataset.securities) ||
-        !selection.securities.every(s => value.dataset.securities.includes(s)))
-      throw new ApiError("PRODUCT_RELEASE_INVALID", "发布响应与证券选择不一致，请核对已导入数据。", true);
+    validateRelease(config, selection, value);
     return value;
   });
 }

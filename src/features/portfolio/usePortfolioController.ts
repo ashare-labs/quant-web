@@ -51,7 +51,7 @@ export function usePortfolioController(route: string) {
     draft,
     index,
     current,
-    serviceSource,
+    operationIdentity,
     () => updateDraft({ ack: "" }),
   );
   const { invalidate, selectionReady, checking, currentPreflight } = preflight;
@@ -61,7 +61,7 @@ export function usePortfolioController(route: string) {
     setActionError("");
     setNotice("");
     setDraft((d) => ({ ...d, ack: "" }));
-  }, [serviceSource, invalidate, setDraft]);
+  }, [operationIdentity, serviceSource, invalidate, setDraft]);
   const update = (patch: Partial<Draft>) => {
     if (changesScope(patch)) invalidate();
     updateDraft(patch);

@@ -28,8 +28,10 @@ npm run contracts:generate -- tasks
 
 日频任务和 paper 核对配对源码身份及契约；portfolio 依据接口结构和所需能力接受兼容版本，但跨请求必须为同一服务身份。所有页面保留后端返回的独审状态，不将契约匹配视为新源码已通过独审。
 
-正式数据使用 `/execution-api/product` 代理到 `/api/v1/product`：`GET /config`、`GET /catalogue?query=&limit=&offset=`、`POST /prices` 与 `POST /releases`。两个 POST 请求都传 `{securities,start,end,source}`；发布响应为 `{release,dataset}`，其中 dataset 沿用 `PortfolioDataset`。目录读取 `securities` 数组，行情保留真实数值字符串、缺口、逐证券覆盖和 AD 来源回执。
+正式数据使用 `/execution-api/product` 代理到 `/api/v1/product`：`GET /config`、`GET /catalogue?query=&limit=&offset=`、`POST /prices`、`POST /coverage` 与 `POST /releases`。行情传 `{securities,start,end,source}`；覆盖检查追加 `reference_set`（null 使用配置默认）；发布另传 `mode`，默认为 `covered_research`，诊断为 `price_only_no_limits`。覆盖响应保留 scope、ready、逐证券日期 gaps、assumptions、limitations、reference_set、source_bindings 和 coverage_sha256。config 的 reference_sets/default_reference_set 指定可选来源组，covered_research 能力不保证每个窗口有覆盖。
 
-AD 的开放 JSON 回执使用手写投影和运行时检查，不能凭生成类型假定数据齐全。`configuration_id` 绑定解析后的 profile 和状态/数据位置；正式查询前后核对相同配置，组合读取及提交同时核对服务源码与配置身份。发布时间窗、实际来源及回执保存在草稿的发布信息中，供进入组合页后核对。接口或资产缺失必须清楚失败，不选择首个数据集或样例。
+发布响应为 `{release,dataset}`，dataset 沿用 `PortfolioDataset` 并声明 mode/diagnostic_allowed；组合页沿用发布模式。普通发布的 release 包含公司行动日程路径与摘要、参考来源绑定和覆盖摘要，前端不能剥离转换成诊断。目录读取 `securities` 数组，行情保留真实数值字符串、缺口、逐证券覆盖和 AD 来源回执。发布覆盖检查不替代组合精确 preflight 的 assumption_ack_sha256。
+
+AD 的开放 JSON 回执使用手写投影和运行时检查，不能凭生成类型假定数据齐全。`configuration_id` 绑定解析后的 profile、状态/数据位置及参考组与来源绑定；正式查询前后核对相同配置，组合读取及提交同时核对服务源码与配置身份。发布时间窗、实际来源及回执保存在草稿的发布信息中，供进入组合页后核对。接口或资产缺失必须清楚失败，不选择首个数据集或样例。
 
 更新候选时由协调者统一导出 AQ 契约并同步身份，再运行整套检查与三仓真实流程；人工浏览器 fixture 和本机构建不代表正式数据联验完成。

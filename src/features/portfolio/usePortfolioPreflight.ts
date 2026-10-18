@@ -6,12 +6,13 @@ import { assertSameService } from "./compatibility.ts";
 import { draftEnvironmentError, type Draft } from "./draft";
 import { assertSameEnvironment } from "../../shared/product-config";
 import { validatePreflight } from "./evidence.ts";
+import { datasetModeError } from "./dataset-mode.ts";
 
 export function usePortfolioPreflight(
   draft: Draft,
   index: Index | null,
   current: Index | null,
-  serviceSource: string,
+  requestSource: string,
   clearAcknowledgement: () => void,
 ) {
   const dataset = index?.catalogue.datasets.find(
@@ -35,9 +36,11 @@ export function usePortfolioPreflight(
     mode: draft.mode,
     accept_retrospective_state: draft.retrospective,
   };
+  const modeError = datasetModeError(dataset, draft.mode);
   const selectionReady =
     !!dataset &&
     !!index && !draftEnvironmentError(draft, index.configuration, !!dataset) &&
+    !modeError &&
     draft.securities.length > 0 &&
     new Set(draft.securities).size === draft.securities.length &&
     draft.securities.every((s) => dataset.securities.includes(s)) &&
@@ -45,7 +48,7 @@ export function usePortfolioPreflight(
     dataset.trading_dates.includes(draft.end) &&
     draft.start <= draft.end;
   const currentPreflight =
-    preflight?.source === serviceSource &&
+    preflight?.source === requestSource &&
     canonical(preflight.value.selection) === canonical(selection)
       ? preflight.value
       : null;
@@ -69,7 +72,7 @@ export function usePortfolioPreflight(
       );
       validatePreflight(checkedSelection, value);
       setPreflight({
-        source: current.catalogue.service_identity.source_sha256,
+        source: requestSource,
         value,
       });
     } catch (e) {
@@ -80,6 +83,7 @@ export function usePortfolioPreflight(
   }
   return {
     dataset,
+    modeError,
     selection,
     selectionReady,
     currentPreflight,

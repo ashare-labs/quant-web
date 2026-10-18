@@ -3,8 +3,9 @@ import { ApiError, errorText } from "../../shared/http";
 import { readProductConfig, type ProductConfig } from "../../shared/product-config";
 import { useOnline } from "../../shared/useOnline";
 import { draftEnvironmentError, draftKey, freshDraft, restoreDraft } from "../portfolio/draft";
-import { publishSelection, readCatalogue, readPrices, type Catalogue, type Prices, type Security, type Selection } from "./api";
-import { draftFromRelease, validSelection } from "./selection";
+import type { ResearchMode } from "../portfolio/dataset-mode";
+import { publishSelection, readCatalogue, readCoverage, readPrices, type Catalogue, type Coverage, type Prices, type Security, type Selection, type ReleaseSelection } from "./api";
+import { draftFromRelease, publicationReady, selectedReference, selectionKey, validSelection } from "./selection";
 
 export function useProductSelection() {
   const online = useOnline();
@@ -15,8 +16,11 @@ export function useProductSelection() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [source, setSource] = useState("auto");
+  const [mode, setMode] = useState<ResearchMode>("covered_research");
+  const [referenceSet, setReferenceSet] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
-  const [prices, setPrices] = useState<Prices | null>(null);
+  const [priceRead, setPriceRead] = useState<{ key: string; value: Prices } | null>(null);
+  const [coverageRead, setCoverageRead] = useState<{ key: string; value: Coverage } | null>(null);
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState<unknown>(null);
   const [draftWarning, setDraftWarning] = useState("");
@@ -24,17 +28,24 @@ export function useProductSelection() {
   const [revision, setRevision] = useState(0);
   const lock = useRef(false);
   const selection: Selection = { securities: selected.map(s => s.security).sort(), start, end, source };
+  const releaseSelection: ReleaseSelection = { ...selection, reference_set: referenceSet || null, mode };
+  const key = selectionKey(selection);
+  const coverageKey = `${key}:${referenceSet}`;
+  const prices = priceRead?.key === key ? priceRead.value : null;
+  const coverage = coverageRead?.key === coverageKey ? coverageRead.value : null;
+  const reference = config ? selectedReference(config, referenceSet || null) : null;
   const available = !!config?.configured && config.kind === "product" && online;
+  const canPublish = available && !busy && publicationReady(config, releaseSelection, coverage, prices, acknowledged);
 
   function failure(e: unknown) {
     setError(errorText(e));
     setErrorDetails(e instanceof ApiError ? e.details : null);
-    setPrices(null);
+    setPriceRead(null); setCoverageRead(null); setAcknowledged(false);
   }
   useEffect(() => {
     let live = true;
     const controller = new AbortController();
-    setConfig(null); setCatalogue(null); setPrices(null); setError(""); setErrorDetails(null); setBusy("");
+    setConfig(null); setCatalogue(null); setPriceRead(null); setCoverageRead(null); setAcknowledged(false); setError(""); setErrorDetails(null); setBusy("");
     if (!online) return;
     setBusy("读取配置");
     void (async () => {
@@ -42,6 +53,7 @@ export function useProductSelection() {
         const current = await readProductConfig(controller.signal);
         if (!live) return;
         setConfig(current);
+        setReferenceSet(current.default_reference_set || "");
         try {
           const raw = localStorage.getItem(draftKey);
           setDraftWarning(raw ? draftEnvironmentError(restoreDraft(raw), current, true) : "");
@@ -56,8 +68,8 @@ export function useProductSelection() {
     return () => { live = false; controller.abort(); };
   }, [online, revision]);
 
-  // Any scope edit invalidates the visible read and the user's diagnostic confirmation.
-  useEffect(() => { setPrices(null); setAcknowledged(false); }, [start, end, source, selected]);
+  // Reads are bound to exact selection keys; edits also clear acknowledgement.
+  useEffect(() => { setPriceRead(null); setCoverageRead(null); setAcknowledged(false); }, [start, end, source, selected, referenceSet, mode]);
 
   async function search(offset = 0, searched = query.trim()) {
     if (!config || !available || busy || lock.current) return;
@@ -73,26 +85,34 @@ export function useProductSelection() {
   }
   async function loadPrices() {
     if (!config || !available || busy || lock.current || !validSelection(selection)) return;
-    lock.current = true; setBusy("读取真实行情"); setError(""); setErrorDetails(null); setPrices(null);
-    try { setPrices(await readPrices(config, selection)); }
+    lock.current = true; setBusy("读取真实行情"); setError(""); setErrorDetails(null); setPriceRead(null);
+    try { setPriceRead({ key, value: await readPrices(config, selection) }); }
+    catch (e) { failure(e); }
+    finally { setBusy(""); lock.current = false; }
+  }
+  async function checkCoverage() {
+    if (!config || !available || busy || lock.current || !validSelection(selection)) return;
+    lock.current = true; setBusy("检查普通回测覆盖"); setError(""); setErrorDetails(null); setCoverageRead(null);
+    try { setCoverageRead({ key: coverageKey, value: await readCoverage(config, { ...selection, reference_set: referenceSet || null }) }); }
     catch (e) { failure(e); }
     finally { setBusy(""); lock.current = false; }
   }
   async function publish() {
-    if (!config || !available || busy || lock.current || !prices || prices.gaps.length || !acknowledged || !validSelection(selection)) return;
+    if (!config || !canPublish || lock.current) return;
     lock.current = true; setBusy("发布回测数据"); setError(""); setErrorDetails(null);
     try {
       // Validate storage before publishing so a malformed old draft is not silently overwritten.
       const raw = localStorage.getItem(draftKey);
       const previous = raw ? restoreDraft(raw) : freshDraft();
-      const release = await publishSelection(config, selection);
-      const next = draftFromRelease(config, release, selection, acknowledged, previous);
+      const release = await publishSelection(config, releaseSelection);
+      const next = draftFromRelease(config, release, releaseSelection, acknowledged, previous);
       localStorage.setItem(draftKey, JSON.stringify(next));
       location.hash = "#/portfolio/editor";
     } catch (e) { failure(e); }
     finally { setBusy(""); lock.current = false; }
   }
   return { config, catalogue, query, setQuery, selected, start, setStart, end, setEnd, source, setSource,
+    mode, setMode, referenceSet, setReferenceSet, reference, coverage, canPublish,
     acknowledged, setAcknowledged, prices, error, errorDetails, draftWarning, busy, available, online, selection,
-    search, toggle, loadPrices, publish, refresh: () => setRevision(v => v + 1) };
+    search, toggle, loadPrices, checkCoverage, publish, refresh: () => setRevision(v => v + 1) };
 }
