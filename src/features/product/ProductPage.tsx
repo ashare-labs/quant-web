@@ -1,3 +1,4 @@
+import { ProductMinutes } from "./ProductMinutes";
 import { ProductPrices } from "./ProductPrices";
 import { ProductCoverage } from "./ProductCoverage";
 import { validSelection } from "./selection";
@@ -49,7 +50,7 @@ export function ProductPage() {
         {!m.selected.length && <p>先从证券目录选择股票。</p>}
         <fieldset disabled={!m.available || !!m.busy}>
           <div className="product-dates"><label>开始日期<input type="date" aria-label="正式数据开始日期" value={m.start} onChange={e => m.setStart(e.target.value)}/></label><label>结束日期<input type="date" aria-label="正式数据结束日期" value={m.end} onChange={e => m.setEnd(e.target.value)}/></label></div>
-          <label>行情来源<select aria-label="正式行情来源" value={m.source} onChange={e => m.setSource(e.target.value)}><option value="auto">自动按真实覆盖选择（以回执为准）</option>{sources.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
+          <label>行情来源<select aria-label="正式行情来源" value={m.source} onChange={e => m.setSource(e.target.value)}><option value="auto">使用当前发布的来源规则（以回执为准）</option>{sources.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
           <label>回测用途<select aria-label="正式数据回测用途" value={m.mode} onChange={e => m.setMode(e.target.value as typeof m.mode)}>
             <option value="covered_research">普通回测（有来源覆盖）</option>
             <option value="price_only_no_limits">独立价格诊断（非总收益）</option>
@@ -77,6 +78,7 @@ export function ProductPage() {
     </div>
     {m.coverage && <ProductCoverage coverage={m.coverage}/>}
     {m.prices && <ProductPrices prices={m.prices}/>}
+    <ProductMinutes config={m.config} available={m.available && m.online} />
     <section className="panel product-evaluation"><h2>独立固定评测</h2><p>固定证券和窗口用于复现评测。其范围与正式主库入口分别显示。</p><a href="#/tasks/daily">固定日频任务</a><a href="#/market">固定样本行情与覆盖</a></section>
   </main>;
 }
