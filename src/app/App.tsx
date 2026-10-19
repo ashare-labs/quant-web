@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useHashRoute } from './useHashRoute';
+import { version } from '../../package.json';
 
 const PortfolioPage = lazy(() => import('../features/portfolio/PortfolioPage').then(m => ({ default: m.PortfolioPage })));
 const TasksPage = lazy(() => import('../features/tasks/TasksPage').then(m => ({ default: m.TasksPage })));
@@ -27,6 +28,6 @@ export function App() {
        feature === 'market' ? <MarketPage/> :
        <main><h1>页面不存在</h1><a href="#/data">打开正式数据与回测</a></main>}
     </Suspense>
-    <footer>quant-web 0.3.6 · 研究与模拟；历史身份与审阅结论保留原值。</footer>
+    <footer>quant-web {version} · 研究与模拟；历史身份与审阅结论保留原值。</footer>
   </>;
 }
