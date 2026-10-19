@@ -173,3 +173,9 @@ test('ordinary release transfers its declared mode and preserves corporate evide
   assert.match(datasetModeError({ ...dataset, mode: undefined }, 'covered_research'), /未声明研究模式/);
   assert.match(datasetModeError({ ...dataset, mode: 'price_only_no_limits', diagnostic_allowed: true }, 'covered_research'), /模式与数据集声明不一致/);
 });
+
+
+test('research selection accepts released Beijing identity without inventing another alias', () => {
+  assert.equal(validSelection({ ...selection, securities: ['BJ.832317'] }), true);
+  assert.equal(validSelection({ ...selection, securities: ['832317.XBEI'] }), false);
+});

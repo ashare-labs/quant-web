@@ -8,7 +8,7 @@ import type { Coverage, CoverageSelection, Prices, Release, ReleaseSelection, Se
 
 export function validSelection(selection: Selection) {
   return selection.securities.length > 0 && new Set(selection.securities).size === selection.securities.length &&
-    selection.securities.every(s => /^\d{6}\.(XSHG|XSHE|XBEI)$/.test(s)) &&
+    selection.securities.every(s => /^(?:\d{6}\.(XSHG|XSHE)|BJ\.\d{6})$/.test(s)) &&
     [selection.start, selection.end].every(s => /^\d{4}-\d{2}-\d{2}$/.test(s)) && selection.start <= selection.end;
 }
 

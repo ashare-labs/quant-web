@@ -1,6 +1,6 @@
 {
-  "version": "0.12.0.dev9",
-  "source_sha256": "134b201f5727f7bc3e053df6ede83135af23cc80dc375d41d4e556d3a2c0147f",
+  "version": "0.12.0.dev11",
+  "source_sha256": "3a6bfc767439258f0b9a62079300e7eceeebaabbf7269032c9803ef8787a2b30",
   "contract_version": "m2-jobs.v6",
   "independent_review_status": "not_reviewed"
 }
