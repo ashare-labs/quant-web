@@ -37,4 +37,6 @@ test('account projection shows financials, actual holdings, orders and trades wi
   const html=renderToStaticMarkup(createElement(AccountDetails,{view:detail}));
   for(const text of ['1,234.567','2,468.567','收盘持仓','模拟成交','委托记录','当日可卖','600000.XSHG','全部成交','买入']) assert.ok(html.includes(text),text);
   assert.ok(!html.includes('<button')&&!html.includes('<form'));
+  const precise=renderToStaticMarkup(createElement(AccountDetails,{view:{...detail,trades:[{...detail.trades[0],cost:'6.4625'}]}}));
+  assert.ok(precise.includes('6.4625')&&!precise.includes('6.463'));
 });
