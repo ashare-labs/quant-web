@@ -4348,7 +4348,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev6
+             * @default 0.12.0.dev7
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
