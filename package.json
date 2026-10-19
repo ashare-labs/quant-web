@@ -13,7 +13,8 @@
     "contracts:check": "node scripts/generate-contracts.mjs --check",
     "contracts:sync": "node scripts/sync-contracts.mjs",
     "verify:portfolio": "node --experimental-strip-types scripts/verify-portfolio.mjs",
-    "package": "node scripts/package.mjs"
+    "package": "node scripts/package.mjs",
+    "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {
     "ace-builds": "1.43.3",

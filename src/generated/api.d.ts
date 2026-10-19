@@ -380,6 +380,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/product/minute/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Minute Prices */
+        post: operations["minute_prices_api_v1_product_minute_prices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product/minute/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Minute Sources */
+        get: operations["minute_sources_api_v1_product_minute_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/product/prices": {
         parameters: {
             query?: never;
@@ -3812,6 +3846,26 @@ export interface components {
              */
             start: string;
         };
+        /** ProductMinuteSelection */
+        ProductMinuteSelection: {
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+            /** Security */
+            security: string;
+            /**
+             * Source
+             * @default tdx
+             */
+            source: string;
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+        };
         /** ProductRelease */
         ProductRelease: {
             dataset: components["schemas"]["PortfolioDataset"];
@@ -4201,7 +4255,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default 1591e6df219a0632dc4baa30ca32069cd97eb381
+             * @default 3f06a1df058328bbe4e19732f4709f18cef3bf13
              */
             commit: string | null;
             /**
@@ -4212,7 +4266,7 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default fcd0db0f465f8473d8fa6f4a3e08d3e4cede5d01
+             * @default 484ddbc39c6e1c55233ee149d34033f7f49be81c
              */
             tree: string | null;
             /**
@@ -4222,7 +4276,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default 8675c3cee871f55eb2d6a8164f248501857c45a6a163a685eaf135afefff3ad3
+             * @default 6e01f7ccc816977745a76fbcee53c0b8f2e2b7cd25078dc5a6df38fc0412f902
              */
             wheel_sha256: string;
         };
@@ -6624,6 +6678,162 @@ export interface operations {
                 "application/json": components["schemas"]["ProductCoverageRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    minute_prices_api_v1_product_minute_prices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductMinuteSelection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    minute_sources_api_v1_product_minute_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

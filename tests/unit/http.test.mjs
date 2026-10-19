@@ -21,3 +21,14 @@ test('invalid success responses and aborted requests cannot be shown as confirme
   const controller=new AbortController();controller.abort();
   await assert.rejects(requestJson('/tasks-api','/jobs',{},controller.signal,{codePrefix:'TASKS'}),error => error.code==='TASKS_NETWORK_UNCERTAIN' && error.uncertain);
 });
+
+test('read-only connection failures distinguish an unavailable backend from an uncertain submission', async t => {
+  t.mock.method(globalThis,'fetch',async () => { throw new TypeError('fetch failed'); });
+  await assert.rejects(requestJson('/execution-api','/product/config'), error =>
+    error.code==='BACKEND_UNREACHABLE' && !error.uncertain && error.message.includes('API 已启动') && !error.message.includes('提交可能'));
+});
+test('read-only HTTP failures do not suggest replaying a mutation key', async t => {
+  t.mock.method(globalThis,'fetch',async () => new Response('{"error":{"code":"UNAVAILABLE","message":"Wait"}}', {status:503,headers:{'Retry-After':'2'}}));
+  await assert.rejects(requestJson('/execution-api','/product/config'), error =>
+    error.code==='UNAVAILABLE' && !error.uncertain && error.message.includes('重新读取') && !error.message.includes('幂等'));
+});

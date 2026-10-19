@@ -21,6 +21,7 @@ npm run build
 先准备 AQ 通用服务和需要的 paper 服务，再启动前端：
 
 ```sh
+npm run doctor
 npm run dev
 ```
 

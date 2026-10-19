@@ -21,6 +21,7 @@ export async function requestJson<T>(base: string, path: string, body?: unknown,
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort, { once: true });
   const timer = setTimeout(abort, options.timeoutMs ?? 45000);
+  const mutation = body !== undefined;
   const prefix = options.codePrefix ? `${options.codePrefix}_` : '';
   try {
     if (signal?.aborted) controller.abort();
@@ -31,21 +32,23 @@ export async function requestJson<T>(base: string, path: string, body?: unknown,
     });
     let value;
     try { value = JSON.parse(await response.text()); }
-    catch { throw new ApiError(`${prefix}INVALID_RESPONSE`, `HTTP ${response.status} 非 JSON，旧结果已隐藏。`, true); }
+    catch { throw new ApiError(`${prefix}INVALID_RESPONSE`, `HTTP ${response.status} 非 JSON，旧结果已隐藏。`, mutation); }
     if (!response.ok) {
       const retry = response.headers.get('Retry-After');
-      const hint = retry && /^\d+$/.test(retry) ? ` 服务建议 ${retry} 秒后重试原请求和幂等键。` : '';
+      const hint = retry && /^\d+$/.test(retry) ? (mutation ? ` 服务建议 ${retry} 秒后重试原请求和幂等键。` : ` 服务建议 ${retry} 秒后重新读取。`) : '';
       const detail = Array.isArray(value.detail)
         ? value.detail.map((item: { loc: unknown[]; msg: string }) => `${item.loc.join('.')}: ${item.msg}`).join('；')
         : JSON.stringify(value.detail ?? value);
       throw new ApiError(value.error?.code ?? `HTTP_${response.status}`, (value.error?.message ?? detail) + hint,
-        response.status >= 500, value.error?.details, value.error?.origin);
+        mutation && response.status >= 500, value.error?.details, value.error?.origin);
     }
     return value as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
-    throw new ApiError(`${prefix}NETWORK_UNCERTAIN`, options.uncertainMessage ??
-      '连接失败或超时。提交可能已写入；重新读取后，只能用保存的请求和原幂等键确认。', true);
+    throw new ApiError(`${prefix}${mutation ? 'NETWORK_UNCERTAIN' : 'BACKEND_UNREACHABLE'}`,
+      mutation ? (options.uncertainMessage ??
+        '连接失败或超时。提交可能已写入；重新读取后，只能用保存的请求和原幂等键确认。') :
+        '无法连接后端或等待响应超时。请确认配置中的 API 已启动，然后重新读取。', mutation);
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', abort);
