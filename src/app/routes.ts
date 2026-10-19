@@ -6,6 +6,7 @@ export function resolveRoute(hash: string) {
     ["#/portfolio", "portfolio"],
     ["#/tasks", "tasks"],
     ["#/paper", "paper"],
+    ["#/accounts", "accounts"],
     ["#/execution", "execution"],
     ["#/market", "market"],
   ] as const;

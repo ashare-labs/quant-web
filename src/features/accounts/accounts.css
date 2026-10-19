@@ -1,0 +1,16 @@
+.accounts-page { max-width: 1180px; margin: 28px auto; padding: 0 24px 48px; color: #243348; }
+.accounts-page header, .accounts-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.accounts-page h1 { margin-bottom: 6px; }
+.accounts-page header p, .account-metrics span { color: #596b80; }
+.accounts-page section { margin: 20px 0; padding: 22px; border: 1px solid #dfe6ed; border-radius: 10px; background: #fff; }
+.accounts-controls select { margin-left: 12px; max-width: 420px; padding: 8px; }
+.accounts-controls button { padding: 8px 14px; }
+.account-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 22px; }
+.account-metrics strong, .account-metrics span { display: block; }
+.account-metrics strong { font-size: 23px; margin-top: 9px; font-variant-numeric: tabular-nums; }
+.accounts-page table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.accounts-page th, .accounts-page td { text-align: left; padding: 11px 8px; border-bottom: 1px solid #e5eaf0; }
+.accounts-page h2 { margin: 0 0 14px; font-size: 18px; }
+.accounts-page dd { overflow-wrap: anywhere; margin: 4px 0 14px; font-family: monospace; }
+.accounts-page [role=alert] { padding: 16px; background: #fff1ed; color: #903718; }
+@media (max-width: 700px) { .accounts-page { padding: 0 12px 24px; } .accounts-page section { overflow-x: auto; padding: 14px; } .accounts-controls select { max-width: 240px; } }
