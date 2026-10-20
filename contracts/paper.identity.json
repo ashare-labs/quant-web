@@ -1,6 +1,6 @@
 {
-  "version": "0.12.0.dev13",
-  "source_sha256": "bc8d31e0fda7f97a595ecdda96043e9c103487db7a04e84333104472671e684b",
+  "version": "0.12.0.dev17",
+  "source_sha256": "c8f94a75ec090140da7c6f6560cb99b91fbac8cdf1d44bfa9797216614e5ebdc",
   "contract_version": "paper-api.v2",
   "independent_review_status": "not_reviewed"
 }
