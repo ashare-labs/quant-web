@@ -34,7 +34,7 @@ export function ProductMinutes({ config, available }: { config: ProductConfig | 
       setError(failure instanceof Error ? failure.message : "分钟读取失败。");
     } finally { setBusy(false); }
   }
-  const columns = ["source_label", "open", "high", "low", "close", "volume", "amount", "price_status"];
+  const columns = ["source", "source_label", "open", "high", "low", "close", "volume", "amount", "price_status"];
   return <section className="panel" aria-label="统一分钟行情">
     <h2>分钟行情</h2>
     <p>默认读取固定本地发布；HF 原始研究记录保留质量限制。北京时间，每次一只证券、最多 60 天。</p>
@@ -46,7 +46,7 @@ export function ProductMinutes({ config, available }: { config: ProductConfig | 
           <label>结束标签<input aria-label="分钟结束标签" type="datetime-local" value={end} onChange={e => setEnd(e.target.value)} step="60" required /></label>
         </div>
         <label>分钟来源<select aria-label="分钟来源" value={source} onChange={e => setSource(e.target.value)}>
-          <option value="auto">当前发布的默认分钟</option><option value="neigezhu">HF 原始研究记录（含限制）</option><option value="free_stockdb">free-stockdb 已发布补缺</option><option value="tdx">TDX 已封存样本</option>
+          <option value="auto">当前发布的默认分钟</option><option value="neigezhu">HF 原始研究记录（含限制）</option><option value="free_stockdb">free-stockdb 已发布补缺</option><option value="sina">新浪已发布近期分钟</option><option value="tdx">TDX 已封存样本</option>
         </select></label>
         <button type="submit" disabled={!security.trim() || !start || !end || end < start}>读取分钟行情</button>
       </fieldset>
@@ -58,7 +58,7 @@ export function ProductMinutes({ config, available }: { config: ProductConfig | 
       {!result.rows.length && <p>所选来源在此窗口没有可查询记录，请查看覆盖和限制。</p>}
       {!!result.rows.length && <div className="table-scroll"><table>
         <caption>分钟明细 · 显示前 {Math.min(result.rows.length, 100)} 条</caption>
-        <thead><tr>{["来源标签（含时区）", "开盘", "最高", "最低", "收盘", "成交量（股）", "成交额（元）", "价格状态"].map(label => <th key={label}>{label}</th>)}</tr></thead>
+        <thead><tr>{["来源", "来源标签（含时区）", "开盘", "最高", "最低", "收盘", "成交量（股）", "成交额（元）", "价格状态"].map(label => <th key={label}>{label}</th>)}</tr></thead>
         <tbody>{result.rows.slice(0, 100).map((row, index) => <tr key={index}>{columns.map(column => <td key={column}>{row[column] == null ? "未提供" : String(row[column])}</td>)}</tr>)}</tbody>
       </table></div>}
       {result.report.limits?.map((value, index) => <p key={index}>{value}</p>)}
