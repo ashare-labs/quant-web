@@ -8,6 +8,7 @@ export function useWorkbench(route: string) {
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null), [jobs, setJobs] = useState<Job[]>([]);
   const [job, setJob] = useState<Job | null>(null), [result, setResult] = useState<Result | null>(null);
   const [logs, setLogs] = useState<Logs | null>(null), [error, setError] = useState(''), [detail, setDetail] = useState<unknown>();
+  const [readError, setReadError] = useState('');
   const [busy, setBusy] = useState(false), guard = useRef(false);
   const [pending, setPending] = useState<Submission | null>(() => {
     try { return JSON.parse(localStorage.getItem(pendingKey) || 'null') as Submission | null; } catch { return null; }
@@ -28,6 +29,7 @@ export function useWorkbench(route: string) {
   useEffect(() => {
     const controller = new AbortController(); let timer: ReturnType<typeof setTimeout>;
     setJob(null); setResult(null); setLogs(null); completed.current = '';
+    setError(''); setDetail(undefined); setReadError('');
     async function poll() {
       try {
         const list = await api<{items: Job[]}>('/jobs', undefined, controller.signal);
@@ -44,7 +46,8 @@ export function useWorkbench(route: string) {
             if (!controller.signal.aborted) { setResult(value); completed.current = jobId; }
           }
         }
-      } catch (e) { if (!controller.signal.aborted) fail(e); }
+        if (!controller.signal.aborted) setReadError('');
+      } catch (e) { if (!controller.signal.aborted) setReadError(errorText(e)); }
       if (!controller.signal.aborted) timer = setTimeout(poll, 1500);
     }
     void poll();
@@ -83,5 +86,5 @@ export function useWorkbench(route: string) {
     if (draft.source && !confirm('导入文件将替换编辑器草稿，是否继续？')) return;
     edit({ source: await file.text(), name: file.name.replace(/\.py$/, '') });
   }
-  return { draft, edit, saved, catalogue, jobs, job, result, logs, error, detail, busy, pending, run, cancel, restoreExample, importFile };
+  return { draft, edit, saved, catalogue, jobs, job, result, logs, error: error || readError, detail, busy, pending, run, cancel, restoreExample, importFile };
 }

@@ -13,6 +13,7 @@ export function PythonResults({ result }: { result: Result }) {
   return <section className="wb-result panel" aria-label="回测结果">
     <div className="wb-toolbar"><div><h2>回测结果 · {result.name}</h2><p>收益已计入当前模型的费用，以下是这次固定窗口的模拟结果。</p></div>
       <button onClick={() => download(result.name + '-result.json', JSON.stringify(result, null, 2), 'application/json')}>下载结果</button></div>
+    {Number(result.preparation.unavailable_rows || 0) > 0 && <div className="attempt" role="status"><strong>本次保留了 {Number(result.preparation.unavailable_rows)} 个缺失分钟位置。</strong><p>已确认无效的报价没有参与成交或新估值；历史窗口在原时刻返回 NaN。具体原因和来源定位见下方“本次使用的数据和模型”。</p></div>}
     <div className="wb-metrics">
       <div><small>区间收益</small><strong>{pct(result.summary.net_return)}</strong></div>
       <div><small>期末权益</small><strong>¥ {num(result.summary.final_equity)}</strong></div>

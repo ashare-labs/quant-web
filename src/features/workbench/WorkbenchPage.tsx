@@ -16,7 +16,7 @@ export function WorkbenchPage({ route }: { route: string }) {
     <a href="#/portfolio">日频内置示例 →</a></div>
     <div className="wb-capability"><strong>自定义 Python · 分钟回测</strong><span>在本次股票池内动态选股、查询已可见分钟线、提交模拟委托。</span><details><summary>支持范围与 API</summary>
       <p>initialize(context)、before_trading_start、handle_data、after_trading_end、run_daily；可用 history、attribute_history、get_price、get_bars、get_current_data、order_target / order_value、record、log。通过 context.parameters 读取参数，通过 context.securities 读取本次股票池。</p>
-      <p>当前网页每次最多 8 股、23 个交易日及 20,000 根分钟线；需要完整时段和必要参考数据。股票池在提交时固定，暂不支持全市场扫描、财务选股或任意频率。历史价格接口请显式传入 fq=None（原价）。模型要求策略在结束日收盘前自行平仓，T+1 仍有效。日频内置策略使用另一个现有入口；受限日频 Python 属于固定窗口功能。</p>
+      <p>当前网页每次最多 8 股、23 个交易日及 20,000 根分钟线；需要已知时段和必要参考数据。确认坏 bar 的时刻保留为 NaN，策略需显式处理；来源未知缺口会报出具体位置。股票池在提交时固定，暂不支持全市场扫描、财务选股或任意频率。历史价格接口请显式传入 fq=None（原价）。模型要求策略在结束日收盘前自行平仓，T+1 仍有效。日频内置策略使用另一个现有入口；受限日频 Python 属于固定窗口功能。</p>
       <p>数据按来源分钟标签作收盘可见模型，下一分钟开盘撮合；日级状态回放、5%/10% 限价模型、来源范围公司行动并非完整历史 PIT。只运行你信任的本机代码；独立进程有网络及资源限制，但不是恶意代码沙箱。</p>
     </details></div>
     {w.error && <div className="error" role="alert"><strong>操作未完成</strong><p>{w.error}</p>{w.detail != null && <details><summary>具体缺口 / 错误位置</summary><pre>{JSON.stringify(w.detail, null, 2)}</pre></details>}</div>}
