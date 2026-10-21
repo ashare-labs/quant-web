@@ -25,14 +25,15 @@ npm run doctor
 npm run dev
 ```
 
-打开 `http://127.0.0.1:41839`。默认进入正式数据选择页；前端命令不会启动后端或 worker。统一部署清单可提供端口和后端环境变量。检查生产构建可使用 `npm run preview`，它与开发服务使用相同的代理配置和端口。
+打开 `http://127.0.0.1:41839`。默认进入 Python 策略工作台；前端命令不会启动后端或 worker。统一部署清单可提供端口和后端环境变量。检查生产构建可使用 `npm run preview`，它与开发服务使用相同的代理配置和端口。
 
 ## 使用指南
 
 | 页面 | 用途 |
 |---|---|
+| `#/workbench` | 编写或导入自定义分钟 Python；配置参数后自动准备数据、运行、取消和查看结果 |
 | `#/data` | 搜索主库证券与日期，核对参考来源及普通回测覆盖，发布到组合回测；独立价格诊断需明确选择 |
-| `#/portfolio` | 编辑及注册策略、预检查、创建多证券组合任务、查看逐日账户与成交 |
+| `#/portfolio` | 七种日频算法示例；保留原有多证券组合与结果入口 |
 | `#/tasks/daily` | 独立固定日频评测：绑定评测数据、选择参数，创建、取消与恢复任务 |
 | `#/tasks/paper` | 核对模拟账户的逐日快照、成交、持仓和来源限制 |
 | `#/paper` | 查看冻结会话、接收数据、推进交易日、暂停和恢复 |
@@ -41,7 +42,7 @@ npm run dev
 
 创建请求会先保存原参数与幂等键。响应中断时，先核对任务状态，再重试保存的同一请求。缺失结果保持“未提供”，不会补成零或拼接历史样例。
 
-[使用正式数据回测](docs/data.md) · [开发与验证](docs/development.md) · [契约生成](docs/contracts.md) · [入口迁移](docs/migration.md) · [贡献约定](CONTRIBUTING.md)
+[Python 工作台](docs/python-workbench.md) · [使用正式数据回测](docs/data.md) · [开发与验证](docs/development.md) · [契约生成](docs/contracts.md) · [入口迁移](docs/migration.md) · [贡献约定](CONTRIBUTING.md)
 
 ## 限制与说明
 

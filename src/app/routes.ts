@@ -1,7 +1,8 @@
-export const defaultRoute = "#/portfolio";
+export const defaultRoute = "#/workbench";
 export function resolveRoute(hash: string) {
   const route = !hash || hash === "#/" ? defaultRoute : hash;
   const paths = [
+    ["#/workbench", "workbench"],
     ["#/data", "product"],
     ["#/portfolio", "portfolio"],
     ["#/tasks", "tasks"],
