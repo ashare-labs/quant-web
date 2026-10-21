@@ -9,7 +9,7 @@ export function ProductPage() {
   const m = useProductSelection();
   const sources = [...new Set(m.selected.flatMap(s => s.sources.map(v => v.source)))].sort();
   return <main className="product-page">
-    <header><div><h1>正式数据与回测</h1><p>选择主库股票和日期，核对普通回测覆盖，再发布到组合回测。</p></div><button onClick={m.refresh} disabled={!!m.busy}>重新读取环境</button></header>
+    <header><div><h1>数据准备与检查</h1><p>选择主库股票和日期，核对普通回测覆盖，再发布到组合回测。</p></div><button onClick={m.refresh} disabled={!!m.busy}>重新读取环境</button></header>
     <section className="panel product-profile" aria-label="当前数据环境">
       <h2>当前环境：{m.config?.profile || "未连接"}</h2>
       {m.config && <p>{m.config.kind === "product" ? "正式产品" : m.config.kind ? `独立评测 / ${m.config.kind}` : "配置不可用"} · {m.config.configured ? "数据已配置" : "数据未配置"}</p>}

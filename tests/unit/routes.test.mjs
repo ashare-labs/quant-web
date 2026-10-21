@@ -5,7 +5,7 @@ import { createProxy, frontendPort, loopbackUrl } from '../../scripts/proxy-conf
 
 test('functional navigation resolves nested task and run IDs without accepting prefix collisions', () => {
   assert.equal(resolveRoute('').route,defaultRoute);
-  assert.equal(defaultRoute, '#/data');
+  assert.equal(defaultRoute, '#/portfolio');
   for (const [route,feature] of [['#/data','product'],['#/portfolio/results/id','portfolio'],['#/tasks/daily/id/details','tasks'],['#/paper','paper'],['#/market','market'],['#/execution/runs/id','execution']]) assert.equal(resolveRoute(route).feature,feature);
   for (const route of ['#/portfolio-old','#/m2','#/br1','#/acceptance','#/workbench']) assert.equal(resolveRoute(route).feature,'not-found');
 });

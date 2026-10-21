@@ -124,7 +124,7 @@ export function PortfolioRunSettings({
         </button>
       </div>
       <div className="qw-config">
-        <p>当前环境：{index?.configuration.profile || "未连接"} · <a href="#/data">从正式主库选择股票与窗口</a></p>
+        <p>当前环境：{index?.configuration.profile || "未连接"} · <a href="#/data">准备或更换回测数据</a></p>
         {environmentError && <p className="qw-error-text" role="alert">{environmentError}</p>}
         {modeError && <div className="qw-error-text" role="alert"><p>{modeError}</p>
           {declaredMode(dataset) && <button onClick={() => update({ mode: declaredMode(dataset)!, retrospective: false })}>使用此数据声明的模式</button>}
@@ -368,7 +368,7 @@ export function PortfolioRunSettings({
         )}
         {current && !current.catalogue.datasets.length && (
           <p className="qw-error-text">
-            尚无发布数据，请从 <a href="#/data">正式数据与回测</a> 选择主库股票并发布窗口。
+            尚无发布数据，请从 <a href="#/data">数据准备与检查</a> 选择主库股票并发布窗口。
           </p>
         )}
         {operation?.state === "done" && (

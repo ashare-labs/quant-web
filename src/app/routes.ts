@@ -1,4 +1,4 @@
-export const defaultRoute = "#/data";
+export const defaultRoute = "#/portfolio";
 export function resolveRoute(hash: string) {
   const route = !hash || hash === "#/" ? defaultRoute : hash;
   const paths = [
