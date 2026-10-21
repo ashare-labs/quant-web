@@ -59,7 +59,7 @@ export function ProductPage() {
             <label>参考数据组<select aria-label="普通回测参考数据组" value={m.referenceSet} onChange={e => m.setReferenceSet(e.target.value)}>
               <option value="">{m.config?.default_reference_set ? `使用配置默认：${m.config.default_reference_set}` : "未配置默认参考数据组"}</option>
               {m.referenceSet && !m.config?.reference_sets?.some(v => v.name === m.referenceSet) && <option value={m.referenceSet}>配置指定组不可用：{m.referenceSet}</option>}
-              {m.config?.reference_sets?.map(v => <option key={v.name} value={v.name}>{v.name} · {v.kind === "daily_execution" ? "日频状态来源" : v.kind === "historical_market" ? "历史市场来源" : v.kind}</option>)}
+              {m.config?.reference_sets?.map(v => <option key={v.name} value={v.name}>{v.name} · {v.kind === "daily_execution" ? "日频状态来源" : v.kind === "historical_market" ? "历史市场来源" : v.kind === "market_release" ? "正式发布参考数据" : v.kind}</option>)}
             </select></label>
             {!m.reference && <p role="alert" className="notice">未找到所选参考数据组。普通回测需要状态与公司行动来源；可检查具体缺口或读取原始行情。</p>}
             <button className="primary wide" disabled={!validSelection(m.selection)} onClick={() => void m.checkCoverage()}>检查普通回测覆盖</button>

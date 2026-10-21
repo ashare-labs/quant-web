@@ -15,6 +15,8 @@ export const algorithmNames: Record<string, string> = {
 };
 export const algorithmName = (value: string) => algorithmNames[value] || value;
 const assumptionLabels = new Map<string, string>([
+  ["accept_daily_replay", "回溯日状态：使用来源记录的当日状态进行日级模拟，不声明历史时点可知。"],
+  ["accept_source_observed_limits", "来源记录限价：使用正式发布中有来源依据的涨跌停价，未用固定比例补造。"],
   ["dated_name_history_status", "日期名称状态延续：根据已采集的官方更名记录延续有日期的状态锚点。"],
   ["gross_cash_zero_withholding", "税前现金、零预扣：分红按税前现金入账，预扣税设为零。"],
   ["retrospective_daily_status", "回溯日状态：日状态按 09:00 回放，未证明当时已送达。"],

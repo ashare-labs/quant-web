@@ -1,10 +1,10 @@
 {
-  "backend_version": "0.12.0.dev18",
-  "source_sha256": "ae604178318600aabca37de8a3ac55a37cb206c20ea8df21c39d3ae65c7bdc29",
+  "backend_version": "0.12.0.dev20",
+  "source_sha256": "0c9cd310839cd9eec7b5775f2a17f66e4238c3afb080373e1f2914a7f756614f",
   "contracts": {
-    "api.openapi.json": "56a9701c4983923bc55d9760bb0e020f8a3f41f3544080c8bf11b88628b50ba9",
-    "tasks.openapi.json": "0e340bd0b8de35fb7e7018d0604c93f8501ac6228e64b42c0f29ea7397a41f62",
-    "portfolio.openapi.json": "8408439c665e2094619562f11fb91ca1442d620a1e276795f55daf8eaa176c48",
+    "api.openapi.json": "fe354067b96a10278f3e64887f732fe47cff813859762d22b02248a0aede3cae",
+    "tasks.openapi.json": "86ae48267d4b185843e2b12ec9e56cbf6b4040c68b7d9f50e9f81f82c9b6c540",
+    "portfolio.openapi.json": "5496a0c913ea4c620917e92c575405e25fb8f46822a48e72776bac2d964e890a",
     "paper.openapi.json": "e5ff56f2f5bb3497f46d7168e9403f9b540a3c03e1ced96ed1999aeb10184a38"
   },
   "independent_review_status": "not_reviewed"

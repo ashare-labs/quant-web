@@ -179,3 +179,26 @@ test('research selection accepts released Beijing identity without inventing ano
   assert.equal(validSelection({ ...selection, securities: ['BJ.832317'] }), true);
   assert.equal(validSelection({ ...selection, securities: ['832317.XBEI'] }), false);
 });
+
+
+test('released references bind market and corporate evidence to the same formal release', async t => {
+  const formal = { name: 'released-reference', kind: 'market_release', source_bindings: {
+    market: { kind: 'market_release', binding_sha256: 'f'.repeat(64) },
+    corporate: { kind: 'market_release', binding_sha256: 'f'.repeat(64) },
+  } };
+  const configured = { ...config, reference_sets: [reference, formal], default_reference_set: formal.name };
+  t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify(configured)));
+  const received = await configClient.readProductConfig();
+  assert.deepEqual(selectedReference(received, null), formal);
+  assert.deepEqual(selectedReference(received, reference.name), reference);
+  const selected = { ...ordinary, reference_set: formal.name };
+  const checked = { ...coverage, reference_set: { name: formal.name, kind: formal.kind }, source_bindings: formal.source_bindings,
+    assumptions: [{ text: 'accept_daily_replay', accepted: true }, { text: 'accept_source_observed_limits', accepted: true }] };
+  const html = renderToStaticMarkup(createElement(ProductCoverage, { coverage: checked }));
+  assert.ok(html.includes('来源记录限价：'));
+  assert.ok(html.includes('回溯日状态：'));
+  assert.equal(publicationReady(received, selected, checked, null, false), true);
+  configured.reference_sets[1] = { ...formal, source_bindings: { ...formal.source_bindings,
+    corporate: { kind: 'market_release', binding_sha256: 'e'.repeat(64) } } };
+  await assert.rejects(configClient.readProductConfig(), /配置响应无效/);
+});

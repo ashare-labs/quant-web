@@ -380,6 +380,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/product/financial/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Financial Coverage */
+        get: operations["financial_coverage_api_v1_product_financial_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/product/financial/point": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Financial Point */
+        post: operations["financial_point_api_v1_product_financial_point_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/product/minute/prices": {
         parameters: {
             query?: never;
@@ -3846,6 +3880,35 @@ export interface components {
              */
             start: string;
         };
+        /** ProductFinancialPoint */
+        ProductFinancialPoint: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Field */
+            field: string;
+            /**
+             * Mode
+             * @default official_daily
+             * @enum {string}
+             */
+            mode: "official_daily" | "historical_pit" | "source_research";
+            /**
+             * Period
+             * Format: date
+             */
+            period: string;
+            /** Security */
+            security: string;
+            /** Source */
+            source: string;
+            /** Statement */
+            statement?: string | null;
+            /** Title */
+            title?: string | null;
+        };
         /** ProductMinuteSelection */
         ProductMinuteSelection: {
             /**
@@ -4255,7 +4318,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default 214a4a5e316ad081aa8901b02daa147947ef93a2
+             * @default b5c26b69e861c63b3fcbe19faf3951588cf55067
              */
             commit: string | null;
             /**
@@ -4266,17 +4329,17 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 35453f7996f88e7920ba0c65afc36056323926f7
+             * @default d7adafc2823de68c9890a4f28b83f085f5bb4f84
              */
             tree: string | null;
             /**
              * Version
-             * @default 0.10.0.dev14
+             * @default 0.10.0.dev18
              */
             version: string;
             /**
              * Wheel Sha256
-             * @default 6473bce726138d039a37187b0dde3ea3b87c4b6184bd44ca7d4e039683794353
+             * @default 7fd58f39438b4dd5d0eba66f1dbc773ef11336a4530649d3324399ef17fe9e89
              */
             wheel_sha256: string;
         };
@@ -4348,7 +4411,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev18
+             * @default 0.12.0.dev20
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -6676,6 +6739,165 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ProductCoverageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    financial_coverage_api_v1_product_financial_coverage_get: {
+        parameters: {
+            query?: {
+                security?: string | null;
+                day?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    financial_point_api_v1_product_financial_point_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductFinancialPoint"];
             };
         };
         responses: {

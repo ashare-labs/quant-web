@@ -2,18 +2,24 @@ import { ApiError, requestJson } from "./http.ts";
 import { isRecord } from "./json.ts";
 import type { components } from "../generated/api";
 
-export type ReferenceSet = { name: string; kind: "daily_execution" | "historical_market"; source_bindings: Record<string, unknown> };
+export type ReferenceSet = { name: string; kind: "daily_execution" | "historical_market" | "market_release"; source_bindings: Record<string, unknown> };
 export type ProductConfig = Omit<components["schemas"]["ProductConfiguration"], "reference_sets"> & {
   reference_sets: ReferenceSet[];
 };
 
 function isReferenceSet(value: unknown): value is ReferenceSet {
   if (!isRecord(value) || typeof value.name !== "string" || !value.name.trim() ||
-      (value.kind !== "daily_execution" && value.kind !== "historical_market") || !isRecord(value.source_bindings)) return false;
+      (value.kind !== "daily_execution" && value.kind !== "historical_market" && value.kind !== "market_release") || !isRecord(value.source_bindings)) return false;
   const bindings = value.source_bindings;
   const required = value.kind === "daily_execution"
     ? { research: "daily_research", execution: "daily_execution", corporate: "corporate_history" }
-    : { market: "historical_market", corporate: "corporate_history" };
+    : value.kind === "market_release"
+      ? { market: "market_release", corporate: "market_release" }
+      : { market: "historical_market", corporate: "corporate_history" };
+  if (value.kind === "market_release") {
+    const market = bindings.market, corporate = bindings.corporate;
+    if (!isRecord(market) || !isRecord(corporate) || market.binding_sha256 !== corporate.binding_sha256) return false;
+  }
   return Object.entries(required).every(([role, kind]) => {
     const binding = bindings[role];
     return isRecord(binding) && binding.kind === kind && typeof binding.binding_sha256 === "string" && /^[a-f0-9]{64}$/.test(binding.binding_sha256);
