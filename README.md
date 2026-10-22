@@ -32,6 +32,7 @@ npm run dev
 | 页面 | 用途 |
 |---|---|
 | `#/workbench` | 编写或导入自定义分钟 Python；配置参数后自动准备数据、运行、取消和查看结果 |
+| `#/factors` | 浏览现有两来源因子库，查看定义、真实值、时序/截面与单因子评价 |
 | `#/data` | 搜索主库证券与日期，核对参考来源及普通回测覆盖，发布到组合回测；独立价格诊断需明确选择 |
 | `#/portfolio` | 七种日频算法示例；保留原有多证券组合与结果入口 |
 | `#/tasks/daily` | 独立固定日频评测：绑定评测数据、选择参数，创建、取消与恢复任务 |
@@ -42,7 +43,7 @@ npm run dev
 
 创建请求会先保存原参数与幂等键。响应中断时，先核对任务状态，再重试保存的同一请求。缺失结果保持“未提供”，不会补成零或拼接历史样例。
 
-[Python 工作台](docs/python-workbench.md) · [使用正式数据回测](docs/data.md) · [开发与验证](docs/development.md) · [契约生成](docs/contracts.md) · [入口迁移](docs/migration.md) · [贡献约定](CONTRIBUTING.md)
+[因子看板](docs/factors.md) · [Python 工作台](docs/python-workbench.md) · [使用正式数据回测](docs/data.md) · [开发与验证](docs/development.md) · [契约生成](docs/contracts.md) · [入口迁移](docs/migration.md) · [贡献约定](CONTRIBUTING.md)
 
 ## 限制与说明
 

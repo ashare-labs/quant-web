@@ -2,7 +2,7 @@
 
 | AQ 导出 | Web 契约 | 生成类型 | 消费方 |
 |---|---|---|---|
-| `api.openapi.json` | `contracts/api.openapi.json` | `src/generated/api.d.ts` | 正式数据、执行演练、固定样本行情 |
+| `api.openapi.json` | `contracts/api.openapi.json` | `src/generated/api.d.ts` | 正式数据、因子看板、执行演练、固定样本行情 |
 | `tasks.openapi.json` | `contracts/tasks.openapi.json` | `src/generated/tasks.d.ts` | 日频任务 |
 | `portfolio.openapi.json` | `contracts/portfolio.openapi.json` | `src/generated/portfolio.d.ts` | 组合回测、策略 |
 | `paper.openapi.json` | `contracts/paper.openapi.json` | `src/generated/paper.d.ts` | 模拟请求契约 |
