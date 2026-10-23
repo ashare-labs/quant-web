@@ -9,10 +9,10 @@ export class ApiError extends Error {
   code: string; uncertain: boolean;
   constructor(message: string, code: string, uncertain: boolean) { super(message); this.code = code; this.uncertain = uncertain; }
 }
-export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false): Promise<T> {
+export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT'): Promise<T> {
   let response: Response;
   try { response = await fetch((paper ? '/paper-api/api/v1/paper' : '/api/v1') + path, {
-    method: body === undefined ? 'GET' : 'POST', signal, cache: 'no-store',
+    method: method || (body === undefined ? 'GET' : 'POST'), signal, cache: 'no-store',
     headers: { Accept: 'application/json', ...(body === undefined ? {} : {'Content-Type': 'application/json'}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   }); } catch (error) {
@@ -23,7 +23,7 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
   try { value = await response.json(); } catch { throw new ApiError('服务返回了无法识别的响应。', 'INVALID_RESPONSE', body !== undefined); }
   if (!response.ok) {
     const e = object(object(value).error);
-    throw new ApiError(String(e.message || '请求失败，请稍后重试。'), String(e.code || response.status), body !== undefined && response.status >= 500);
+    throw new ApiError(String(e.message || '请求失败，请稍后重试。'), String(e.code || response.status), body !== undefined && response.status >= 500 && object(e.details).save_state !== 'not_saved');
   }
   return value as T;
 }

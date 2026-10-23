@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {todayInShanghai, validateDateRange} from '../src/shared/dates.ts';
 import {formatCapital, unformatCapital, parseCapital} from '../src/shared/capital.ts';
-import {createDraft, readDrafts, validateConfig, validateDraftConfig} from '../src/shared/drafts.ts';
+import {newDraft, readDrafts, validateConfig, validateDraftConfig} from '../src/shared/drafts.ts';
 
 const now = new Date('2026-10-23T16:00:00Z'); // Shanghai is already on the 24th.
 const complete = {start: '2026-10-24', end: '2026-10-24', capital: '100000'};
@@ -96,7 +96,7 @@ test('only new drafts receive 100000; existing amounts and empty fields are not 
   globalThis.localStorage = {getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value)};
   try {
     assert.deepEqual(readDrafts(), existing);
-    const created = createDraft('新策略');
+    const created = newDraft('新策略');
     assert.equal(created.capital, '100000');
     assert.equal(created.start, '');
     assert.equal(created.end, '');

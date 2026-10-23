@@ -1,13 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {uniqueName, validateConfig, readDrafts, saveDraft} from '../src/shared/drafts.ts';
+import {validateConfig, readDrafts, saveDraft} from '../src/shared/drafts.ts';
 import {active, shownStatus, csv, num, pct, api, ApiError} from '../src/shared/api.ts';
 import {submission, emptyDraft, containsRequest} from '../src/factors/model.ts';
 
 test('no missing numeric value is shown as zero',()=>{for(const value of [null,undefined,'',NaN,Infinity]){assert.equal(num(value),'—');assert.equal(pct(value),'—');}assert.equal(num(0),'0');assert.equal(pct(0),'0.00%');});
 test('retired and old runtime tasks cannot offer execution actions',()=>{assert.equal(active({status:'queued',display_status:'retired'}),false);assert.equal(active({status:'running',execution_state:'runtime_unavailable'}),false);assert.equal(shownStatus({status:'queued',display_status:'runtime_unavailable'}),'runtime_unavailable');assert.equal(active({status:'queued',execution_state:'current_runtime'}),true);});
-test('duplicate strategy names receive bounded suffixes',()=>{assert.equal(uniqueName('研究',['研究','研究 (2)']),'研究 (3)');assert.equal(uniqueName('A'.repeat(80),['A'.repeat(80)]).length,80);assert.throws(()=>uniqueName(' ',[]));});
 test('backtest config rejects invalid dates and non-positive or oversized cash',()=>{for(const config of [{start:'2024-02-30',end:'2024-03-01',capital:'10'},{start:'2024-02-01',end:'2024-01-01',capital:'10'},{start:'2024-01-01',end:'2024-02-01',capital:'0'},{start:'2024-01-01',end:'2024-02-01',capital:'Infinity'},{start:'2024-01-01',end:'2024-02-01',capital:'100000001'}])assert.throws(()=>validateConfig(config));validateConfig({start:'2024-01-01',end:'2024-02-01',capital:'100000'});});
 test('corrupt local storage is retained and cannot be overwritten by save',()=>{const map=new Map([['quantweb-strategy-drafts-v1','broken-json']]);globalThis.localStorage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)};assert.throws(()=>readDrafts());assert.throws(()=>saveDraft({id:'new'}));assert.equal(map.get('quantweb-strategy-drafts-v1'),'broken-json');});
 test('CSV escapes quotes, preserves missing, and neutralizes formula text',()=>{const text=csv([['=cmd','a"b',null,0,-2,'-function()']]);assert.ok(text.includes('"\'=cmd"'));assert.ok(text.includes('"a""b"'));assert.ok(text.includes('"","0","-2"'));assert.ok(text.includes("'-function()"));});
