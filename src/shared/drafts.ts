@@ -11,8 +11,8 @@ export function readDrafts(): Draft[] {
 }
 export function saveDraft(draft: Draft) { const drafts = readDrafts(); const index = drafts.findIndex(d => d.id === draft.id); if (index >= 0) drafts[index] = draft; else drafts.unshift(draft); localStorage.setItem(key, JSON.stringify(drafts)); }
 export function uniqueName(name: string, names: string[]) { const base = name.trim().slice(0, 80); if (!base) throw new Error('请填写策略名称。'); let result = base, suffix = 2; while (names.includes(result)) { const tail = ` (${suffix++})`; result = base.slice(0, 80 - tail.length) + tail; } return result; }
-export function createDraft(name: string, knownNames: string[] = [], folder = '') {
-  const drafts = readDrafts(); const draft: Draft = {id: crypto.randomUUID(), name: uniqueName(name, [...knownNames, ...drafts.map(d => d.name)]), source: '', folder, start: '', end: '', capital: DEFAULT_CAPITAL, updated: new Date().toISOString()}; saveDraft(draft); return draft;
+export function createDraft(name: string, folder = '') {
+  const drafts = readDrafts(); const draft: Draft = {id: crypto.randomUUID(), name: uniqueName(name, drafts.map(d => d.name)), source: '', folder, start: '', end: '', capital: DEFAULT_CAPITAL, updated: new Date().toISOString()}; saveDraft(draft); return draft;
 }
 export function readFolders(): string[] { const raw = localStorage.getItem(foldersKey); if (!raw) return []; const list: unknown = JSON.parse(raw); if (!Array.isArray(list) || !list.every(v => typeof v === 'string')) throw new Error('本地文件夹记录无法读取。'); return list; }
 export function createFolder(name: string) { const folders = readFolders(); const next = uniqueName(name, folders); localStorage.setItem(foldersKey, JSON.stringify([...folders, next])); return next; }

@@ -33,7 +33,6 @@ export interface HistoryJob {
   execution_state?: string; execution_reason?: Row | null; created_at: string; updated_at: string;
   read_only: true; can_resume: false; result: Row | null; error: Row | null;
 }
-export interface HistoryStrategy {version_id: string; frozen: Row; source?: string; read_only: true}
 export const statusLabels: Record<string, string> = {
   queued: '等待运行', running: '运行中', cancelling: '正在取消', cancelled: '已取消', failed: '运行失败', succeeded: '已完成',
   retired: '已退役', runtime_unavailable: '旧运行时不可执行',
@@ -41,8 +40,6 @@ export const statusLabels: Record<string, string> = {
 export const shownStatus = (job: {status: string; display_status?: string | null}) => job.display_status || job.status;
 export const active = (job: {status: string; display_status?: string | null; execution_state?: string}) =>
   ['queued', 'running', 'cancelling'].includes(shownStatus(job)) && (!job.execution_state || job.execution_state === 'current_runtime');
-export const jobHref = (job: {job_id: string}, family = 'python', history = false) =>
-  `backtest-results.html?job=${encodeURIComponent(job.job_id)}&family=${encodeURIComponent(family)}${history ? '&history=1' : ''}`;
 export const num = (v: unknown, decimals = 3) => typeof v === 'number' && Number.isFinite(v) ? v.toLocaleString('zh-CN', {maximumFractionDigits: decimals}) : '—';
 export const pct = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? (v * 100).toFixed(2) + '%' : '—';
 export const dateTime = (v: unknown) => typeof v === 'string' && Number.isFinite(Date.parse(v)) ? new Date(v).toLocaleString('zh-CN', {hour12: false}) : '—';

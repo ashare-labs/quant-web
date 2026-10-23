@@ -17,7 +17,7 @@ export function ResultsPage() {
   {j&&<div className="run-settings"><span>设置：{String(request.start_date||'—')} 至 {String(request.end_date||'—')}</span><span>初始资金 ¥ {num(request.initial_cash)}</span><span>{frequency}</span><Status job={j}/></div>}
   <div className="result"><aside className="side" aria-label="结果视图">{['收益概述','交易详情','持仓详情','每日权益','运行日志'].map(v=><button key={v} className={tab===v?'active':''} aria-pressed={tab===v} onClick={()=>setTab(v)}>{v}</button>)}</aside><section className="result-content">
     <div className="titlebar"><h1>{tab}</h1><div className="inline-actions"><button onClick={()=>{job.refresh();result.refresh();log.refresh();}} disabled={!path}>刷新</button>{!history&&j&&active(j)&&<button disabled={busy||j.status==='cancelling'} onClick={cancel}>取消运行</button>}</div></div>
-    {!valid&&<Empty>{id?'任务编号无效。':'请选择一条历史回测查看运行与结果。'}<p><a href="strategies.html">前往策略列表</a></p></Empty>}
+    {!valid&&<Empty>{id?'任务编号无效。':'暂无选中的回测任务。'}<p><a href="strategies.html">前往策略列表</a></p></Empty>}
     <ErrorNotice message={error||job.error||result.error} retry={()=>{job.refresh();result.refresh();}}/>
     {job.loading&&<Empty>正在读取运行状态…</Empty>}
     {j&&<>{['retired','runtime_unavailable'].includes(shownStatus(j))&&<Reason value={j.execution_reason}/>}<Reason value={j.error}/>{history&&<p className="note">只读历史 · 冻结文件完整性已由服务核对，不代表重新验证策略收益。</p>}{!history&&j.can_resume===false&&['failed','cancelled'].includes(j.status)&&<p className="notice">此 Python 任务不支持断点恢复。可读取已有日志；不能恢复已结束的内存状态。</p>}
