@@ -13,6 +13,6 @@ AQ_API_URL=http://127.0.0.1:18846 PAPER_API_URL=http://127.0.0.1:18847 npm run d
 
 `npm run preview` 体验已构建的 `dist/`；传入相同环境变量。`npm run package` 生成 `.local/packages/quant-web-0.4.0.tgz` 与 SHA256。部署静态资源时需将 `/api` 反向代理至 AQ，`/paper-api` 去掉前缀后代理至 paper；未在本次部署。
 
-现有能力、按钮映射和缺口见 [实现说明](docs/implementation.md)。Python 新回测当前受取数契约缺口限制，不会隐藏填入默认证券；因子计算和历史结果采用真实接口。Python 文件由本机服务保存；日期和资金仍保存在浏览器。旧浏览器草稿保留，只有主动保存时才写入服务端。
+现有能力、按钮映射和缺口见 [实现说明](docs/implementation.md)。Python 新回测当前受取数契约缺口限制，不会隐藏填入默认证券；因子计算和历史结果采用真实接口。Python 文件由本机服务保存；日期、资金和运行频率仍保存在浏览器。旧浏览器草稿保留，只有主动保存时才写入服务端。
 
 设计源保持只读，使用用户提供的 QuantWeb 标志与共享样式；不包含设计稿中的账户快照和演示收益数据。
