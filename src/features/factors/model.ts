@@ -12,7 +12,7 @@ export function readDraft(): Draft {
 }
 export function compatible(source: Source, factor: Factor) {
   if (!source.ready) return false;
-  return factor.library === 'alpha191' ? source.capabilities.includes('alpha191') : source.capabilities.includes(factor.entrypoint.endsWith('compute_panel') ? 'joinquant_panel' : 'joinquant_research');
+  return ['alpha191','qlib_alpha158'].includes(factor.library) ? source.capabilities.includes(factor.library) : source.capabilities.includes(factor.entrypoint.endsWith('compute_panel') ? 'joinquant_panel' : 'joinquant_research');
 }
 const before = (day: string, days: number) => { const d = new Date(day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - days); return d.toISOString().slice(0,10); };
 export function sampleDraft(source: Source): Partial<Draft> {
@@ -41,7 +41,7 @@ export function submission(draft: Draft, factor: Factor, environment: string, ke
   }
   return { environment_id: environment, idempotency_key: key, name: factor.name + ' · 因子探索', factor_id: factor.id, definition: factor.definition, source_id: draft.source, securities, history_start: draft.history, start_date: draft.start, end_date: draft.end, label_end:draft.evaluate?draft.labelEnd:null, parameters, rank_policy: draft.rank, evaluation };
 }
-export const reasonText: Record<string,string> = { OK: '有效', ok: '有效', computed: '有效', missing: '缺失', WARMUP: '预热不足', MISSING_INPUT: '缺少输入', UNDEFINED_MATH: '数学上未定义', OUT_OF_UNIVERSE: '不在股票范围', INCOMPLETE_RANK_POOL: '截面成员不完整', AMBIGUOUS_FORMULA: '原文公式有歧义', MISSING_DEPENDENCY: '缺少外部依赖' };
+export const reasonText: Record<string,string> = { OK: '有效', QLIB_NAN: 'Qlib 输出未定义或缺失', POSITIVE_INFINITY: 'Qlib 正无穷', NEGATIVE_INFINITY: 'Qlib 负无穷', ok: '有效', computed: '有效', missing: '缺失', WARMUP: '预热不足', MISSING_INPUT: '缺少输入', UNDEFINED_MATH: '数学上未定义', OUT_OF_UNIVERSE: '不在股票范围', INCOMPLETE_RANK_POOL: '截面成员不完整', AMBIGUOUS_FORMULA: '原文公式有歧义', MISSING_DEPENDENCY: '缺少外部依赖' };
 export const number = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN',{maximumSignificantDigits:7}) : '—';
 export const factorHref = (id: string) => '#/factors/' + encodeURIComponent(id);
 export function containsRequest(actual: unknown, expected: unknown): boolean {

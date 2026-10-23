@@ -43,3 +43,12 @@ test('evaluation projection distinguishes null, zero and invalid data',()=>{
  assert.throws(()=>evaluation({...value,ic:[{date:'2024-01-02',horizon:1,value:Infinity}]}));
  assert.throws(()=>evaluation({...value,coverage:{}}));
 });
+
+test('Qlib has its own namespace and capability while sharing submission and evaluation',()=>{
+ const qlib={...factor,id:'qlib_alpha158:MA60',field:'MA60',library:'qlib_alpha158',definition:'qlib.alpha158.v0.9.7',parameters:[]};
+ assert.equal(compatible(source,qlib),false);
+ assert.equal(compatible({...source,capabilities:['alpha191','qlib_alpha158']},qlib),true);
+ const value=submission({...draft,evaluate:true,labelEnd:'2024-09-20'},qlib,'a'.repeat(64),'qlib');
+ assert.equal(value.factor_id,'qlib_alpha158:MA60');assert.equal(value.definition,'qlib.alpha158.v0.9.7');
+ assert.deepEqual(value.parameters,{});assert.equal(value.evaluation.lag,1);
+});
