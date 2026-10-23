@@ -2092,7 +2092,10 @@ export interface components {
             parameters?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
-            /** Securities */
+            /**
+             * Securities
+             * @default []
+             */
             securities: string[];
             /** Source */
             source: string;
@@ -2203,10 +2206,10 @@ export interface components {
             request: components["schemas"]["PythonCreate"];
             /**
              * Schema Version
-             * @default python-minute-job.v1
-             * @constant
+             * @default python-demand-job.v2
+             * @enum {string}
              */
-            schema_version: "python-minute-job.v1";
+            schema_version: "python-minute-job.v1" | "python-demand-job.v2";
             /** Service Identity */
             service_identity: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2366,7 +2369,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default c518cf58799aa6e57f1a8a98e0578df668296432
+             * @default de9f34ee6a0bd52277e2fcf33b8494f1ff92cb0e
              */
             commit: string | null;
             /**
@@ -2377,17 +2380,17 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default eafd8cdb7fb3a42fbf7fc50ac8490e03b41e8dd6
+             * @default e6d00743b7557cbad789d9820aa6a62fba45a883
              */
             tree: string | null;
             /**
              * Version
-             * @default 0.10.0.dev20
+             * @default 0.10.0.dev21
              */
             version: string;
             /**
              * Wheel Sha256
-             * @default 4fbab2a558a2935a79a014fadc55db0394daa804a8c25b4c902dbbdbe762b49e
+             * @default 1ea2cd9328d0c111089b04e7db93e099bf641f20e51933702e222fec1ea154b7
              */
             wheel_sha256: string;
         };
@@ -2459,7 +2462,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev21
+             * @default 0.12.0.dev22
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -2598,6 +2601,16 @@ export interface components {
              */
             admission_wait_seconds: number;
             /**
+             * Artifact Bytes
+             * @default 536870912
+             */
+            artifact_bytes: number;
+            /**
+             * Cached Rows
+             * @default 250000
+             */
+            cached_rows: number;
+            /**
              * Callback Seconds
              * @default 5
              */
@@ -2652,6 +2665,16 @@ export interface components {
              * @default 60
              */
             preparation_seconds: number;
+            /**
+             * Query Rows
+             * @default 100000
+             */
+            query_rows: number;
+            /**
+             * Read Rows
+             * @default 1000000
+             */
+            read_rows: number;
             /**
              * Rss Bytes
              * @default 1073741824

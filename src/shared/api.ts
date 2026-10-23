@@ -23,7 +23,7 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
   try { value = await response.json(); } catch { throw new ApiError('服务返回了无法识别的响应。', 'INVALID_RESPONSE', body !== undefined); }
   if (!response.ok) {
     const e = object(object(value).error);
-    throw new ApiError(String(e.message || '请求失败，请稍后重试。'), String(e.code || response.status), body !== undefined && response.status >= 500 && object(e.details).save_state !== 'not_saved');
+    throw new ApiError(String(e.message || '请求失败，请稍后重试。'), String(e.code || response.status), body !== undefined && (response.status >= 500 || e.code === 'DATABASE_OPERATION_REFUSED') && object(e.details).save_state !== 'not_saved');
   }
   return value as T;
 }
