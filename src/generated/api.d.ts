@@ -21,23 +21,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/data/admission": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Admission */
-        post: operations["admission_api_v1_data_admission_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/factors/catalogue": {
         parameters: {
             query?: never;
@@ -175,6 +158,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/history/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listing */
+        get: operations["listing_api_v1_history_jobs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/history/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_v1_history_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/history/jobs/{job_id}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Logs */
+        get: operations["logs_api_v1_history_jobs__job_id__logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/history/jobs/{job_id}/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Manifest */
+        get: operations["manifest_api_v1_history_jobs__job_id__manifest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/history/jobs/{job_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Result */
+        get: operations["result_api_v1_history_jobs__job_id__result_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/history/strategies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Strategies */
+        get: operations["strategies_api_v1_history_strategies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/market/stores": {
         parameters: {
             query?: never;
@@ -237,212 +322,6 @@ export interface paths {
         put?: never;
         /** Research Prices */
         post: operations["research_prices_api_v1_market__store_alias___dataset_id__prices_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/catalogue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Catalogue */
-        get: operations["catalogue_api_v1_portfolio_catalogue_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listing */
-        get: operations["listing_api_v1_portfolio_jobs_get"];
-        put?: never;
-        /** Create */
-        post: operations["create_api_v1_portfolio_jobs_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get */
-        get: operations["get_api_v1_portfolio_jobs__job_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel */
-        post: operations["cancel_api_v1_portfolio_jobs__job_id__cancel_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}/logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Logs */
-        get: operations["logs_api_v1_portfolio_jobs__job_id__logs_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}/manifest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Manifest */
-        get: operations["manifest_api_v1_portfolio_jobs__job_id__manifest_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}/result": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Result */
-        get: operations["result_api_v1_portfolio_jobs__job_id__result_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/jobs/{job_id}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resume */
-        post: operations["resume_api_v1_portfolio_jobs__job_id__resume_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/preflight": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Preflight */
-        post: operations["preflight_api_v1_portfolio_preflight_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/service": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Service */
-        get: operations["service_api_v1_portfolio_service_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/strategies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Strategies */
-        get: operations["strategies_api_v1_portfolio_strategies_get"];
-        put?: never;
-        /** Register */
-        post: operations["register_api_v1_portfolio_strategies_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/portfolio/strategies/{version_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Strategy */
-        get: operations["strategy_api_v1_portfolio_strategies__version_id__get"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -688,6 +567,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/python/jobs/{job_id}/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Manifest */
+        get: operations["manifest_api_v1_python_jobs__job_id__manifest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/python/jobs/{job_id}/result": {
         parameters: {
             query?: never;
@@ -705,17 +601,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/rqalpha/scenarios": {
+    "/api/v1/python/jobs/{job_id}/resume": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Native Scenarios */
-        get: operations["native_scenarios_api_v1_rqalpha_scenarios_get"];
+        get?: never;
         put?: never;
-        post?: never;
+        /** Resume */
+        post: operations["resume_api_v1_python_jobs__job_id__resume_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -732,8 +628,7 @@ export interface paths {
         /** List Runs */
         get: operations["list_runs_api_v1_runs_get"];
         put?: never;
-        /** Submit Run */
-        post: operations["submit_run_api_v1_runs_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -768,23 +663,6 @@ export interface paths {
         get: operations["account_api_v1_runs__run_id__account_get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/runs/{run_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel */
-        post: operations["cancel_api_v1_runs__run_id__cancel_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -927,23 +805,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/scenarios": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Scenarios */
-        get: operations["scenarios_api_v1_scenarios_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/source-diagnostics": {
         parameters: {
             query?: never;
@@ -988,8 +849,7 @@ export interface paths {
         /** List Strategies */
         get: operations["list_strategies_api_v1_strategies_get"];
         put?: never;
-        /** Register Strategy */
-        post: operations["register_strategy_api_v1_strategies_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1013,238 +873,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/tasks/daily/data/bind": {
+    "/api/v1/tasks/service": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** Bind */
-        post: operations["bind_api_v1_tasks_daily_data_bind_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listing */
-        get: operations["listing_api_v1_tasks_daily_jobs_get"];
-        put?: never;
-        /** Create */
-        post: operations["create_api_v1_tasks_daily_jobs_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/catalogue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Catalogue */
-        get: operations["catalogue_api_v1_tasks_daily_jobs_catalogue_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/service": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Service Status */
-        get: operations["service_status_api_v1_tasks_daily_jobs_service_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get */
-        get: operations["get_api_v1_tasks_daily_jobs__job_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel */
-        post: operations["cancel_api_v1_tasks_daily_jobs__job_id__cancel_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}/logs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Logs */
-        get: operations["logs_api_v1_tasks_daily_jobs__job_id__logs_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}/manifest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Manifest */
-        get: operations["manifest_api_v1_tasks_daily_jobs__job_id__manifest_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}/result": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Result */
-        get: operations["result_api_v1_tasks_daily_jobs__job_id__result_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/jobs/{job_id}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resume */
-        post: operations["resume_api_v1_tasks_daily_jobs__job_id__resume_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/python-strategies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Python Strategies */
-        get: operations["python_strategies_api_v1_tasks_daily_python_strategies_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/python-strategies/{version_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Python Strategy */
-        get: operations["python_strategy_api_v1_tasks_daily_python_strategies__version_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/strategies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Strategies */
-        get: operations["list_strategies_api_v1_tasks_daily_strategies_get"];
-        put?: never;
-        /** Register Strategy */
-        post: operations["register_strategy_api_v1_tasks_daily_strategies_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/tasks/daily/strategies/{version_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Strategy */
-        get: operations["get_strategy_api_v1_tasks_daily_strategies__version_id__get"];
+        /** Service */
+        get: operations["service_api_v1_tasks_service_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1257,63 +894,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AD08Tuple */
-        AD08Tuple: {
-            /**
-             * Adjust Origin
-             * Format: date
-             */
-            adjust_origin: string;
-            /**
-             * Adjustment Requested
-             * @default pre
-             * @constant
-             */
-            adjustment_requested: "pre";
-            /**
-             * Count
-             * @default 1
-             */
-            count: number;
-            /**
-             * Field
-             * @default close
-             * @constant
-             */
-            field: "close";
-            /**
-             * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /**
-             * History Date
-             * Format: date
-             */
-            history_date: string;
-            /**
-             * Include Now
-             * @default false
-             */
-            include_now: boolean;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /**
-             * Skip Suspended
-             * @default false
-             */
-            skip_suspended: boolean;
-            /**
-             * Trading Date
-             * Format: date
-             */
-            trading_date: string;
-        };
         /** Account */
         Account: {
             /** Cash */
@@ -1331,84 +911,8 @@ export interface components {
              */
             positions: components["schemas"]["Position"][];
         };
-        /** AccountInput */
-        AccountInput: {
-            /**
-             * Account As Of
-             * Format: date-time
-             */
-            account_as_of: string;
-            /** Account Id */
-            account_id: string;
-            /** Cash */
-            cash: string;
-            /** Commit Sequence */
-            commit_sequence: number;
-            /** Quantity */
-            quantity: number;
-            /** Run Id */
-            run_id: string;
-            /** Sellable */
-            sellable: number;
-            /** Snapshot Sha256 */
-            snapshot_sha256: string;
-            /**
-             * Source Kind
-             * @enum {string}
-             */
-            source_kind: "initial" | "previous_day_committed";
-        };
         /** ActionRequest */
         ActionRequest: Record<string, never>;
-        /** AllowedWindow */
-        AllowedWindow: {
-            /** Assumption Ack Sha256 */
-            assumption_ack_sha256: string;
-            /** Assumptions */
-            assumptions: components["schemas"]["M2Assumption"][];
-            data_identity: components["schemas"]["PortableDataIdentity"];
-            scope: components["schemas"]["M2ResultScope"];
-        };
-        /** BandParameters */
-        BandParameters: {
-            /**
-             * Enter Below
-             * @default 12.5
-             */
-            enter_below: string;
-            /**
-             * Exit Above
-             * @default 12.55
-             */
-            exit_above: string;
-            /**
-             * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /**
-             * Initial Cash
-             * @default 10000
-             */
-            initial_cash: string;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /**
-             * Target Shares
-             * @default 100
-             */
-            target_shares: number;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            template: "previous_close_band.v1";
-        };
         /** Capabilities */
         Capabilities: {
             /**
@@ -1439,12 +943,9 @@ export interface components {
             backend_version: string;
             /**
              * Executable Modes
-             * @default [
-             *       "fixture",
-             *       "synthetic"
-             *     ]
+             * @default []
              */
-            executable_modes: ("fixture" | "synthetic")[];
+            executable_modes: ("python_daily" | "python_minute" | "factors")[];
             /** Limitations */
             limitations: string[];
             /**
@@ -1524,96 +1025,6 @@ export interface components {
             quality_reference: string;
             /** Requirements Met */
             requirements_met: boolean;
-        };
-        /** DataBatch */
-        DataBatch: {
-            admission: components["schemas"]["DataAdmission"];
-            query: components["schemas"]["DataQuery"];
-            /** Source Payload Reference */
-            source_payload_reference: string;
-        };
-        /** DataBindRequest */
-        DataBindRequest: {
-            /** Dataset Id */
-            dataset_id: string;
-        };
-        /** DataQuery */
-        DataQuery: {
-            /**
-             * As Of
-             * Format: date-time
-             */
-            as_of: string;
-            /** Dataset Id */
-            dataset_id: string;
-            /**
-             * End
-             * Format: date-time
-             */
-            end: string;
-            /**
-             * Frequency
-             * @enum {string}
-             */
-            frequency: "daily" | "1m";
-            guarantees?: components["schemas"]["Guarantees"];
-            /** Securities */
-            securities: ("600000.XSHG" | "000001.XSHE")[];
-            /**
-             * Start
-             * Format: date-time
-             */
-            start: string;
-            /**
-             * Visibility
-             * @enum {string}
-             */
-            visibility: "assumed" | "received" | "verified";
-        };
-        /** DecisionContext */
-        DecisionContext: {
-            /** Epoch */
-            epoch: string;
-            /** Event Cursor */
-            event_cursor: number;
-            /** Generation */
-            generation: number;
-            /**
-             * Logical At
-             * Format: date-time
-             */
-            logical_at: string;
-            /**
-             * Phase
-             * @default DECIDE
-             * @constant
-             */
-            phase: "DECIDE";
-            /**
-             * Previous Open
-             * Format: date
-             */
-            previous_open: string;
-            /** Request Sha256 */
-            request_sha256: string;
-            /** Run Id */
-            run_id: string;
-            /**
-             * Trading Date
-             * Format: date
-             */
-            trading_date: string;
-            /** Window Id */
-            window_id: string;
-        };
-        /** DecisionRule */
-        DecisionRule: {
-            /** Rule Id */
-            rule_id: string;
-            /** Target Shares */
-            target_shares: number;
-            /** When All */
-            when_all: components["schemas"]["RuleCondition"][];
         };
         /** DiagnosticCapabilities */
         DiagnosticCapabilities: {
@@ -1751,51 +1162,6 @@ export interface components {
              *     }
              */
             trading_facts: components["schemas"]["TradingFacts"];
-        };
-        /** EndDateSelection */
-        EndDateSelection: {
-            /**
-             * Allowed Dates Source
-             * @default windows[].scope.trading_dates
-             * @constant
-             */
-            allowed_dates_source: "windows[].scope.trading_dates";
-            /**
-             * Creates Owner Data
-             * @default false
-             * @constant
-             */
-            creates_owner_data: false;
-            /**
-             * Inclusive
-             * @default true
-             * @constant
-             */
-            inclusive: true;
-            /**
-             * Omitted End
-             * @default owner_window_end
-             * @constant
-             */
-            omitted_end: "owner_window_end";
-            /**
-             * Policy
-             * @default admitted_window_prefix.v1
-             * @constant
-             */
-            policy: "admitted_window_prefix.v1";
-            /**
-             * Request Field
-             * @default end_date
-             * @constant
-             */
-            request_field: "end_date";
-            /**
-             * Start Date Selectable
-             * @default false
-             * @constant
-             */
-            start_date_selectable: false;
         };
         /** EngineIdentity */
         EngineIdentity: {
@@ -1961,46 +1327,6 @@ export interface components {
              */
             status: "not_admitted";
         };
-        /** ExecutionScope */
-        ExecutionScope: {
-            /**
-             * End Date
-             * Format: date
-             */
-            end_date: string;
-            /**
-             * Owner Window Id
-             * @enum {string}
-             */
-            owner_window_id: "two_day" | "w1" | "w2";
-            /** Parent Window Sha256 */
-            parent_window_sha256: string;
-            /** Requested End Date */
-            requested_end_date: string | null;
-            /**
-             * Schema Version
-             * @default m2.execution-prefix.v1
-             * @constant
-             */
-            schema_version: "m2.execution-prefix.v1";
-            /**
-             * Settlement Successor
-             * Format: date
-             */
-            settlement_successor: string;
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-            /** Trading Dates */
-            trading_dates: string[];
-            /**
-             * Warmup Date
-             * Format: date
-             */
-            warmup_date: string;
-        };
         /** ExecutionStatus */
         ExecutionStatus: {
             /** Cancel Requested At */
@@ -2110,10 +1436,21 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Display Status */
+            display_status?: string | null;
             /** Error */
             error: {
                 [key: string]: components["schemas"]["JsonValue"];
             } | null;
+            /** Execution Reason */
+            execution_reason?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Execution State
+             * @default current_runtime
+             */
+            execution_state: string;
             /** Job Id */
             job_id: string;
             /** Manifest Sha256 */
@@ -2129,6 +1466,8 @@ export interface components {
              * @enum {string}
              */
             status: "queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded";
+            /** Stored Status */
+            stored_status?: ("queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded") | null;
             /** Total Cursors */
             total_cursors: number;
             /**
@@ -2218,266 +1557,6 @@ export interface components {
              */
             tax: string;
         };
-        /** Guarantees */
-        Guarantees: {
-            /**
-             * Complete
-             * @default false
-             */
-            complete: boolean;
-            /**
-             * Corporate Actions
-             * @default false
-             */
-            corporate_actions: boolean;
-            /**
-             * Final
-             * @default false
-             */
-            final: boolean;
-            /**
-             * Fresh
-             * @default false
-             */
-            fresh: boolean;
-            /**
-             * Tradable
-             * @default false
-             */
-            tradable: boolean;
-            /**
-             * Turnover
-             * @default false
-             */
-            turnover: boolean;
-        };
-        /** HistoricalEnginePriceRead */
-        HistoricalEnginePriceRead: {
-            /**
-             * Authorizes New Read
-             * @default false
-             * @constant
-             */
-            authorizes_new_read: false;
-            /** Context */
-            context: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Native Observation Index */
-            native_observation_index: number;
-            /**
-             * Operation
-             * @enum {string}
-             */
-            operation: "execution_bar" | "valuation_bar";
-            /** Owner Document Sha256 */
-            owner_document_sha256: {
-                [key: string]: string;
-            };
-            /** Owner Documents */
-            owner_documents: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /**
-             * Trading Date
-             * Format: date
-             */
-            trading_date: string;
-            /**
-             * Verification
-             * @default committed_historical_integrity_only
-             * @constant
-             */
-            verification: "committed_historical_integrity_only";
-        };
-        /** JobCatalogue */
-        JobCatalogue: {
-            /** Configuration Error */
-            configuration_error: string | null;
-            /** Configured */
-            configured: boolean;
-            /**
-             * Contract Version
-             * @default m2-jobs.v6
-             * @constant
-             */
-            contract_version: "m2-jobs.v6";
-            /** Data Binding Sha256 */
-            data_binding_sha256: string | null;
-            /**
-             * @default {
-             *       "allowed_dates_source": "windows[].scope.trading_dates",
-             *       "creates_owner_data": false,
-             *       "inclusive": true,
-             *       "omitted_end": "owner_window_end",
-             *       "policy": "admitted_window_prefix.v1",
-             *       "request_field": "end_date",
-             *       "start_date_selectable": false
-             *     }
-             */
-            end_date_selection: components["schemas"]["EndDateSelection"];
-            /**
-             * Executor Review Scope
-             * @default portable_revision_not_independently_reviewed
-             * @constant
-             */
-            executor_review_scope: "portable_revision_not_independently_reviewed";
-            /** Executor Source Sha256 */
-            executor_source_sha256: string;
-            /** Executor Version */
-            executor_version: string;
-            /**
-             * General Backtests Enabled
-             * @default false
-             * @constant
-             */
-            general_backtests_enabled: false;
-            /**
-             * Historical Pit Verified
-             * @default false
-             * @constant
-             */
-            historical_pit_verified: false;
-            /** Native Error */
-            native_error: string | null;
-            /** Native Ready */
-            native_ready: boolean;
-            /**
-             * Paper Live Enabled
-             * @default false
-             * @constant
-             */
-            paper_live_enabled: false;
-            /**
-             * @default {
-             *       "entry_comparison": "previous_close <= enter_below",
-             *       "exit_comparison": "previous_close >= exit_above",
-             *       "initial_cash_max_text_length": 12,
-             *       "initial_cash_min": "0.01",
-             *       "initial_position": 0,
-             *       "maximum_decimal_places": 2,
-             *       "policy_version": "m2-band-parameters.v1",
-             *       "target_shares": [
-             *         100,
-             *         200
-             *       ],
-             *       "target_shares_are_examples": true,
-             *       "target_shares_max": 9007199254740991,
-             *       "target_shares_min": 100,
-             *       "target_shares_multiple_of": 100,
-             *       "threshold_rule": "0 < enter_below < exit_above"
-             *     }
-             */
-            parameter_limits: components["schemas"]["ParameterLimits"];
-            /**
-             * @default {
-             *       "enter_below": "12.5",
-             *       "exit_above": "12.55",
-             *       "frequency": "1d",
-             *       "initial_cash": "10000",
-             *       "security": "600000.XSHG",
-             *       "target_shares": 100,
-             *       "template": "previous_close_band.v1"
-             *     }
-             */
-            parameters: components["schemas"]["BandParameters"];
-            /**
-             * @default {
-             *       "api_contract": "python-decision-api.v1",
-             *       "arbitrary_data_queries": false,
-             *       "attempt_seconds": 120,
-             *       "callback_seconds": 5,
-             *       "hard_memory_quota": false,
-             *       "hostile_code_sandbox": false,
-             *       "module_load_seconds": 5,
-             *       "output_bytes": 1048576,
-             *       "parameters_bytes": 8192,
-             *       "registration": "local_cli_only",
-             *       "registration_status": "registered_not_executed",
-             *       "source_bytes": 65536,
-             *       "state_model": "stateless_per_decision",
-             *       "trust_model": "owner_trusted_local"
-             *     }
-             */
-            python_strategies: components["schemas"]["PythonCapabilities"];
-            /**
-             * @default {
-             *       "account_input": "prior_committed_snapshot",
-             *       "code_execution": false,
-             *       "contract_version": "m2-decision-rules.v1",
-             *       "day_index": "zero_based_owner_window_index",
-             *       "inputs": [
-             *         "previous_close",
-             *         "prior_cash",
-             *         "prior_quantity",
-             *         "day_index"
-             *       ],
-             *       "max_conditions_per_rule": 8,
-             *       "max_rules": 16,
-             *       "mutable_strategy_state": false,
-             *       "operators": [
-             *         "lt",
-             *         "le",
-             *         "eq",
-             *         "ne",
-             *         "ge",
-             *         "gt"
-             *       ],
-             *       "ordering": "first_match_all_conditions",
-             *       "otherwise": "no_change",
-             *       "required_data": "owner_authorized_previous_close_each_day",
-             *       "target_shares": [
-             *         0,
-             *         100,
-             *         200
-             *       ],
-             *       "target_shares_are_examples": true,
-             *       "target_shares_max": 9007199254740991,
-             *       "target_shares_min": 0,
-             *       "target_shares_multiple_of": 100
-             *     }
-             */
-            rule_strategies: components["schemas"]["RuleStrategyCapabilities"];
-            service_identity: components["schemas"]["JobServiceIdentity"];
-            /** Windows */
-            windows: components["schemas"]["AllowedWindow"][];
-        };
-        /** JobCreate */
-        JobCreate: {
-            /** Assumption Ack Sha256 */
-            assumption_ack_sha256: string;
-            /** Data Binding Sha256 */
-            data_binding_sha256: string;
-            /** End Date */
-            end_date?: string | null;
-            /** Idempotency Key */
-            idempotency_key: string;
-            /** Name */
-            name: string;
-            /**
-             * Parameters
-             * @default {
-             *       "enter_below": "12.5",
-             *       "exit_above": "12.55",
-             *       "frequency": "1d",
-             *       "initial_cash": "10000",
-             *       "security": "600000.XSHG",
-             *       "target_shares": 100,
-             *       "template": "previous_close_band.v1"
-             *     }
-             */
-            parameters: components["schemas"]["BandParameters"] | components["schemas"]["RegisteredRuleParameters"] | components["schemas"]["RegisteredPythonParameters"];
-            /**
-             * Window Id
-             * @enum {string}
-             */
-            window_id: "two_day" | "w1" | "w2";
-        };
-        /** JobList */
-        JobList: {
-            /** Items */
-            items: components["schemas"]["JobView"][];
-        };
         /** JobLog */
         JobLog: {
             /**
@@ -2501,189 +1580,6 @@ export interface components {
             /** Job Id */
             job_id: string;
         };
-        /** JobManifest */
-        JobManifest: {
-            approved_window: components["schemas"]["AllowedWindow"];
-            /** Data Binding Sha256 */
-            data_binding_sha256: string;
-            execution_scope: components["schemas"]["ExecutionScope"];
-            /** Executor Source Sha256 */
-            executor_source_sha256: string;
-            /** Job Directory */
-            job_directory: string;
-            /** Job Id */
-            job_id: string;
-            /** Parameters Sha256 */
-            parameters_sha256: string;
-            /** Prepared Proof */
-            prepared_proof: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Python Source Sha256 */
-            python_source_sha256?: string | null;
-            request: components["schemas"]["JobCreate"];
-            /** Runner Sha256 */
-            runner_sha256: string;
-            /**
-             * Schema Version
-             * @default m2-job-manifest.v6
-             * @constant
-             */
-            schema_version: "m2-job-manifest.v6";
-            service_identity: components["schemas"]["JobServiceIdentity"];
-            /** Session */
-            session: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Session File Sha256 */
-            session_file_sha256: string;
-            /** Session Sha256 */
-            session_sha256: string;
-            strategy: components["schemas"]["M2StrategyVersion"];
-        };
-        /** JobResult */
-        JobResult: {
-            account: components["schemas"]["M2AccountProjection"];
-            /** Assumption Bundle Sha256 */
-            assumption_bundle_sha256: string;
-            /** Assumptions */
-            assumptions: components["schemas"]["M2Assumption"][];
-            /**
-             * Contract Version
-             * @default m2-job-result.v6
-             * @constant
-             */
-            contract_version: "m2-job-result.v6";
-            data_identity: components["schemas"]["PortableDataIdentity"];
-            /** Days */
-            days: components["schemas"]["ParameterDayProjection"][];
-            /** Engine Price Reads */
-            engine_price_reads: components["schemas"]["HistoricalEnginePriceRead"][];
-            /** Evidence */
-            evidence: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            execution_identity: components["schemas"]["PortableExecutionIdentity"];
-            execution_scope: components["schemas"]["ExecutionScope"];
-            /**
-             * Executor Review Scope
-             * @default portable_revision_not_independently_reviewed
-             * @constant
-             */
-            executor_review_scope: "portable_revision_not_independently_reviewed";
-            /**
-             * General Execution Permission
-             * @default false
-             * @constant
-             */
-            general_execution_permission: false;
-            /**
-             * Historical Pit Verified
-             * @default false
-             * @constant
-             */
-            historical_pit_verified: false;
-            /** Job Id */
-            job_id: string;
-            /** Limitations */
-            limitations: string[];
-            /** Manifest Sha256 */
-            manifest_sha256: string;
-            /**
-             * Paper Admitted
-             * @default false
-             * @constant
-             */
-            paper_admitted: false;
-            /** Recovery */
-            recovery: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            request: components["schemas"]["JobCreate"];
-            /**
-             * Result Status
-             * @default completed_not_independently_reviewed
-             * @constant
-             */
-            result_status: "completed_not_independently_reviewed";
-            scope: components["schemas"]["M2ResultScope"];
-            service_identity: components["schemas"]["JobServiceIdentity"];
-            strategy: components["schemas"]["M2StrategyVersion"];
-            summary: components["schemas"]["M2ResultSummary"];
-            /** Valuation Bar Query Observed */
-            valuation_bar_query_observed: boolean;
-        };
-        /** JobServiceIdentity */
-        JobServiceIdentity: {
-            /** Backend Version */
-            backend_version: string;
-            /**
-             * Contract Version
-             * @default m2-jobs.v6
-             * @constant
-             */
-            contract_version: "m2-jobs.v6";
-            /**
-             * Independent Review Status
-             * @default not_reviewed
-             * @constant
-             */
-            independent_review_status: "not_reviewed";
-            /** Source Sha256 */
-            source_sha256: string;
-        };
-        /** JobView */
-        JobView: {
-            /** Account Id */
-            account_id: string;
-            /** Attempt Count */
-            attempt_count: number;
-            /** Can Resume */
-            can_resume: boolean;
-            /** Cancellation Requested At */
-            cancellation_requested_at: string | null;
-            /** Checkpoint Complete */
-            checkpoint_complete: boolean;
-            /** Committed Cursor */
-            committed_cursor: number;
-            /**
-             * Contract Version
-             * @default m2-jobs.v6
-             * @constant
-             */
-            contract_version: "m2-jobs.v6";
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /** Error */
-            error: {
-                [key: string]: components["schemas"]["JsonValue"];
-            } | null;
-            /** Job Id */
-            job_id: string;
-            /** Manifest Sha256 */
-            manifest_sha256: string;
-            /** Recovery Required */
-            recovery_required: boolean;
-            request: components["schemas"]["JobCreate"];
-            result: components["schemas"]["ResultReference"] | null;
-            /** Session Sha256 */
-            session_sha256: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded";
-            /** Total Cursors */
-            total_cursors: number;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
         JsonValue: unknown;
         /** LogEntry */
         LogEntry: {
@@ -2701,218 +1597,6 @@ export interface components {
              * Format: date-time
              */
             observed_at: string;
-        };
-        /** M2AD08Projection */
-        M2AD08Projection: {
-            /**
-             * Actual Native Observed
-             * @default true
-             * @constant
-             */
-            actual_native_observed: true;
-            /** Argument Types */
-            argument_types: {
-                [key: string]: string;
-            };
-            /**
-             * Cache Hit
-             * @constant
-             */
-            cache_hit: true;
-            /**
-             * Codec Native Call Observed
-             * @default false
-             * @constant
-             */
-            codec_native_call_observed: false;
-            /** Consumption Authorization Sha256 */
-            consumption_authorization_sha256: string;
-            /** Evidence Id */
-            evidence_id: string;
-            first_call: components["schemas"]["NativeCallFact"];
-            /** History Call */
-            history_call: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /**
-             * Native Array Dtype
-             * @constant
-             */
-            native_array_dtype: "float64";
-            /** Native Array Shape */
-            native_array_shape: [
-                1
-            ];
-            /** Native Call Id */
-            native_call_id: string;
-            /**
-             * Native History Caller
-             * @constant
-             */
-            native_history_caller: "_get_prev_close";
-            /** Observed Returns */
-            observed_returns: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
-            /** Owner Document Sha256 */
-            owner_document_sha256: {
-                [key: string]: string;
-            };
-            /** Owner Documents */
-            owner_documents: {
-                [key: string]: {
-                    [key: string]: components["schemas"]["JsonValue"];
-                };
-            };
-            /** Previous Close */
-            previous_close: string;
-        };
-        /** M2AccountProjection */
-        M2AccountProjection: {
-            /** Average Price */
-            average_price: string;
-            /** Cash */
-            cash: string;
-            /** Dividend Receivable */
-            dividend_receivable: string;
-            /** Equity */
-            equity: string;
-            /** Native Daily Transaction Cost */
-            native_daily_transaction_cost: string;
-            /** Quantity */
-            quantity: number;
-            /** Sellable */
-            sellable: number;
-        };
-        /** M2Assumption */
-        M2Assumption: {
-            /** Assumption Id */
-            assumption_id: string;
-            /** Description */
-            description: string;
-            /**
-             * Owner
-             * @enum {string}
-             */
-            owner: "ashare-data" | "ashare-quant";
-            /** Sha256 */
-            sha256: string;
-            /** Version */
-            version: string;
-        };
-        /** M2FillProjection */
-        M2FillProjection: {
-            /** Commission */
-            commission: string;
-            /** Evidence Id */
-            evidence_id: string;
-            /** Fee */
-            fee: string;
-            /** Fill Id */
-            fill_id: string;
-            /**
-             * Filled At
-             * Format: date-time
-             */
-            filled_at: string;
-            /** Order Id */
-            order_id: string;
-            /** Price */
-            price: string;
-            /** Quantity */
-            quantity: number;
-            /**
-             * Side
-             * @enum {string}
-             */
-            side: "buy" | "sell";
-            /** Tax */
-            tax: string;
-        };
-        /** M2ResultScope */
-        M2ResultScope: {
-            /**
-             * Clock Basis
-             * @default declared_daily_model_schedule_not_market_receipt
-             * @constant
-             */
-            clock_basis: "declared_daily_model_schedule_not_market_receipt";
-            /**
-             * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /**
-             * Grade
-             * @default conditional_research
-             * @constant
-             */
-            grade: "conditional_research";
-            /** Initial Cash */
-            initial_cash: string;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /**
-             * Timezone
-             * @default Asia/Shanghai
-             * @constant
-             */
-            timezone: "Asia/Shanghai";
-            /** Trading Dates */
-            trading_dates: string[];
-            /**
-             * Window Id
-             * @enum {string}
-             */
-            window_id: "two_day" | "w1" | "w2";
-        };
-        /** M2ResultSummary */
-        M2ResultSummary: {
-            /** Actual History Call Count */
-            actual_history_call_count: number;
-            /** Commission Total */
-            commission_total: string;
-            /** Committed Fill Count */
-            committed_fill_count: number;
-            /** Committed Order Count */
-            committed_order_count: number;
-            /** Fee Total */
-            fee_total: string;
-            /** Final Cash */
-            final_cash: string;
-            /** Final Equity */
-            final_equity: string;
-            /** Final Quantity */
-            final_quantity: number;
-            /** Initial Cash */
-            initial_cash: string;
-            /** Native Cache Consumption Count */
-            native_cache_consumption_count: number;
-            /** Net Change */
-            net_change: string;
-            /** Tax Total */
-            tax_total: string;
-        };
-        /** M2StrategyVersion */
-        M2StrategyVersion: {
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /** Definition */
-            definition: components["schemas"]["StrategyDefinition"] | components["schemas"]["RuleStrategyDefinition"] | components["schemas"]["PythonDefinition"];
-            /** Parameter Sha256 */
-            parameter_sha256: string;
-            /** Source Sha256 */
-            source_sha256: string;
-            /** Version Id */
-            version_id: string;
         };
         /** Manifest */
         Manifest: {
@@ -2987,82 +1671,6 @@ export interface components {
              */
             trading_timezone: "Asia/Shanghai";
         };
-        /** NativeCallFact */
-        NativeCallFact: {
-            call: components["schemas"]["AD08Tuple"];
-            /** Codec Observation */
-            codec_observation?: string | null;
-            /** Native Call Id */
-            native_call_id: string;
-            /** Native Return Repr */
-            native_return_repr: string;
-            /** Native Value */
-            native_value: string;
-            origin_context: components["schemas"]["DecisionContext"];
-            owner_documents?: components["schemas"]["OwnerDocuments"] | null;
-            owner_receipt: components["schemas"]["OwnerReadReceipt"];
-        };
-        /** NativeOrderProjection */
-        NativeOrderProjection: {
-            /** Filled Quantity */
-            filled_quantity: number;
-            /** Order Id */
-            order_id: string;
-            /** Reason */
-            reason?: string | null;
-            /** Remaining Quantity */
-            remaining_quantity: number;
-            /** Requested Quantity */
-            requested_quantity: number;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /**
-             * Side
-             * @enum {string}
-             */
-            side: "buy" | "sell";
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "filled" | "partially_filled" | "rejected" | "cancelled" | "active";
-            /** Trade Ids */
-            trade_ids: string[];
-        };
-        /** NativeRejection */
-        NativeRejection: {
-            /** Cursor */
-            cursor: number;
-            /**
-             * Event
-             * @default ORDER_CREATION_REJECT
-             * @constant
-             */
-            event: "ORDER_CREATION_REJECT";
-            /** Generation */
-            generation: number;
-            /** Native Observation Index */
-            native_observation_index: number;
-            /**
-             * Observed At
-             * Format: date-time
-             */
-            observed_at: string;
-            /** Order Id */
-            order_id: string | null;
-            /**
-             * Phase
-             * @default SUBMIT_MATCH
-             * @constant
-             */
-            phase: "SUBMIT_MATCH";
-            /** Reason */
-            reason: string;
-        };
         /** Order */
         Order: {
             /** Filled */
@@ -3090,40 +1698,6 @@ export interface components {
              * @enum {string}
              */
             status: "pending_new" | "pending_cancel" | "accepted" | "partially_filled" | "filled" | "rejected" | "cancelled";
-        };
-        /** OwnerContractReview */
-        OwnerContractReview: {
-            /**
-             * Execution Permission
-             * @default false
-             * @constant
-             */
-            execution_permission: false;
-            /** Receipt Sha256 */
-            receipt_sha256?: string | null;
-            /**
-             * Scope
-             * @constant
-             */
-            scope: "data_production_contract_only";
-            /**
-             * Status
-             * @constant
-             */
-            status: "not_reviewed";
-        };
-        /** OwnerDocuments */
-        OwnerDocuments: {
-            /** Authorization */
-            authorization: string;
-            /** Evidence */
-            evidence: string;
-            /** Query */
-            query: string;
-            /** Result */
-            result: string;
-            /** Sources */
-            sources: string;
         };
         /** OwnerError */
         OwnerError: {
@@ -3184,432 +1758,6 @@ export interface components {
              */
             status: "readable" | "refused";
         };
-        /**
-         * OwnerReadReceipt
-         * @description Flat synthetic transport with disjoint stable and authorization projections.
-         *
-         *     Future codecs must retain and verify the published owner's complete Evidence
-         *     and Authorization; this local identity must never replace the owner digest.
-         */
-        OwnerReadReceipt: {
-            /** Assumption Ids */
-            assumption_ids: ("A-EQ" | "A-NORMAL" | "A-AD08" | "A-VIS" | "A-CLOSE" | "A-COST" | "A-POOL")[];
-            /** Authorization Sha256 */
-            authorization_sha256: string;
-            /** Binding Id */
-            binding_id: string;
-            call: components["schemas"]["AD08Tuple"];
-            /** Dataset Id */
-            dataset_id: string;
-            /**
-             * Evidence Kind
-             * @enum {string}
-             */
-            evidence_kind: "synthetic" | "observed";
-            /** Generation */
-            generation: number;
-            /** Query Contract Sha256 */
-            query_contract_sha256: string;
-            /**
-             * Role
-             * @constant
-             */
-            role: "decision_previous_close";
-            /** Source Row Sha256 */
-            source_row_sha256: string;
-            /** Use Profile Sha256 */
-            use_profile_sha256: string;
-            /** Value */
-            value: string;
-            /** Window Id */
-            window_id: string;
-        };
-        /** ParameterDayProjection */
-        ParameterDayProjection: {
-            account_at_day_close: components["schemas"]["M2AccountProjection"];
-            account_at_execution: components["schemas"]["M2AccountProjection"];
-            ad08: components["schemas"]["M2AD08Projection"];
-            /** Cumulative Fee */
-            cumulative_fee: string;
-            /**
-             * Day Close At
-             * Format: date-time
-             */
-            day_close_at: string;
-            /** Day Close Commit Sequence */
-            day_close_commit_sequence: number;
-            /** Day Close Cursor */
-            day_close_cursor: number;
-            /** Day Fee */
-            day_fee: string;
-            /**
-             * Decision At
-             * Format: date-time
-             */
-            decision_at: string;
-            /** Decision Commit Sequence */
-            decision_commit_sequence: number;
-            /** Decision Cursor */
-            decision_cursor: number;
-            /** Decision Id */
-            decision_id: string;
-            /**
-             * Decision Verification
-             * @default pure_rule_replay
-             * @enum {string}
-             */
-            decision_verification: "pure_rule_replay" | "trusted_python_record.v1";
-            /** Economic Input Sha256 */
-            economic_input_sha256: string;
-            /** Evidence Id */
-            evidence_id: string;
-            /**
-             * Execution At
-             * Format: date-time
-             */
-            execution_at: string;
-            /** Execution Close */
-            execution_close: string | null;
-            /** Execution Commit Sequence */
-            execution_commit_sequence: number;
-            /** Execution Cursor */
-            execution_cursor: number;
-            /**
-             * Execution Price Read Status
-             * @enum {string}
-             */
-            execution_price_read_status: "owner_execution_bar_observed" | "not_read_no_order";
-            /** Fills */
-            fills: components["schemas"]["M2FillProjection"][];
-            /** Native Reason */
-            native_reason: string | null;
-            /** Native Receipt Sha256 */
-            native_receipt_sha256: string;
-            /** Native Rejections */
-            native_rejections: components["schemas"]["NativeRejection"][];
-            /** No Order Reason */
-            no_order_reason: string | null;
-            /** Orders */
-            orders: components["schemas"]["NativeOrderProjection"][];
-            /**
-             * Previous Open
-             * Format: date
-             */
-            previous_open: string;
-            prior_committed_account: components["schemas"]["AccountInput"];
-            python_decision?: components["schemas"]["PythonDecisionReceipt"] | null;
-            signal: components["schemas"]["Signal"];
-            /**
-             * Trading Date
-             * Format: date
-             */
-            trading_date: string;
-        };
-        /** ParameterLimits */
-        ParameterLimits: {
-            /**
-             * Entry Comparison
-             * @default previous_close <= enter_below
-             * @constant
-             */
-            entry_comparison: "previous_close <= enter_below";
-            /**
-             * Exit Comparison
-             * @default previous_close >= exit_above
-             * @constant
-             */
-            exit_comparison: "previous_close >= exit_above";
-            /** Initial Cash Max */
-            initial_cash_max?: null;
-            /**
-             * Initial Cash Max Text Length
-             * @default 12
-             * @constant
-             */
-            initial_cash_max_text_length: 12;
-            /**
-             * Initial Cash Min
-             * @default 0.01
-             * @constant
-             */
-            initial_cash_min: "0.01";
-            /**
-             * Initial Position
-             * @default 0
-             * @constant
-             */
-            initial_position: 0;
-            /**
-             * Maximum Decimal Places
-             * @default 2
-             * @constant
-             */
-            maximum_decimal_places: 2;
-            /**
-             * Policy Version
-             * @default m2-band-parameters.v1
-             * @constant
-             */
-            policy_version: "m2-band-parameters.v1";
-            /**
-             * Target Shares
-             * @default [
-             *       100,
-             *       200
-             *     ]
-             */
-            target_shares: [
-                100,
-                200
-            ];
-            /**
-             * Target Shares Are Examples
-             * @default true
-             * @constant
-             */
-            target_shares_are_examples: true;
-            /**
-             * Target Shares Max
-             * @default 9007199254740991
-             */
-            target_shares_max: number;
-            /**
-             * Target Shares Min
-             * @default 100
-             * @constant
-             */
-            target_shares_min: 100;
-            /**
-             * Target Shares Multiple Of
-             * @default 100
-             * @constant
-             */
-            target_shares_multiple_of: 100;
-            /**
-             * Threshold Rule
-             * @default 0 < enter_below < exit_above
-             * @constant
-             */
-            threshold_rule: "0 < enter_below < exit_above";
-        };
-        /** PortableDataIdentity */
-        PortableDataIdentity: {
-            /** Data Binding Sha256 */
-            data_binding_sha256: string;
-            /** Dataset Id */
-            dataset_id: string;
-            /**
-             * External Owner Review Status
-             * @default local_contract_verified_not_independently_reviewed
-             * @constant
-             */
-            external_owner_review_status: "local_contract_verified_not_independently_reviewed";
-            /** Manifest Sha256 */
-            manifest_sha256: string;
-            /**
-             * Original Owner Envelope Review
-             * @default PENDING
-             * @constant
-             */
-            original_owner_envelope_review: "PENDING";
-            /**
-             * Original Owner Execution Authorized
-             * @default false
-             * @constant
-             */
-            original_owner_execution_authorized: false;
-            /** Original Quality */
-            original_quality: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Owner Commit */
-            owner_commit: string | null;
-            owner_contract_review: components["schemas"]["OwnerContractReview"];
-            /** Owner Descriptor */
-            owner_descriptor: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Owner Runtime Sha256 */
-            owner_runtime_sha256: string;
-            /** Owner Version */
-            owner_version: string;
-            /** Profile Sha256 */
-            profile_sha256: string;
-            /** Query Contract Sha256 */
-            query_contract_sha256: string;
-            /**
-             * Source Evidence Kind
-             * @default source_claim_unverified
-             * @constant
-             */
-            source_evidence_kind: "source_claim_unverified";
-            /** Source References */
-            source_references: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
-        };
-        /** PortableExecutionIdentity */
-        PortableExecutionIdentity: {
-            /** Backend Version */
-            backend_version: string;
-            /**
-             * Engine
-             * @default RQAlpha
-             * @constant
-             */
-            engine: "RQAlpha";
-            /**
-             * Engine Commit
-             * @default 0d98adefa87956e26f3e7ca5b26b5f3fc7ca834f
-             * @constant
-             */
-            engine_commit: "0d98adefa87956e26f3e7ca5b26b5f3fc7ca834f";
-            /**
-             * Engine Version
-             * @default 6.4.1
-             * @constant
-             */
-            engine_version: "6.4.1";
-            /**
-             * Identity Basis
-             * @default installed_source_and_fixed_runtime
-             * @constant
-             */
-            identity_basis: "installed_source_and_fixed_runtime";
-            /** Native Run Identity */
-            native_run_identity: string;
-            /** Runtime Sha256 */
-            runtime_sha256: string;
-            /** Session Sha256 */
-            session_sha256: string;
-            /** Source Sha256 */
-            source_sha256: string;
-        };
-        /** PortfolioAccount */
-        PortfolioAccount: {
-            /** At */
-            at?: string | null;
-            /** Cash */
-            cash: string;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Equity */
-            equity: string;
-            /** Positions */
-            positions: {
-                [key: string]: components["schemas"]["PortfolioPosition"];
-            };
-        };
-        /** PortfolioCatalogue */
-        PortfolioCatalogue: {
-            /**
-             * Account Policy
-             * @default new_isolated_account_per_job
-             * @constant
-             */
-            account_policy: "new_isolated_account_per_job";
-            /**
-             * Contract Version
-             * @default portfolio-jobs.v1
-             * @constant
-             */
-            contract_version: "portfolio-jobs.v1";
-            /**
-             * Dataset Registration
-             * @default local_cli_or_product_publication
-             * @constant
-             */
-            dataset_registration: "local_cli_or_product_publication";
-            /** Datasets */
-            datasets: components["schemas"]["PortfolioDataset"][];
-            /** Fee Models */
-            fee_models: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
-            /**
-             * Instrument Scope
-             * @default main_board_ordinary_a_shares
-             * @constant
-             */
-            instrument_scope: "main_board_ordinary_a_shares";
-            /** Native Error */
-            native_error: string | null;
-            /** Native Ready */
-            native_ready: boolean;
-            /**
-             * Preflight Required
-             * @default true
-             * @constant
-             */
-            preflight_required: true;
-            /**
-             * Python Registration
-             * @default not_supported_use_registered_algorithms
-             * @constant
-             */
-            python_registration: "not_supported_use_registered_algorithms";
-            service_identity: components["schemas"]["PortfolioIdentity"];
-            /** Strategy Algorithms */
-            strategy_algorithms: string[];
-        };
-        /** PortfolioCreate */
-        PortfolioCreate: {
-            /**
-             * Accept Retrospective State
-             * @default false
-             */
-            accept_retrospective_state: boolean;
-            /** Assumption Ack Sha256 */
-            assumption_ack_sha256: string;
-            /**
-             * Contract Version
-             * @default portfolio-jobs.v1
-             * @constant
-             */
-            contract_version: "portfolio-jobs.v1";
-            /** Dataset Id */
-            dataset_id: string;
-            /**
-             * End Date
-             * Format: date
-             */
-            end_date: string;
-            /**
-             * Fee Model
-             * @default fixed-commission-tax.v1
-             * @constant
-             */
-            fee_model: "fixed-commission-tax.v1";
-            /** Idempotency Key */
-            idempotency_key: string;
-            /**
-             * Initial Cash
-             * @default 1000000.00
-             */
-            initial_cash: string;
-            /**
-             * Mode
-             * @default covered_research
-             * @enum {string}
-             */
-            mode: "covered_research" | "price_only_no_limits";
-            /** Name */
-            name: string;
-            /** Securities */
-            securities: string[];
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-            /** Strategy Version Id */
-            strategy_version_id: string;
-            /** Volume Ratio */
-            volume_ratio?: string | null;
-        };
         /** PortfolioDataset */
         PortfolioDataset: {
             /** Action Coverage */
@@ -3647,539 +1795,6 @@ export interface components {
             state_mode: string;
             /** Trading Dates */
             trading_dates: string[];
-        };
-        /** PortfolioDay */
-        PortfolioDay: {
-            /**
-             * At
-             * Format: date-time
-             */
-            at: string;
-            /** Cash */
-            cash: string;
-            /** Cumulative Fee */
-            cumulative_fee: string;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Day Fee */
-            day_fee: string;
-            /** Equity */
-            equity: string;
-            /** Positions */
-            positions: {
-                [key: string]: components["schemas"]["PortfolioPosition"];
-            };
-        };
-        /** PortfolioDecision */
-        PortfolioDecision: {
-            /**
-             * At
-             * Format: date-time
-             */
-            at: string;
-            /**
-             * Cutoff
-             * Format: date-time
-             */
-            cutoff: string;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** History Sha256 */
-            history_sha256: string;
-            /** Prior Account Sha256 */
-            prior_account_sha256: string;
-            /** Rebalance */
-            rebalance: boolean;
-            signal: components["schemas"]["PortfolioSignal"] | null;
-        };
-        /** PortfolioIdentity */
-        PortfolioIdentity: {
-            /** Backend Version */
-            backend_version: string;
-            /**
-             * Contract Version
-             * @default portfolio-jobs.v1
-             * @constant
-             */
-            contract_version: "portfolio-jobs.v1";
-            /**
-             * Independent Review Status
-             * @default not_reviewed
-             * @constant
-             */
-            independent_review_status: "not_reviewed";
-            /** Source Sha256 */
-            source_sha256: string;
-        };
-        /** PortfolioJobList */
-        PortfolioJobList: {
-            /** Items */
-            items: components["schemas"]["PortfolioJobView"][];
-        };
-        /** PortfolioJobView */
-        PortfolioJobView: {
-            /** Account Id */
-            account_id: string;
-            /** Attempt Count */
-            attempt_count: number;
-            /** Can Resume */
-            can_resume: boolean;
-            /** Cancellation Requested At */
-            cancellation_requested_at: string | null;
-            /** Checkpoint Complete */
-            checkpoint_complete: boolean;
-            /** Committed Cursor */
-            committed_cursor: number;
-            /**
-             * Contract Version
-             * @default portfolio-jobs.v1
-             * @constant
-             */
-            contract_version: "portfolio-jobs.v1";
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /** Error */
-            error: {
-                [key: string]: components["schemas"]["JsonValue"];
-            } | null;
-            /** Job Id */
-            job_id: string;
-            /** Manifest Sha256 */
-            manifest_sha256: string;
-            /** Recovery Required */
-            recovery_required: boolean;
-            request: components["schemas"]["PortfolioCreate"];
-            result: components["schemas"]["ResultReference"] | null;
-            /** Session Sha256 */
-            session_sha256: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded";
-            /** Total Cursors */
-            total_cursors: number;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** PortfolioManifest */
-        PortfolioManifest: {
-            data_identity: components["schemas"]["PortfolioDataset"];
-            execution_scope: components["schemas"]["PortfolioScope"];
-            /** Files */
-            files: {
-                [key: string]: string;
-            };
-            /** Job Id */
-            job_id: string;
-            preflight: components["schemas"]["PortfolioPreflight"];
-            /** Prepared Proof */
-            prepared_proof: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            request: components["schemas"]["PortfolioCreate"];
-            /**
-             * Schema Version
-             * @default portfolio-job-manifest.v1
-             * @constant
-             */
-            schema_version: "portfolio-job-manifest.v1";
-            service_identity: components["schemas"]["PortfolioIdentity"];
-            /** Session */
-            session: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Session File Sha256 */
-            session_file_sha256: string;
-            /** Session Sha256 */
-            session_sha256: string;
-            strategy: components["schemas"]["PortfolioStrategyVersion"];
-        };
-        /** PortfolioOrder */
-        PortfolioOrder: {
-            /** At */
-            at: string | null;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Filled */
-            filled: number;
-            /** Id */
-            id: string;
-            /** Message */
-            message: string;
-            /** Quantity */
-            quantity: number;
-            /** Security */
-            security: string;
-            /**
-             * Side
-             * @enum {string}
-             */
-            side: "BUY" | "SELL";
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "FILLED" | "CANCELLED" | "REJECTED";
-        };
-        /** PortfolioPosition */
-        PortfolioPosition: {
-            /** Average Price */
-            average_price: string;
-            /** Dividend Receivable */
-            dividend_receivable: string;
-            /**
-             * Pending Share Value
-             * @default 0
-             */
-            pending_share_value: string;
-            /**
-             * Pending Shares
-             * @default 0
-             */
-            pending_shares: number;
-            /** Price */
-            price: string;
-            /** Quantity */
-            quantity: number;
-            /**
-             * Restricted Shares
-             * @default 0
-             */
-            restricted_shares: number;
-            /** Sellable */
-            sellable: number;
-            /** Value */
-            value: string;
-        };
-        /** PortfolioPreflight */
-        PortfolioPreflight: {
-            /** Assumption Ack Sha256 */
-            assumption_ack_sha256: string;
-            /** Assumptions */
-            assumptions: ({
-                [key: string]: components["schemas"]["JsonValue"];
-            } | string)[];
-            /** Economic Scope */
-            economic_scope: string;
-            /** Gaps */
-            gaps: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
-            /**
-             * Historical Pit Verified
-             * @default false
-             * @constant
-             */
-            historical_pit_verified: false;
-            /** Input Sha256 */
-            input_sha256: string | null;
-            /** Limitations */
-            limitations: string[];
-            /** Ready */
-            ready: boolean;
-            /** Real Market Data */
-            real_market_data: boolean;
-            scope: components["schemas"]["PortfolioScope"] | null;
-            selection: components["schemas"]["PortfolioSelection"];
-        };
-        /** PortfolioResult */
-        PortfolioResult: {
-            account: components["schemas"]["PortfolioAccount"];
-            /** Account Id */
-            account_id: string;
-            /** Assumptions */
-            assumptions: ({
-                [key: string]: components["schemas"]["JsonValue"];
-            } | string)[];
-            /** Audit */
-            audit: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /**
-             * Contract Version
-             * @default portfolio-result.v1
-             * @constant
-             */
-            contract_version: "portfolio-result.v1";
-            data_identity: components["schemas"]["PortfolioDataset"];
-            /** Days */
-            days: components["schemas"]["PortfolioDay"][];
-            /** Decisions */
-            decisions: components["schemas"]["PortfolioDecision"][];
-            /** Economic Scope */
-            economic_scope: string;
-            /**
-             * Historical Pit Verified
-             * @default false
-             * @constant
-             */
-            historical_pit_verified: false;
-            /** Job Id */
-            job_id: string;
-            /** Limitations */
-            limitations: string[];
-            /** Orders */
-            orders: components["schemas"]["PortfolioOrder"][];
-            /** Receipt */
-            receipt: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            /** Recovery */
-            recovery: {
-                [key: string]: components["schemas"]["JsonValue"];
-            };
-            request: components["schemas"]["PortfolioCreate"];
-            /**
-             * Result Status
-             * @default completed_not_independently_reviewed
-             * @constant
-             */
-            result_status: "completed_not_independently_reviewed";
-            scope: components["schemas"]["PortfolioScope"];
-            service_identity: components["schemas"]["PortfolioIdentity"];
-            strategy: components["schemas"]["PortfolioStrategyVersion"];
-            summary: components["schemas"]["PortfolioSummary"];
-            /** Trades */
-            trades: components["schemas"]["PortfolioTrade"][];
-        };
-        /** PortfolioScope */
-        PortfolioScope: {
-            /**
-             * End Date
-             * Format: date
-             */
-            end_date: string;
-            /**
-             * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /** Securities */
-            securities: string[];
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-            /**
-             * Timezone
-             * @default Asia/Shanghai
-             * @constant
-             */
-            timezone: "Asia/Shanghai";
-            /** Trading Dates */
-            trading_dates: string[];
-            /**
-             * Warmup Sessions
-             * @default 120
-             * @constant
-             */
-            warmup_sessions: 120;
-        };
-        /** PortfolioSelection */
-        PortfolioSelection: {
-            /**
-             * Accept Retrospective State
-             * @default false
-             */
-            accept_retrospective_state: boolean;
-            /** Dataset Id */
-            dataset_id: string;
-            /**
-             * End Date
-             * Format: date
-             */
-            end_date: string;
-            /**
-             * Mode
-             * @default covered_research
-             * @enum {string}
-             */
-            mode: "covered_research" | "price_only_no_limits";
-            /** Securities */
-            securities: string[];
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-        };
-        /** PortfolioServiceStatus */
-        PortfolioServiceStatus: {
-            /** Available Pending */
-            available_pending: number;
-            /**
-             * Contract Version
-             * @default m2-job-service.v1
-             * @constant
-             */
-            contract_version: "m2-job-service.v1";
-            /** Counts */
-            counts: {
-                [key: string]: number;
-            };
-            /**
-             * Counts Scope
-             * @default shared_v6_and_portfolio_queue
-             * @constant
-             */
-            counts_scope: "shared_v6_and_portfolio_queue";
-            /**
-             * Job Contract Version
-             * @default portfolio-jobs.v1
-             * @constant
-             */
-            job_contract_version: "portfolio-jobs.v1";
-            policy: components["schemas"]["ServicePolicy"];
-            /** Policy Sha256 */
-            policy_sha256: string;
-            /**
-             * Queue Order
-             * @default created_at_then_rowid
-             * @constant
-             */
-            queue_order: "created_at_then_rowid";
-            /** Recovery Required */
-            recovery_required: number;
-            /**
-             * Resource Scope
-             * @default per_database_local_trusted_processes
-             * @constant
-             */
-            resource_scope: "per_database_local_trusted_processes";
-            /**
-             * Unaccepted Task Directories
-             * @default 0
-             */
-            unaccepted_task_directories: number;
-        };
-        /** PortfolioSignal */
-        PortfolioSignal: {
-            /** Scores */
-            scores: {
-                [key: string]: string;
-            };
-            /** Selected */
-            selected: string[];
-            /** Targets */
-            targets: {
-                [key: string]: number;
-            };
-            /** Weights */
-            weights: {
-                [key: string]: string;
-            };
-        };
-        /** PortfolioStrategyDefinition */
-        PortfolioStrategyDefinition: {
-            /**
-             * Algorithm
-             * @enum {string}
-             */
-            algorithm: "equal-weight" | "daily-equal-weight" | "momentum" | "trend" | "weekly-reversal" | "low-volatility" | "momentum-low-volatility";
-            /**
-             * Template
-             * @default daily_portfolio.v1
-             * @constant
-             */
-            template: "daily_portfolio.v1";
-        };
-        /** PortfolioStrategyVersion */
-        PortfolioStrategyVersion: {
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            definition: components["schemas"]["PortfolioStrategyDefinition"];
-            /** Parameter Sha256 */
-            parameter_sha256: string;
-            /** Source Sha256 */
-            source_sha256: string;
-            /** Version Id */
-            version_id: string;
-        };
-        /** PortfolioSummary */
-        PortfolioSummary: {
-            /** Annualized Return */
-            annualized_return?: null;
-            /** Benchmark */
-            benchmark?: null;
-            /** Commission Total */
-            commission_total: string;
-            /** Fee Total */
-            fee_total: string;
-            /** Final Cash */
-            final_cash: string;
-            /** Final Equity */
-            final_equity: string;
-            /** Initial Cash */
-            initial_cash: string;
-            /** Max Drawdown */
-            max_drawdown: string;
-            /** Metric Scope */
-            metric_scope: string;
-            /** Net Change */
-            net_change: string;
-            /** Net Return */
-            net_return: string;
-            /** Order Count */
-            order_count: number;
-            /** Sharpe */
-            sharpe?: null;
-            /** Tax Total */
-            tax_total: string;
-            /** Trade Count */
-            trade_count: number;
-        };
-        /** PortfolioTrade */
-        PortfolioTrade: {
-            /**
-             * At
-             * Format: date-time
-             */
-            at: string;
-            /** Commission */
-            commission: string;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Id */
-            id: string;
-            /** Order Id */
-            order_id: string;
-            /** Price */
-            price: string;
-            /** Quantity */
-            quantity: number;
-            /** Security */
-            security: string;
-            /**
-             * Side
-             * @enum {string}
-             */
-            side: "BUY" | "SELL";
-            /** Tax */
-            tax: string;
         };
         /** Position */
         Position: {
@@ -4408,89 +2023,6 @@ export interface components {
              */
             start: string;
         };
-        /** PythonCapabilities */
-        PythonCapabilities: {
-            /**
-             * Api Contract
-             * @default python-decision-api.v1
-             * @constant
-             */
-            api_contract: "python-decision-api.v1";
-            /**
-             * Arbitrary Data Queries
-             * @default false
-             * @constant
-             */
-            arbitrary_data_queries: false;
-            /**
-             * Attempt Seconds
-             * @default 120
-             */
-            attempt_seconds: number;
-            /**
-             * Callback Seconds
-             * @default 5
-             */
-            callback_seconds: number;
-            /**
-             * Hard Memory Quota
-             * @default false
-             * @constant
-             */
-            hard_memory_quota: false;
-            /**
-             * Hostile Code Sandbox
-             * @default false
-             * @constant
-             */
-            hostile_code_sandbox: false;
-            /**
-             * Module Load Seconds
-             * @default 5
-             */
-            module_load_seconds: number;
-            /**
-             * Output Bytes
-             * @default 1048576
-             */
-            output_bytes: number;
-            /**
-             * Parameters Bytes
-             * @default 8192
-             * @constant
-             */
-            parameters_bytes: 8192;
-            /**
-             * Registration
-             * @default local_cli_only
-             * @constant
-             */
-            registration: "local_cli_only";
-            /**
-             * Registration Status
-             * @default registered_not_executed
-             * @constant
-             */
-            registration_status: "registered_not_executed";
-            /**
-             * Source Bytes
-             * @default 65536
-             * @constant
-             */
-            source_bytes: 65536;
-            /**
-             * State Model
-             * @default stateless_per_decision
-             * @constant
-             */
-            state_model: "stateless_per_decision";
-            /**
-             * Trust Model
-             * @default owner_trusted_local
-             * @constant
-             */
-            trust_model: "owner_trusted_local";
-        };
         /** PythonCreate */
         PythonCreate: {
             /**
@@ -4505,6 +2037,12 @@ export interface components {
             end_date: string;
             /** Environment Id */
             environment_id: string;
+            /**
+             * Frequency
+             * @default 1m
+             * @enum {string}
+             */
+            frequency: "1m" | "1d";
             /** Idempotency Key */
             idempotency_key: string;
             /**
@@ -4532,96 +2070,11 @@ export interface components {
              * @constant
              */
             trusted_local_code: true;
-        };
-        /** PythonDecisionReceipt */
-        PythonDecisionReceipt: {
-            /** Input */
-            input: {
-                [key: string]: unknown;
-            };
-            /** Input Sha256 */
-            input_sha256: string;
-            /** Output Sha256 */
-            output_sha256: string;
-            /** Parameters Sha256 */
-            parameters_sha256: string;
-            /** Sdk Sha256 */
-            sdk_sha256: string;
-            signal: components["schemas"]["Signal"];
-            /** Source Sha256 */
-            source_sha256: string;
-            /** Strategy Reason */
-            strategy_reason: string;
-            /** Strategy Version Id */
-            strategy_version_id: string;
             /**
-             * Verification Kind
-             * @default trusted_python_record.v1
-             * @constant
+             * Warmup Sessions
+             * @default 20
              */
-            verification_kind: "trusted_python_record.v1";
-        };
-        /** PythonDefinition */
-        PythonDefinition: {
-            /**
-             * Api Contract
-             * @default python-decision-api.v1
-             * @constant
-             */
-            api_contract: "python-decision-api.v1";
-            /**
-             * Data Profile
-             * @default m2.previous_close.v1
-             * @constant
-             */
-            data_profile: "m2.previous_close.v1";
-            /**
-             * Dependencies
-             * @default [
-             *       "decimal",
-             *       "math"
-             *     ]
-             */
-            dependencies: ("decimal" | "math")[];
-            /**
-             * Entrypoint
-             * @default on_decision
-             * @constant
-             */
-            entrypoint: "on_decision";
-            /**
-             * Resource Profile
-             * @default python-local-bounded.v1
-             * @constant
-             */
-            resource_profile: "python-local-bounded.v1";
-            /**
-             * Schema Version
-             * @default trusted-python-descriptor.v1
-             * @constant
-             */
-            schema_version: "trusted-python-descriptor.v1";
-            /** Sdk Sha256 */
-            sdk_sha256: string;
-            /** Source Sha256 */
-            source_sha256: string;
-            /**
-             * State Model
-             * @default stateless_per_decision
-             * @constant
-             */
-            state_model: "stateless_per_decision";
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            template: "trusted_python_decision.v1";
-            /**
-             * Trust Model
-             * @default owner_trusted_local
-             * @constant
-             */
-            trust_model: "owner_trusted_local";
+            warmup_sessions: number;
         };
         /** PythonJobList */
         PythonJobList: {
@@ -4653,10 +2106,21 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Display Status */
+            display_status?: string | null;
             /** Error */
             error: {
                 [key: string]: components["schemas"]["JsonValue"];
             } | null;
+            /** Execution Reason */
+            execution_reason?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Execution State
+             * @default current_runtime
+             */
+            execution_state: string;
             /** Job Id */
             job_id: string;
             /** Manifest Sha256 */
@@ -4677,6 +2141,8 @@ export interface components {
              * @enum {string}
              */
             status: "queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded";
+            /** Stored Status */
+            stored_status?: ("queued" | "running" | "cancelling" | "cancelled" | "failed" | "succeeded") | null;
             /** Total Cursors */
             total_cursors: number;
             /**
@@ -4684,6 +2150,41 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** PythonManifest */
+        PythonManifest: {
+            execution_scope: components["schemas"]["PythonScope"];
+            /** Files */
+            files: {
+                [key: string]: string;
+            };
+            /** Job Id */
+            job_id: string;
+            /** Release */
+            release: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            request: components["schemas"]["PythonCreate"];
+            /**
+             * Schema Version
+             * @default python-minute-job.v1
+             * @constant
+             */
+            schema_version: "python-minute-job.v1";
+            /** Service Identity */
+            service_identity: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Session */
+            session: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Session File Sha256 */
+            session_file_sha256: string;
+            /** Session Sha256 */
+            session_sha256: string;
+            /** Source Sha256 */
+            source_sha256: string;
         };
         /** PythonResult */
         PythonResult: {
@@ -4716,63 +2217,18 @@ export interface components {
                 [key: string]: components["schemas"]["JsonValue"];
             };
         };
-        /** RegisteredPythonParameters */
-        RegisteredPythonParameters: {
+        /** PythonScope */
+        PythonScope: {
             /**
              * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /**
-             * Initial Cash
-             * @default 10000
-             */
-            initial_cash: string;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /** Strategy Parameters */
-            strategy_parameters?: {
-                [key: string]: unknown;
-            };
-            /** Strategy Version Id */
-            strategy_version_id: string;
-            /**
-             * @description discriminator enum property added by openapi-typescript
+             * @default 1m
              * @enum {string}
              */
-            template: "registered_python.v1";
-        };
-        /** RegisteredRuleParameters */
-        RegisteredRuleParameters: {
-            /**
-             * Frequency
-             * @default 1d
-             * @constant
-             */
-            frequency: "1d";
-            /**
-             * Initial Cash
-             * @default 10000
-             */
-            initial_cash: string;
-            /**
-             * Security
-             * @default 600000.XSHG
-             * @constant
-             */
-            security: "600000.XSHG";
-            /** Strategy Version Id */
-            strategy_version_id: string;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            template: "registered_rules.v1";
+            frequency: "1m" | "1d";
+            /** Securities */
+            securities: string[];
+            /** Trading Dates */
+            trading_dates: string[];
         };
         /** ResearchCoverage */
         ResearchCoverage: {
@@ -5029,158 +2485,6 @@ export interface components {
             /** Snapshot Sha256 */
             snapshot_sha256: string;
         };
-        /** RuleCondition */
-        RuleCondition: {
-            /**
-             * Field
-             * @enum {string}
-             */
-            field: "previous_close" | "prior_cash" | "prior_quantity" | "day_index";
-            /**
-             * Operator
-             * @enum {string}
-             */
-            operator: "lt" | "le" | "eq" | "ne" | "ge" | "gt";
-            /** Value */
-            value: string;
-        };
-        /** RuleStrategyCapabilities */
-        RuleStrategyCapabilities: {
-            /**
-             * Account Input
-             * @default prior_committed_snapshot
-             * @constant
-             */
-            account_input: "prior_committed_snapshot";
-            /**
-             * Code Execution
-             * @default false
-             * @constant
-             */
-            code_execution: false;
-            /**
-             * Contract Version
-             * @default m2-decision-rules.v1
-             * @constant
-             */
-            contract_version: "m2-decision-rules.v1";
-            /**
-             * Day Index
-             * @default zero_based_owner_window_index
-             * @constant
-             */
-            day_index: "zero_based_owner_window_index";
-            /**
-             * Inputs
-             * @default [
-             *       "previous_close",
-             *       "prior_cash",
-             *       "prior_quantity",
-             *       "day_index"
-             *     ]
-             */
-            inputs: ("previous_close" | "prior_cash" | "prior_quantity" | "day_index")[];
-            /**
-             * Max Conditions Per Rule
-             * @default 8
-             * @constant
-             */
-            max_conditions_per_rule: 8;
-            /**
-             * Max Rules
-             * @default 16
-             * @constant
-             */
-            max_rules: 16;
-            /**
-             * Mutable Strategy State
-             * @default false
-             * @constant
-             */
-            mutable_strategy_state: false;
-            /**
-             * Operators
-             * @default [
-             *       "lt",
-             *       "le",
-             *       "eq",
-             *       "ne",
-             *       "ge",
-             *       "gt"
-             *     ]
-             */
-            operators: ("lt" | "le" | "eq" | "ne" | "ge" | "gt")[];
-            /**
-             * Ordering
-             * @default first_match_all_conditions
-             * @constant
-             */
-            ordering: "first_match_all_conditions";
-            /**
-             * Otherwise
-             * @default no_change
-             * @constant
-             */
-            otherwise: "no_change";
-            /**
-             * Required Data
-             * @default owner_authorized_previous_close_each_day
-             * @constant
-             */
-            required_data: "owner_authorized_previous_close_each_day";
-            /**
-             * Target Shares
-             * @default [
-             *       0,
-             *       100,
-             *       200
-             *     ]
-             */
-            target_shares: [
-                0,
-                100,
-                200
-            ];
-            /**
-             * Target Shares Are Examples
-             * @default true
-             * @constant
-             */
-            target_shares_are_examples: true;
-            /**
-             * Target Shares Max
-             * @default 9007199254740991
-             */
-            target_shares_max: number;
-            /**
-             * Target Shares Min
-             * @default 0
-             * @constant
-             */
-            target_shares_min: 0;
-            /**
-             * Target Shares Multiple Of
-             * @default 100
-             * @constant
-             */
-            target_shares_multiple_of: 100;
-        };
-        /** RuleStrategyDefinition */
-        RuleStrategyDefinition: {
-            /**
-             * Otherwise
-             * @default no_change
-             * @constant
-             */
-            otherwise: "no_change";
-            /** Rules */
-            rules: components["schemas"]["DecisionRule"][];
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            template: "decision_rules.v1";
-        };
         /** RunCreate */
         RunCreate: {
             /**
@@ -5338,12 +2642,16 @@ export interface components {
             counts: {
                 [key: string]: number;
             };
+            /** Historical Counts */
+            historical_counts?: {
+                [key: string]: number;
+            };
             /**
              * Job Contract Version
-             * @default m2-jobs.v6
+             * @default research-jobs.v1
              * @constant
              */
-            job_contract_version: "m2-jobs.v6";
+            job_contract_version: "research-jobs.v1";
             policy: components["schemas"]["ServicePolicy"];
             /** Policy Sha256 */
             policy_sha256: string;
@@ -5366,23 +2674,6 @@ export interface components {
              * @default 0
              */
             unaccepted_task_directories: number;
-        };
-        /** Signal */
-        Signal: {
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "no_change" | "target_shares";
-            /**
-             * Reason
-             * @enum {string}
-             */
-            reason: "hold_template" | "enter_threshold" | "exit_threshold" | "inside_band" | "rule_matched" | "rules_no_match" | "python_target" | "python_no_change";
-            /** Rule Index */
-            rule_index?: number | null;
-            /** Target Shares */
-            target_shares?: number | null;
         };
         /** StateView */
         StateView: {
@@ -5439,20 +2730,6 @@ export interface components {
              * @enum {string}
              */
             scenario: "buy_hold" | "t_plus_one" | "insufficient_cash" | "partial_fill" | "cross_day" | "corporate_action" | "restart";
-        };
-        /** StrategyDefinition */
-        StrategyDefinition: {
-            /** Enter Below */
-            enter_below?: string | null;
-            /** Exit Above */
-            exit_above?: string | null;
-            /** Target Shares */
-            target_shares: number;
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            template: "buy_hold.v1" | "previous_close_band.v1";
         };
         /** StrategyVersion */
         StrategyVersion: {
@@ -5536,84 +2813,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Capabilities"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    admission_api_v1_data_admission_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DataQuery"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DataBatch"];
                 };
             };
             /** @description Forbidden */
@@ -6362,6 +3561,470 @@ export interface operations {
             };
         };
     };
+    listing_api_v1_history_jobs_get: {
+        parameters: {
+            query?: {
+                family?: ("daily" | "portfolio" | "python" | "factors") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_api_v1_history_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logs_api_v1_history_jobs__job_id__logs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobLogs"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    manifest_api_v1_history_jobs__job_id__manifest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    result_api_v1_history_jobs__job_id__result_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    strategies_api_v1_history_strategies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     research_aliases_api_v1_market_stores_get: {
         parameters: {
             query?: never;
@@ -6617,1076 +4280,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResearchRead"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    catalogue_api_v1_portfolio_catalogue_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioCatalogue"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listing_api_v1_portfolio_jobs_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioJobList"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    create_api_v1_portfolio_jobs_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PortfolioCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioJobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_api_v1_portfolio_jobs__job_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioJobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    cancel_api_v1_portfolio_jobs__job_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ActionRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioJobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    logs_api_v1_portfolio_jobs__job_id__logs_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobLogs"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    manifest_api_v1_portfolio_jobs__job_id__manifest_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioManifest"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    result_api_v1_portfolio_jobs__job_id__result_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioResult"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    resume_api_v1_portfolio_jobs__job_id__resume_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ActionRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioJobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    preflight_api_v1_portfolio_preflight_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PortfolioSelection"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioPreflight"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    service_api_v1_portfolio_service_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioServiceStatus"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    strategies_api_v1_portfolio_strategies_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioStrategyVersion"][];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    register_api_v1_portfolio_strategies_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PortfolioStrategyDefinition"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioStrategyVersion"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    strategy_api_v1_portfolio_strategies__version_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                version_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PortfolioStrategyVersion"];
                 };
             };
             /** @description Forbidden */
@@ -8912,6 +5505,82 @@ export interface operations {
             };
         };
     };
+    manifest_api_v1_python_jobs__job_id__manifest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PythonManifest"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     result_api_v1_python_jobs__job_id__result_get: {
         parameters: {
             query?: never;
@@ -8988,14 +5657,20 @@ export interface operations {
             };
         };
     };
-    native_scenarios_api_v1_rqalpha_scenarios_get: {
+    resume_api_v1_python_jobs__job_id__resume_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                job_id: string;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ActionRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -9003,9 +5678,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PythonJobView"];
                 };
             };
             /** @description Forbidden */
@@ -9080,84 +5753,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunView"][];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    submit_run_api_v1_runs_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RunCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RunView"];
                 };
             };
             /** @description Forbidden */
@@ -9310,82 +5905,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Account"] | null;
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    cancel_api_v1_runs__run_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                run_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RunView"];
                 };
             };
             /** @description Forbidden */
@@ -10059,82 +6578,6 @@ export interface operations {
             };
         };
     };
-    scenarios_api_v1_scenarios_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     diagnose_api_v1_source_diagnostics_post: {
         parameters: {
             query?: never;
@@ -10361,84 +6804,6 @@ export interface operations {
             };
         };
     };
-    register_strategy_api_v1_strategies_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StrategyCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StrategyVersion"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     strategy_api_v1_strategies__version_id__get: {
         parameters: {
             query?: never;
@@ -10515,311 +6880,7 @@ export interface operations {
             };
         };
     };
-    bind_api_v1_tasks_daily_data_bind_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DataBindRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobCatalogue"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listing_api_v1_tasks_daily_jobs_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobList"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    create_api_v1_tasks_daily_jobs_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["JobCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    catalogue_api_v1_tasks_daily_jobs_catalogue_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobCatalogue"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    service_status_api_v1_tasks_daily_jobs_service_get: {
+    service_api_v1_tasks_service_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -10835,848 +6896,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ServiceStatus"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_api_v1_tasks_daily_jobs__job_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    cancel_api_v1_tasks_daily_jobs__job_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ActionRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    logs_api_v1_tasks_daily_jobs__job_id__logs_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobLogs"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    manifest_api_v1_tasks_daily_jobs__job_id__manifest_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobManifest"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    result_api_v1_tasks_daily_jobs__job_id__result_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobResult"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    resume_api_v1_tasks_daily_jobs__job_id__resume_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ActionRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobView"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    python_strategies_api_v1_tasks_daily_python_strategies_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["M2StrategyVersion"][];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    python_strategy_api_v1_tasks_daily_python_strategies__version_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                version_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["M2StrategyVersion"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    list_strategies_api_v1_tasks_daily_strategies_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["M2StrategyVersion"][];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    register_strategy_api_v1_tasks_daily_strategies_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RuleStrategyDefinition"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["M2StrategyVersion"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
-                };
-            };
-            /** @description Too Many Requests */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    get_strategy_api_v1_tasks_daily_strategies__version_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                version_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["M2StrategyVersion"];
                 };
             };
             /** @description Forbidden */
