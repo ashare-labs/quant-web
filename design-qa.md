@@ -1,64 +1,52 @@
-# 六页设计核对
+# 策略所属回测列表 QA
 
 final result: passed
 
-本结论针对已实现范围的视觉和响应式质量，不表示缺失的后端功能已完成。未实现能力在页面明确显示不可用，详见 [实现说明](docs/implementation.md)。
+结论仅覆盖独立候选的策略回测列表、相关入口和导航；当前运行前端尚未切换。2026-10-24 在 Air Chrome 对真实本机后端完成验收，没有使用假数据行。
 
-## 参照与状态
+## 参考和比较方法
 
-视觉真值：用户提供的六个 HTML，保存在本任务只读副本 `../evidence/design-reference/`；原目录 18 个文件的哈希未改变。副本缺少的共享样式、脚本与图表资产从同一 OpenDesign 工程补齐用于查看，未改写原设计。
+只读查看用户目录 `/Users/yinming/Downloads/screenshot_tmp` 的两张原始2048×1189图片：`ChatGPT 图像 2026年10月24日 12_55_17.png` 是聚宽策略所属回测列表，`12_55_25.png` 是原QuantWeb失败结果页。原图未修改。
 
-实现：六个独立 HTML 入口、同一 React/TypeScript 应用，临时预览地址 `http://127.0.0.1:41846`。截图统一保存在 `../evidence/screenshots/`，未混入产品资源。
+排除浏览器顶栏50px和左栏60px后，内容区为1988×1139；使用未改动QuantWeb的50px全站导航校准，归一化到实际Chrome1864×1068视口。副本仅用于对照。按product-design:image-to-code及design-qa流程，把源图和真实实现同时放入一张全图及一张对应区域图检查，修正后重新拍摄、重新组合检查。
 
-桌面参照与实现均为 1280 × 720 CSS 像素，图片同为 1280 × 720，密度 1:1，无缩放归一化。移动端为 390 × 844 CSS 像素，截图同尺寸。设计稿没有移动端真值，移动端只做可用性与溢出检查。
+证据目录：`/Users/yinming/Documents/Codex/2026-10-24/task-4/evidence/`。
 
-设计中的历史账户、策略名和收益快照与当前服务记录不同，不作数据或曲线像素相等比较。真实结果、空状态、本地草稿与不可用按钮属于用户要求的产品边界。
+- `joinquant-reference.png`：归一化参考。
+- `backtests-live-desktop-final.jpg`：最终Chrome真实记录页面。
+- `comparison-full-final.png`：完整源图／实现并排，单侧1864×1068。
+- `comparison-focused-final.png`：对应策略导航、工具栏、表头及两行记录，上参考、下实现。
+- `backtests-live-mobile.jpg`、`backtests-mobile-scrolled.jpg`：390×844窄屏与横向滚动。
+- `compare-results-live.jpg`、`compare-source-live.jpg`：真实冻结结果和源码对比。
+- `same-name-other-strategy-empty.jpg`、`old-unassigned-preserved.jpg`：同名目录隔离和未归属保护。
+- `live-api-validation.json`：真实列表、manifest、summary及文件内容一致性证据。
 
-## 全视图证据
+## 修复循环和五项检查
 
-各行两张图在同一比较输入内查看，未把分开观察称为并排比较。
+| 检查 | 发现与处理 | 最终结果 |
+| --- | --- | --- |
+| 字体 | 保留现有字体栈；局部正文14px、表头13px、策略标题16px；组合图检查双行日期和数字基线 | passed |
+| 间距 | 初次局部样式被共享样式覆盖，已调整导入顺序。双行日期加padding使实际行高57px，修正为55px，表头45px。DOM实测header y=234/h=45，两行y=279、334/h=55，与源图边界对齐 | passed |
+| 颜色 | 白底、浅灰表头、灰蓝标题、细分隔线、红正绿负、蓝状态链接；其他页面共享样式未改 | passed |
+| 资产 | 保留QuantWeb标志和Font Awesome；无需新位图。使用既有交换/代码/删除图标。部分选择的原生半选样式已恢复 | passed |
+| 文案与状态 | 对应参考默认列和八项列选项；使用真实策略、记录数、日期、状态、冻结指标。数据差异不以参考演示内容补齐 | passed |
 
-| 页面 | 设计 | 最终实现 | 实际状态 |
-| --- | --- | --- | --- |
-| 入口总览 | design-overview.jpg | app-overview-final.jpg | 三个研究入口、服务已连接 |
-| 策略列表 | design-strategies.jpg | app-strategies.jpg | 一条人工创建的本地草稿，另有真实历史记录标签 |
-| 策略编辑 | design-editor.jpg | app-editor-final.jpg | 已保存源码与起止日期/资金；开始回测不可用 |
-| 历史回测结果 | design-backtest-results.jpg | app-backtest-results-final.jpg | 真实冻结结果、配置栏、权益曲线和只读提示 |
-| 模拟策略列表 | design-simulations.jpg | app-simulations.jpg | 真实空列表，历史只读 |
-| 因子看板 | design-factors.jpg | app-factors-final.jpg | 实际目录、分类、筛选与数据缺口 |
+全图与重点区域最终比较均通过。允许的内容差异：既有QuantWeb品牌/全站导航、真实记录只有2条、未归属提示；没有真实编译运行能力，不添加参考的编译运行入口。没有未解决的P0/P1/P2视觉问题。
 
-额外状态：`app-history-list.jpg`、`app-factor-form.jpg`、`app-factor-evaluation-final.jpg`；六页移动端图为 `mobile-overview.jpg`、`mobile-strategies.jpg`、`mobile-editor.jpg`、`mobile-results.jpg`、`mobile-simulations.jpg`、`mobile-factors.jpg`。
+## 真实功能验收
 
-## 五项表面与局部核对
+候选只监听 `127.0.0.1:41896`，代理现有API18846/18847；本线程未改当前41846、后端、启动配置或网络。后端契约为AQ24ed98f、AD145d700。
 
-- 字体：沿用原共享样式的 Microsoft Yahei / Open Sans / Helvetica Neue / Helvetica / sans-serif；同一浏览器字体回退、字重和字号。标题、导航、表头、按钮、代码区层级一致，无额外远程字体。
-- 间距：保留 50px 导航、1140px 主内容、1230px 因子区域、编辑器 46%/54% 双栏与结果侧栏。响应式下编辑器纵向排列，宽表仅在表容器内滚动，六页 document.scrollWidth 均等于 390。
-- 颜色：原 navy 顶栏 rgb(33,48,94)、蓝色操作、浅灰背景、暗色代码区；未引入额外渐变和装饰。禁用和成功/失败状态有文本，不只依赖颜色。
-- 资产：使用原 QuantWeb JPG 标志，无重绘。图标采用 Font Awesome；真实权益与因子图由 ECharts 绘制，没有将设计中的历史曲线图冒充计算结果。
-- 文案：导航及页面名称遵循原稿。移除原型/账户快照文案，说明本地保存、历史只读和真实缺口。未提供的指标为“—”，没有示例策略或加载示例入口。
+- 策略目录／文件入口 → 编辑策略／该策略回测列表 → 单次结果 → 原策略回测列表 → 编辑策略：passed。刷新后两条记录及归属保持一致。
+- Chrome实际提交 `联验_Tailscale_20261024_025756/temporary_daily_ma_test.py`，2024-03-04～03-08及03-11～03-15均成功，任务为`m2job-bf8b88bd97604ea0931f93df1e5f82e4`和`m2job-c51a4ae0237148fc82ac7f6ab376e25a`。未保存或改写策略文件，仅增加两条真实回测。
+- 名称与源码都相同的另一目录`联验_20261023_1324`仍为0条；10条旧未归属记录不混入；实际旧失败任务按job进入列表时明确提示未记录归属：passed。
+- 勾选、部分勾选、冻结结果对比、冻结源码对比、搜索无匹配／清除、创建时间与初始资金列切换：passed。
+- 窄屏页面scrollWidth=390；表格容器clientWidth=390/scrollWidth=1200，实际横向滚动scrollLeft=810可读右侧收益和状态：passed。视口覆盖已reset。
+- 应用脚本没有捕获error/warn。记录到两条`chrome-extension://.../zotero.js`和`inject.js`连接错误，属于浏览器扩展，未影响页面；原始记录见`console.json`。
+- `npm run check`：48/48；`npm run package`及`git diff --check`：passed。构建保留既有ECharts大chunk提示。105条跨页、变动页、重复/混入身份、失败无结果及旧运行时路由用协议测试覆盖；没有为凑分页截图向真实库制造数十条任务。
 
-局部比较：`design-navigation-detail.jpg` 与 `app-navigation-detail.jpg` 同为 1280 × 155，集中核对品牌图、字体、导航基线、选中标记与标题卡片；除右侧真实目录计数替换快照日期外一致。全视图中表头、按钮与编辑器输入清晰可读。
+## 当前服务能力边界
 
-## 比较迭代与已修复项
+运行耗时、Python版本、基准/Sharpe/超额指标未由当前契约提供，显示“—”；没有把排队时间冒充执行耗时，没有重算指标。删除历史接口不存在，按钮明确禁用。纯浏览器草稿仍可提交但未归属；旧pending原样恢复。上述属于明确保留的服务边界，不是接线失败。
 
-1. [P2，已修复] 总览表行距及第一列宽度偏离原稿。初图 `app-overview.jpg` 每行过高、说明列过于靠左；将行垂直内边距恢复 14px、第一列恢复 25%。`app-overview-final.jpg` 与设计重新放入同一输入核对，密度和列对齐恢复。
-2. [P2，已修复] 结果页漏了原稿配置摘要栏，真实任务的日期/资金不易核查。增加仅从请求读取的日期、资金、频率与状态栏；真实图表日期标签缩为日期，完整时间仍由数据与提示提供。最终 `app-backtest-results-final.jpg` 与设计重新比较，主区域起始位置恢复。
-3. 编辑器早期标题行过高，收紧名称输入高度至 20px；最终 `app-editor-final.jpg` 已核对。标签明确显示日期和资金，因此配置栏比原稿略高，这是可接受的可读性调整。
-
-无剩余可操作 P0/P1/P2 视觉缺陷。可接受的差异：历史/草稿分签、真实数据字段、缺口说明、单因子评价工作流、较少的真实可得结果指标与空列表，均避免把原稿数据复制成系统结果。
-
-## 交互与验证边界
-
-- 浏览器实测：六页导航、本地草稿新建/编辑/保存/重开、非法资金拒绝、历史列表及结果/持仓分页、因子库筛选与搜索、真实 MA5 提交/完成/刷新找回/评价、模拟列表和状态筛选。
-- 接口实测：通过前端代理读取 10 个历史结果，与原发布内容一致；真实因子请求幂等找回仍为同一任务；单独隔离因子任务取消最终为 cancelled。
-- 浏览器控制台 warn/error：空。六页移动端没有整页横向溢出，宽表和结果分签可在容器内横向滚动；临时 viewport 已重置。
-- 未验收：CSV/JSON/代码下载最终落盘、Python 文件导入的浏览器流程、真实非空 paper 会话和当前 Python 提交/取消。导出 IC CSV 的 IAB 下载等待被工具终止，结果不确定，没有重试或宣称下载成功。CSV 编码和公式转义有自动检查。
-- 新 Python 回测依赖后端取数契约；服务端草稿/历史删除、paper 写入、指数成分池和全目录预计算评价均缺失，不属于本次视觉通过所授予的功能。
-
-## 完成清单
-
-- [x] 六页桌面参照和实现同输入比较
-- [x] 五项表面与品牌/导航局部核对
-- [x] 发现项修复后重新截图比较
-- [x] 六页移动端、真实数据状态、空/禁用/错误状态
-- [x] 保存截图、接口证据和剩余能力清单
+此候选可供父任务审阅和接入；不代表当前41846已更新。

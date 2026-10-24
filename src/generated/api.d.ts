@@ -481,6 +481,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/python/backtests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Strategy Backtests */
+        get: operations["strategy_backtests_api_v1_python_backtests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/python/catalogue": {
         parameters: {
             query?: never;
@@ -2104,6 +2121,8 @@ export interface components {
              * Format: date
              */
             start_date: string;
+            /** Strategy Id */
+            strategy_id?: string | null;
             /**
              * Trusted Local Code
              * @constant
@@ -2369,7 +2388,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default de9f34ee6a0bd52277e2fcf33b8494f1ff92cb0e
+             * @default 145d700fbf53385cdc5790b171b9e3a880b65092
              */
             commit: string | null;
             /**
@@ -2380,7 +2399,7 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default e6d00743b7557cbad789d9820aa6a62fba45a883
+             * @default 634c04ccdb6f9a5ae46743d689ff23970fb94ae8
              */
             tree: string | null;
             /**
@@ -2390,7 +2409,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default 1ea2cd9328d0c111089b04e7db93e099bf641f20e51933702e222fec1ea154b7
+             * @default fc868ea835b9c073127537568b5debfeaee541a57da27b870f6dfd39a27ad7fa
              */
             wheel_sha256: string;
         };
@@ -2769,6 +2788,88 @@ export interface components {
              */
             truth_source: "fixture-replay-v1" | "rqalpha";
         };
+        /** StrategyBacktest */
+        StrategyBacktest: {
+            /** Can Cancel */
+            can_cancel: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Status */
+            display_status: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Error */
+            error: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Execution Reason */
+            execution_reason: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Execution State */
+            execution_state: string;
+            /** Frequency */
+            frequency: string;
+            /** Initial Cash */
+            initial_cash: number;
+            /** Job Id */
+            job_id: string;
+            /** Name */
+            name: string;
+            result: components["schemas"]["ResultReference"] | null;
+            /** Result Available */
+            result_available: boolean;
+            /** Result Error */
+            result_error: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Status */
+            status: string;
+            /** Stored Status */
+            stored_status: string;
+            /** Strategy Id */
+            strategy_id: string | null;
+            /** Summary */
+            summary: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** StrategyBacktests */
+        StrategyBacktests: {
+            /**
+             * Identity Model
+             * @default saved_relative_path
+             */
+            identity_model: string;
+            /** Items */
+            items: components["schemas"]["StrategyBacktest"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Strategy Id */
+            strategy_id: string | null;
+            /** Total */
+            total: number;
+            /** Unassigned Count */
+            unassigned_count: number;
+        };
         /** StrategyCreate */
         StrategyCreate: {
             /**
@@ -2810,6 +2911,15 @@ export interface components {
             name: string;
             /** Path */
             path: string;
+            /** Strategy Id */
+            strategy_id?: string | null;
+        };
+        /** StrategyFilePath */
+        StrategyFilePath: {
+            /** Path */
+            path: string;
+            /** Strategy Id */
+            strategy_id: string;
         };
         /** StrategyPath */
         StrategyPath: {
@@ -2834,6 +2944,8 @@ export interface components {
             path: string;
             /** Source */
             source: string;
+            /** Strategy Id */
+            strategy_id: string;
         };
         /** StrategyVersion */
         StrategyVersion: {
@@ -5149,6 +5261,84 @@ export interface operations {
             };
         };
     };
+    strategy_backtests_api_v1_python_backtests_get: {
+        parameters: {
+            query?: {
+                strategy_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyBacktests"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     catalogue_api_v1_python_catalogue_get: {
         parameters: {
             query?: never;
@@ -5474,7 +5664,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StrategyPath"];
+                    "application/json": components["schemas"]["StrategyFilePath"];
                 };
             };
             /** @description Forbidden */

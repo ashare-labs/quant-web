@@ -6,7 +6,7 @@ import {ApiError} from '../src/shared/api.ts';
 const originalFetch=globalThis.fetch, originalStorage=globalThis.localStorage;
 afterEach(()=>{globalThis.fetch=originalFetch;if(originalStorage===undefined)delete globalThis.localStorage;else globalThis.localStorage=originalStorage;});
 const catalogue={environment_id:'a'.repeat(64),external_securities_required:false,universe:'strategy_subscription'};
-const draft={name:'需求回测',source:'def initialize(context): pass',start:'2024-03-04',end:'2024-03-08',capital:'100,000',frequency:'1d'};
+const draft={name:'需求回测',filePath:'研究/需求回测.py',source:'def initialize(context): pass',start:'2024-03-04',end:'2024-03-08',capital:'100,000',frequency:'1d'};
 const json=(v,status=200)=>new Response(JSON.stringify(v),{status});
 const job=request=>({contract_version:'python-minute-jobs.v1',job_id:'m2job-'+'b'.repeat(32),request:{...request,securities:[],warmup_sessions:20}});
 function storage(){const data=new Map();globalThis.localStorage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};return data;}

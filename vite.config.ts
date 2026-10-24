@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { configureApiProxy, observeApi } from './scripts/preview-api';
 const dependency = createRequire(import.meta.url);
-const pages = ['index', 'strategies', 'strategy-editor', 'backtest-results', 'simulations', 'factors'];
+const pages = ['index', 'strategies', 'strategy-editor', 'backtests', 'backtest-results', 'simulations', 'factors'];
 const api = process.env.AQ_API_URL, paper = process.env.PAPER_API_URL;
 const proxy = {
   ...(api ? { '/api': { target: api, changeOrigin: false, configure: configureApiProxy } } : {}),

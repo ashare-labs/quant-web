@@ -1,0 +1,63 @@
+.backtest-subnav{height:56px;padding:0 28px 0 20px;color:#333;font-size:15px;flex-wrap:nowrap;border-color:#e4e9f1}
+.backtest-subnav .strategy-context{display:flex;align-items:center;gap:12px;min-width:0}
+.backtest-subnav .strategy-context>a{color:#c9cdd2;flex-shrink:0}
+.backtest-subnav .strategy-context h1{font-size:16px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backtest-subnav nav{align-self:stretch;align-items:stretch;gap:24px;flex-shrink:0;font-size:14px}
+.backtest-subnav nav>a,.backtest-subnav nav>span{display:flex;align-items:center;color:#333;border-bottom:1px solid transparent;padding-top:1px}
+.backtest-subnav nav>.current{color:#2562c0;border-bottom-color:#2562c0}
+main.backtest-list{max-width:none;margin:0;padding:0;color:#333}
+.backtest-controls{padding:20px 28px 24px;min-height:128px}
+.backtest-actions{display:flex;align-items:center;min-height:34px;gap:16px;font-size:14px}
+.backtest-count{white-space:nowrap}
+.backtest-actions .button-group{display:flex}
+.backtest-actions button{min-height:32px;height:32px;padding:5px 11px;border-radius:0;color:#777;border-color:#e1e8f2;font-size:14px;white-space:nowrap}
+.backtest-actions .button-group>button+button,.backtest-actions .button-group>span>button{border-left:0}
+.backtest-actions button:disabled{opacity:1;color:#888;background:#fff}
+.backtest-actions button:not(:disabled):hover{color:var(--accent);background:#f4f7fb}
+.backtest-actions .fa{font-size:16px;width:18px;text-align:center;margin-right:6px}
+.backtest-search{display:flex;align-items:center;border:1px solid #e4e9f1;margin-left:auto;width:200px;height:34px;flex-shrink:0}
+.backtest-search input{width:100%;height:32px;min-height:32px;border:0;padding:6px;color:#333;background:transparent}
+.backtest-search input::placeholder{color:#b7b7b7}
+.backtest-search .fa{margin:0 10px;color:#bbb;font-size:17px}
+.backtest-columns{display:flex;align-items:center;flex-wrap:wrap;gap:12px 28px;margin-top:30px;font-size:13px;line-height:20px}
+.backtest-columns label{display:flex;align-items:center;gap:4px;line-height:20px;white-space:nowrap;cursor:pointer}
+.backtest-columns input{width:13px;height:13px;min-height:13px;margin:0;accent-color:#1677ff}
+.backtest-list .notice{margin:0 28px 16px}
+.backtest-table{font-size:14px;min-width:1200px;table-layout:fixed;line-height:18px}
+.backtest-table th,.backtest-table td{padding:10px 8px;border-bottom:1px solid #e4e9f1;vertical-align:middle;font-variant-numeric:tabular-nums}
+.backtest-table th{height:45px;background:#f7f7f7;color:#8b9ab5;font-size:13px;white-space:nowrap;font-weight:400}
+.backtest-table td{height:55px;padding-top:8px;padding-bottom:8px;color:#333;background:#fff}
+.backtest-table tr:hover td{background:#fafcff}
+.backtest-table .row-check{width:2.36%;text-align:right;padding-right:3px}
+.backtest-table .row-number{width:2.15%}
+.backtest-table .run-name{width:30.9%}
+.backtest-table .run-created{width:10.25%}
+.backtest-table .run-period{width:11.6%}
+.backtest-table .run-duration{width:8.35%}
+.backtest-table .run-frequency{width:7.3%}
+.backtest-table .run-metric{width:7.65%}
+.backtest-table .run-drawdown{width:7.35%}
+.backtest-table .run-status{width:4.4%}
+.backtest-table .run-optional{width:140px}
+.backtest-table.has-optional{table-layout:auto;min-width:1500px}
+.backtest-table.has-optional .run-name{min-width:230px;width:30%}
+.backtest-table.has-optional .run-optional{min-width:135px}
+.backtest-table input[type=checkbox]{appearance:none;vertical-align:middle;width:20px;height:20px;min-height:20px;padding:0;margin:0;border:1px solid #c5ccda;border-radius:1px;background:#fff;cursor:pointer}
+.backtest-table input[type=checkbox]:checked,.backtest-table input[type=checkbox]:indeterminate{appearance:auto;accent-color:#1677ff}
+.backtest-table td .run-name-link{display:block;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backtest-table td .run-name-link:hover{color:var(--accent);text-decoration:underline}
+.backtest-table .run-status-link{color:#3181ff;white-space:nowrap}
+.backtest-table .return-positive{color:#ff4b51}
+.backtest-table .return-negative{color:#27a835}
+.backtest-table time,.backtest-table .date-range{display:block;white-space:nowrap}
+.backtest-table .empty{height:180px;color:var(--muted);padding:36px 16px}
+.backtest-list .backtest-pagination{margin:0;padding:24px;font-size:13px}
+.backtest-pagination button{min-height:30px;height:30px;padding:4px 10px;border-color:#e1e8f2}
+.backtest-pagination [aria-current=page]{background:#2c66b3;color:#fff;border-color:#2c66b3}
+.backtest-pagination .page-summary{margin-left:12px;color:#888}
+.backtest-selection{font-size:12px;color:#6f7c8f}
+.source-comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.source-comparison section{min-width:0}.source-comparison h3{font-size:14px;font-weight:400;overflow-wrap:anywhere}
+.source-comparison pre{background:#f7f8fa;border:1px solid var(--border);padding:12px;height:55vh;overflow:auto;white-space:pre;overflow-wrap:normal;word-break:normal}
+.comparison-table td,.comparison-table th{vertical-align:top;min-width:140px}
+@media(max-width:800px){.backtest-subnav{height:auto;min-height:56px;flex-wrap:wrap;gap:8px;padding:12px 16px}.backtest-subnav .strategy-context{width:100%}.backtest-subnav nav{height:32px;gap:22px}.backtest-controls{padding:18px 16px 22px}.backtest-actions{flex-wrap:wrap;gap:12px}.backtest-search{order:3;width:100%;margin:0}.backtest-columns{gap:12px 22px;margin-top:22px}.backtest-list .notice{margin:0 16px 16px}.source-comparison{grid-template-columns:1fr}.source-comparison pre{height:35vh}}

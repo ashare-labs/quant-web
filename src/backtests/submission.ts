@@ -1,6 +1,7 @@
 import type { components } from '../generated/api';
 import { api, ApiError, object, type PythonJob } from '../shared/api.ts';
 import { pythonBacktestConfig, type Draft } from '../shared/drafts.ts';
+import { isStrategyId } from './history-api.ts';
 
 // OpenAPI defaults appear required in generated output types; this request
 // deliberately omits the two legacy pre-preparation hints.
@@ -13,13 +14,15 @@ export function environment(catalogue: unknown): string {
   }
   return value.environment_id;
 }
-export function submission(draft: Pick<Draft, 'name'|'source'|'start'|'end'|'capital'> & {frequency: string}, catalogue: unknown, key: string): Submission {
+export function submission(draft: Pick<Draft, 'name'|'source'|'start'|'end'|'capital'|'filePath'> & {frequency: string}, catalogue: unknown, key: string): Submission {
   if (!draft.name.trim()) throw new Error('请填写策略名称。');
   if (!draft.source.trim()) throw new Error('请编写或导入 Python 策略。');
   if (new TextEncoder().encode(draft.source).length > 262144) throw new Error('源码不能超过 256 KiB。');
   if (draft.frequency !== '1d' && draft.frequency !== '1m') throw new Error('请选择日频或分钟模式。');
   const config = pythonBacktestConfig({...draft, frequency: draft.frequency});
+  if (draft.filePath !== undefined && !isStrategyId(draft.filePath)) throw new Error('策略文件标识无效，请重新打开该策略。');
   return {environment_id: environment(catalogue), idempotency_key: key, name: draft.name, source: draft.source,
+    ...(draft.filePath ? {strategy_id: draft.filePath} : {}),
     ...config, parameters: {},
     accept_research_model: true, trusted_local_code: true};
 }
@@ -30,6 +33,7 @@ export function readPending(): Submission | null {
   if (!['idempotency_key','environment_id','name','source','start_date','end_date'].every(k => typeof value[k] === 'string') || !['1d','1m'].includes(String(value.frequency)) || typeof value.initial_cash !== 'number' || value.accept_research_model !== true || value.trusted_local_code !== true) {
     throw new Error('未确认的回测请求无法读取；原内容已保留，请检查浏览器存储。');
   }
+  if (value.strategy_id !== undefined && value.strategy_id !== null && !isStrategyId(value.strategy_id)) throw new Error('未确认请求的策略标识无效；原请求已保留。');
   return value as Submission;
 }
 export function matchesRequest(job: unknown, request: Submission): job is PythonJob {

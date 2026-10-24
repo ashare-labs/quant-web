@@ -3,6 +3,7 @@ import { dateTime, errorText } from '../shared/api';
 import { editorHref, readDrafts, readFolders, type Draft } from '../shared/drafts';
 import { childPath, createDirectory, directoryQuery, displayName, fileHref, folderHref, saveStrategyFile, type StrategyDirectory } from '../shared/strategy-files';
 import { ErrorNotice, Modal, useResource } from '../shared/ui';
+import { backtestsHref } from '../backtests/history-model';
 
 export function StrategiesPage() {
   const [search,setSearch] = useState(''), [modal,setModal] = useState(''), [name,setName] = useState(''), [error,setError] = useState(''), [pending,setPending] = useState(false);
@@ -41,7 +42,7 @@ export function StrategiesPage() {
     <ErrorNotice message={[directory.error, storageError].filter(Boolean).join(' ')}/>
     <div className="tablewrap"><table><thead><tr><th>名称</th><th>分类</th><th>最后修改时间</th><th>历史编译运行</th><th>历史回测</th></tr></thead><tbody>
       {visibleDirectories.map(path=><tr key={'folder:'+path}><td><a href={folderHref(path)}><i className="fa fa-folder-o" aria-hidden="true"/> {path.slice(prefix.length)}</a></td><td>文件夹</td><td>—</td><td>—</td><td>—</td></tr>)}
-      {files.map(entry=><tr key={entry.path}><td><a href={fileHref(entry.path)}><span aria-hidden="true">▤　</span>{displayName(entry.path)}</a></td><td><span className="badge">Code</span></td><td>—</td><td>—</td><td>—</td></tr>)}
+      {files.map(entry=><tr key={entry.path}><td><a href={fileHref(entry.path)}><span aria-hidden="true">▤　</span>{displayName(entry.path)}</a></td><td><span className="badge">Code</span></td><td>—</td><td>—</td><td><a href={backtestsHref({file:entry.path})} aria-label={displayName(entry.path)+'的回测列表'}>回测列表</a></td></tr>)}
       {legacy.map(d=><tr key={'draft:'+d.id}><td><a href={editorHref(d.id)}><span aria-hidden="true">▤　</span>{d.name}（浏览器草稿）</a></td><td><span className="badge">Code</span></td><td>{dateTime(d.updated)}</td><td>—</td><td>—</td></tr>)}
       {!count&&!directory.error&&!storageError&&<tr><td colSpan={5} className="empty">{directory.loading ? '正在读取文件…' : query ? '没有匹配的文件' : <>此目录还没有文件。点击“新建策略”开始研究。</>}</td></tr>}
     </tbody></table></div>
