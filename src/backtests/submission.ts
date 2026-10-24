@@ -2,11 +2,14 @@ import type { components } from '../generated/api';
 import { api, ApiError, object, type PythonJob } from '../shared/api.ts';
 import { pythonBacktestConfig, type Draft } from '../shared/drafts.ts';
 import { isStrategyId } from './history-api.ts';
+import { randomId } from '../shared/random-id.ts';
 
 // OpenAPI defaults appear required in generated output types; this request
 // deliberately omits the two legacy pre-preparation hints.
 export type Submission = Omit<components['schemas']['PythonCreate'], 'securities'|'warmup_sessions'>;
-export const pendingKey = 'quantweb-python-pending-v1';
+type EditorRequest = Pick<Draft, 'id'|'name'|'source'|'start'|'end'|'capital'|'filePath'> & {frequency: string};
+const attemptPrefix = 'quantweb-python-idempotency-v1:';
+const legacyKey = 'quantweb-python-pending-v1';
 export function environment(catalogue: unknown): string {
   const value = object(catalogue);
   if (value.external_securities_required !== false || value.universe !== 'strategy_subscription' || typeof value.environment_id !== 'string' || !/^[a-f0-9]{64}$/.test(value.environment_id)) {
@@ -26,15 +29,38 @@ export function submission(draft: Pick<Draft, 'name'|'source'|'start'|'end'|'cap
     ...config, parameters: {},
     accept_research_model: true, trusted_local_code: true};
 }
-export function readPending(): Submission | null {
-  const raw = localStorage.getItem(pendingKey);
-  if (!raw) return null;
-  const value = object(JSON.parse(raw));
-  if (!['idempotency_key','environment_id','name','source','start_date','end_date'].every(k => typeof value[k] === 'string') || !['1d','1m'].includes(String(value.frequency)) || typeof value.initial_cash !== 'number' || value.accept_research_model !== true || value.trusted_local_code !== true) {
-    throw new Error('未确认的回测请求无法读取；原内容已保留，请检查浏览器存储。');
+function signature(request: Submission): string {
+  // Compare all current fields; cached content is never used to build a request.
+  return JSON.stringify(Object.entries(request).filter(([key]) => key !== 'idempotency_key').sort(([a],[b])=>a.localeCompare(b)));
+}
+function stored(key: string): Record<string, unknown> {
+  try { return object(JSON.parse(localStorage.getItem(key) || 'null')); }
+  catch { return {}; } // An obsolete/corrupt token must not lock the editor.
+}
+export async function submitCurrent(draft: EditorRequest, catalogue: unknown): Promise<PythonJob> {
+  const request = submission(draft, catalogue, randomId()), current = signature(request);
+  const key = attemptPrefix + draft.id, attempt = stored(key), legacy = stored(legacyKey);
+  if (attempt.signature === current && typeof attempt.key === 'string') request.idempotency_key = attempt.key;
+  // One-way compatibility for an unacknowledged pre-upgrade POST. Only its key
+  // can be reused, and only when the CURRENT editor constructs the same body.
+  else if (typeof legacy.idempotency_key === 'string' && signature(legacy as Submission) === current) request.idempotency_key = legacy.idempotency_key;
+  localStorage.setItem(key, JSON.stringify({signature: current, key: request.idempotency_key}));
+  try { localStorage.removeItem(legacyKey); } catch { /* No UI depends on this obsolete entry. */ }
+  function forget() {
+    // Do not erase a newer, different attempt made in another editor/tab.
+    if (stored(key).key === request.idempotency_key) {
+      try { localStorage.removeItem(key); }
+      catch { try { localStorage.setItem(key, 'null'); } catch { /* Storage is unavailable. */ } }
+    }
   }
-  if (value.strategy_id !== undefined && value.strategy_id !== null && !isStrategyId(value.strategy_id)) throw new Error('未确认请求的策略标识无效；原请求已保留。');
-  return value as Submission;
+  try {
+    const job = await submit(request);
+    forget();
+    return job;
+  } catch (error) {
+    if (error instanceof ApiError && !error.uncertain) forget();
+    throw error;
+  }
 }
 export function matchesRequest(job: unknown, request: Submission): boolean {
   const value = object(job), accepted = object(value.request);
@@ -49,30 +75,19 @@ export function matchesCanonicalRequest(job: unknown, request: Submission, manif
   return matchesRequest(job,canonical)&&matchesRequest({...value,request:frozen.request},canonical);
 }
 export async function submit(request: Submission): Promise<PythonJob> {
-  // Persist the exact request before sending: an uncertain response must never
-  // create a new key or re-read edited source during recovery.
-  localStorage.setItem(pendingKey, JSON.stringify(request));
-  let job: PythonJob;
-  try {
-    job = await api<PythonJob>('/python/jobs', request);
-    if (!matchesRequest(job, request)) {
-      // An old pending request may contain an alias. Verify the frozen alias
-      // evidence, not today's file lookup: the file may since have disappeared.
-      let verified=false;
-      const canonical=object(object(job).request).strategy_id;
-      if(isStrategyId(request.strategy_id)&&isStrategyId(canonical)&&matchesRequest(job,{...request,strategy_id:canonical})){
-        try{
-          const manifest=await api('/history/jobs/'+encodeURIComponent(job.job_id)+'/manifest');
-          verified=matchesCanonicalRequest(job,request,manifest);
-        }catch{/* Preserve the exact pending request when evidence is unavailable. */}
-      }
-      if(!verified)throw new ApiError('服务返回的任务与原请求不一致，或缺少规范身份凭据。请按原请求找回。','INVALID_JOB_RESPONSE',true);
+  const job = await api<PythonJob>('/python/jobs', request);
+  if (!matchesRequest(job, request)) {
+    // A submitted request may contain an alias. Verify the frozen alias
+    // evidence, not today's file lookup: the file may since have disappeared.
+    let verified=false;
+    const canonical=object(object(job).request).strategy_id;
+    if(isStrategyId(request.strategy_id)&&isStrategyId(canonical)&&matchesRequest(job,{...request,strategy_id:canonical})){
+      try{
+        const manifest=await api('/history/jobs/'+encodeURIComponent(job.job_id)+'/manifest');
+        verified=matchesCanonicalRequest(job,request,manifest);
+      }catch{/* Acceptance is uncertain without the frozen identity evidence. */}
     }
-  } catch (error) {
-    if (error instanceof ApiError && !error.uncertain) localStorage.removeItem(pendingKey);
-    throw error;
+    if(!verified)throw new ApiError('服务返回的任务与本次提交不一致，或缺少规范身份凭据。请稍后重试或查看回测记录。','INVALID_JOB_RESPONSE',true);
   }
-  // Acceptance is known even if the browser cannot remove its recovery record.
-  try { localStorage.removeItem(pendingKey); } catch { /* The same key remains safe to recover. */ }
   return job;
 }

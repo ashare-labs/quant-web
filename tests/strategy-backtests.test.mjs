@@ -2,7 +2,7 @@ import test,{afterEach} from 'node:test';
 import assert from 'node:assert/strict';
 import {backtestQuery,isStrategyId,normalizeBacktest,readStrategyBacktests,resolveStrategy,strategyIdentity} from '../src/backtests/history-api.ts';
 import {backtestsHref,createdTime,duration,frequencyLabel,optionalValue,pageOf,recordStatus,resultHref,selectRecords} from '../src/backtests/history-model.ts';
-import {submission,submit,readPending,pendingKey} from '../src/backtests/submission.ts';
+import {submission,submit} from '../src/backtests/submission.ts';
 
 // Constructed protocol fixtures only. Product code always reads the real service.
 const originalFetch=globalThis.fetch,originalStorage=globalThis.localStorage;
@@ -62,13 +62,12 @@ test('search is scoped to supplied strategy records and results preserve old-run
   assert.equal(current.get('strategy'),strategy);assert.equal(current.get('history'),null);assert.equal(historical.get('history'),'1');assert.equal(historical.get('job'),b.id);
 });
 
-test('new submissions bind the saved file slot; lost acceptance and legacy recovery preserve exact identity',async()=>{
+test('new submissions bind the saved file slot and report uncertain transport failures',async()=>{
   const catalogue={environment_id:'a'.repeat(64),external_securities_required:false,universe:'strategy_subscription'};
   const draft={name:'同名策略',filePath:strategy,source:'def initialize(context): pass',start:'2024-03-04',end:'2024-03-08',capital:'100000',frequency:'1d'};
   const body=submission(draft,catalogue,'original');assert.equal(body.strategy_id,strategy);
   assert.equal('strategy_id' in submission({...draft,filePath:undefined},catalogue,'new'),false);
   assert.throws(()=>submission({...draft,filePath:'../a.py'},catalogue,'new'),/标识无效/);
   const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
-  globalThis.fetch=async()=>{throw Error('lost');};await assert.rejects(submit(body));assert.deepEqual(readPending(),body);
-  const legacy={...body};delete legacy.strategy_id;storage.set(pendingKey,JSON.stringify(legacy));assert.deepEqual(readPending(),legacy);assert.equal('strategy_id' in readPending(),false);
+  globalThis.fetch=async()=>{throw Error('lost');};await assert.rejects(submit(body));
 });

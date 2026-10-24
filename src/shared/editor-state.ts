@@ -3,8 +3,8 @@ import { displayName, fileIdentity, parentDirectory } from './strategy-files.ts'
 import { isStrategyId } from './strategy-path.ts';
 import { randomId } from './random-id.ts';
 
-// The existing draft is the one editable working copy. A pending request and a
-// historical manifest are immutable run records, never editor restore sources.
+// The existing draft is the one editable working copy. Historical manifests
+// are immutable run records, never editor restore sources.
 export function findEditorDraft(path: string | null, id: string | null) {
   return readDrafts().find(draft => path ? draft.filePath === path : draft.id === id);
 }

@@ -23,18 +23,18 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
     body: body === undefined ? undefined : JSON.stringify(body),
   }); } catch (error) {
     if (signal?.aborted) throw error;
-    throw new ApiError(body === undefined ? '无法连接服务，请检查服务状态后重试。' : '未能确认提交结果，请先找回原请求，避免重复提交。', 'NETWORK_ERROR', body !== undefined);
+    throw new ApiError(body === undefined ? '无法连接服务，请检查服务状态后重试。' : '未能确认提交结果，请检查连接后重试。', 'NETWORK_ERROR', body !== undefined);
   }
   let raw: string;
   try { raw = await response.text(); } catch {
-    throw new ApiError(`读取服务响应时连接中断（HTTP ${response.status}）。` + (body === undefined ? '请恢复连接后重试。' : '提交结果尚未确认，原请求应保留并在连接恢复后重试。'), 'RESPONSE_INTERRUPTED', body !== undefined, response);
+    throw new ApiError(`读取服务响应时连接中断（HTTP ${response.status}）。` + (body === undefined ? '请恢复连接后重试。' : '提交结果尚未确认，请在连接恢复后重试。'), 'RESPONSE_INTERRUPTED', body !== undefined, response);
   }
   let value: unknown;
   try { value = JSON.parse(raw); } catch {
     const kind = !raw.trim() ? '空响应' : /text\/html/i.test(response.headers.get('content-type') || '') || /^\s*</.test(raw) ? 'HTML 页面' : '非 JSON 响应';
     const requestId = response.headers.get('x-quantweb-request-id');
     const message = `访问服务失败（HTTP ${response.status}；${kind}）。请检查访问地址、代理连接和服务状态。`
-      + (body === undefined ? '' : '提交结果尚未确认，请保留原请求并在连接恢复后重试。')
+      + (body === undefined ? '' : '提交结果尚未确认，请在连接恢复后重试。')
       + (requestId ? `请求编号：${requestId}` : '');
     throw new ApiError(message, response.ok ? 'INVALID_RESPONSE' : `HTTP_${response.status}`, body !== undefined, response);
   }

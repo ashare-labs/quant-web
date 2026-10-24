@@ -4,7 +4,7 @@ import {readStrategyFile,saveStrategyFile,strategyDirectory} from '../src/shared
 import {newDraft,readDrafts,saveDraft,editorHref} from '../src/shared/drafts.ts';
 import {findEditorDraft,openResolvedFileDraft,editedDraft,retainEditorDraft,savedEditorDraft,commitEditorSave} from '../src/shared/editor-state.ts';
 import {resolveStrategy,readStrategyBacktests} from '../src/backtests/history-api.ts';
-import {submission,submit,readPending,pendingKey} from '../src/backtests/submission.ts';
+import {submission,submit} from '../src/backtests/submission.ts';
 
 const previousFetch=globalThis.fetch,previousStorage=globalThis.localStorage;
 afterEach(()=>{globalThis.fetch=previousFetch;if(previousStorage===undefined)delete globalThis.localStorage;else globalThis.localStorage=previousStorage;});
@@ -91,21 +91,21 @@ test('current file list resolves aliases but explicit frozen history remains exa
 test('canonicalized acceptance requires the frozen original alias and every other request field',async()=>{
   storage();const original=submission(draft(alias),catalogue,'alias-key'),accepted={...original,strategy_id:canonical},calls=[];
   globalThis.fetch=async(url,options)=>{calls.push({url,body:options.body});return json(options.method==='POST'?job(accepted):manifest(accepted));};
-  const result=await submit(original);assert.equal(result.request.strategy_id,canonical);assert.equal(readPending(),null);
+  const result=await submit(original);assert.equal(result.request.strategy_id,canonical);
   assert.deepEqual(JSON.parse(calls[0].body),original);assert.equal(calls[1].url,'/api/v1/history/jobs/'+result.job_id+'/manifest');assert.equal(calls.some(c=>c.url.includes('/files')),false);
 });
 
-test('unproven or mismatched identity receipts retain the original recovery request',async()=>{
+test('unproven or mismatched identity receipts are not acknowledged as acceptance',async()=>{
   const original=submission(draft(alias),catalogue,'alias-key'),accepted={...original,strategy_id:canonical};
   for(const frozen of [manifest(accepted,'Other/Case.py'),{...manifest(accepted),job_id:'m2job-'+'d'.repeat(32)},manifest({...accepted,source:'different'}),manifest({...accepted,strategy_id:'Other/Case.py'}),{...manifest(accepted),session:{}},null]){
     storage();globalThis.fetch=async(_url,options)=>json(options.method==='POST'?job(accepted):frozen);
-    await assert.rejects(submit(original),e=>e.uncertain);assert.deepEqual(readPending(),original);
+    await assert.rejects(submit(original),e=>e.uncertain);
   }
 });
 
-test('lost alias acceptance retries the original request while preserving newer canonical editor work',async()=>{
+test('explicit transport retry verifies alias evidence without changing editable work',async()=>{
   storage();const original=submission(draft(alias),catalogue,'lost-alias'),accepted={...original,strategy_id:canonical},sent=[];let count=0;
   globalThis.fetch=async(_url,options)=>{if(options.method==='POST'){sent.push(JSON.parse(options.body));if(!count++)throw Error('lost');return json(job(accepted));}return json(manifest(accepted));};
   await assert.rejects(submit(original));const current={...draft(canonical),source:'newer work'};saveDraft(current);
-  await submit(readPending());assert.deepEqual(sent,[original,original]);assert.deepEqual(findEditorDraft(canonical,null),current);
+  await submit(original);assert.deepEqual(sent,[original,original]);assert.deepEqual(findEditorDraft(canonical,null),current);
 });

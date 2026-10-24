@@ -2,7 +2,7 @@ import test,{afterEach} from 'node:test';
 import assert from 'node:assert/strict';
 import {newDraft,readDrafts,saveDraft} from '../src/shared/drafts.ts';
 import {commitEditorSave,editedDraft,findEditorDraft,openFileDraft,retainEditorDraft,savedEditorDraft} from '../src/shared/editor-state.ts';
-import {readPending,submission,submit,pendingKey} from '../src/backtests/submission.ts';
+import {submission,submit,submitCurrent} from '../src/backtests/submission.ts';
 
 const originalStorage=globalThis.localStorage,originalFetch=globalThis.fetch;
 afterEach(()=>{globalThis.fetch=originalFetch;if(originalStorage===undefined)delete globalThis.localStorage;else globalThis.localStorage=originalStorage;});
@@ -19,7 +19,7 @@ function reopen(file=path,source=base.source){return openFileDraft(file,source,f
 test('F2: saved A → unsaved B → accepted run → file return/refresh retains B and every parameter',async()=>{
   storage();const working=edit(reopen(),patch),request=submission(working,catalogue,'run-B');
   globalThis.fetch=async()=>response(accepted(request),201);await submit(request);
-  assert.equal(readPending(),null);
+
   for(let refresh=0;refresh<3;refresh++)assert.deepEqual(reopen(),working);
   assert.equal(readDrafts().length,1);assert.equal(reopen().source,patch.source);
 });
@@ -27,18 +27,20 @@ test('F2: saved A → unsaved B → accepted run → file return/refresh retains
 test('confirmed submit rejection retains source and invalid/in-progress editor values across refresh',async()=>{
   storage();const working=edit(reopen(),patch),request=submission(working,catalogue,'rejected');
   globalThis.fetch=async()=>response({error:{code:'PYTHON_SYNTAX_ERROR',message:'syntax'}},422);
-  await assert.rejects(submit(request));assert.equal(readPending(),null);assert.deepEqual(reopen(),working);
+  await assert.rejects(submit(request));assert.deepEqual(reopen(),working);
   const incomplete=edit(working,{source:'def ',start:'',capital:'',name:'尚未保存名称'});
   assert.throws(()=>submission(incomplete,catalogue,'invalid'));assert.deepEqual(reopen(),incomplete);
 });
 
-test('lost acceptance retries frozen B while current C survives return without being replaced by B',async()=>{
-  storage();const b=edit(reopen(),patch),request=submission(b,catalogue,'original-request');
-  globalThis.fetch=async()=>{throw Error('lost');};await assert.rejects(submit(request));
+test('after an uncertain B submission, Start submits current C and returning retains C',async()=>{
+  storage();const b=edit(reopen(),patch),sent=[];
+  globalThis.fetch=async(_url,options)=>{sent.push(JSON.parse(options.body));throw Error('lost');};
+  await assert.rejects(submitCurrent(b,catalogue));
   const c=edit(b,{source:'def initialize(context): pass # NEWER_EDIT',capital:'300000',frequency:'1d'});
-  assert.deepEqual(readPending(),request);
-  globalThis.fetch=async(_url,options)=>{assert.deepEqual(JSON.parse(options.body),request);return response(accepted(request),201);};
-  await submit(readPending());assert.deepEqual(reopen(),c);assert.equal(readPending(),null);
+  globalThis.fetch=async(_url,options)=>{const body=JSON.parse(options.body);sent.push(body);return response(accepted(body),201);};
+  await submitCurrent(c,catalogue);assert.deepEqual(reopen(),c);
+  assert.equal(sent[1].source,c.source);assert.equal(sent[1].initial_cash,300000);
+  assert.equal(sent[1].frequency,'1d');assert.notEqual(sent[0].idempotency_key,sent[1].idempotency_key);
 });
 
 test('same-name different files preserve independent working source, names and configuration',()=>{
@@ -85,9 +87,4 @@ test('invalid retained metadata leaves old storage untouched; a draft for anothe
   const map=storage([{...base,workingCopy:'yes'}]),before=map.get(key);
   assert.throws(readDrafts,/原始内容已保留/);assert.equal(map.get(key),before);
   assert.throws(()=>openFileDraft('other.py','remote',base),/不一致/);
-});
-
-test('a legacy pending request stays exact while newer editable state is retained independently',()=>{
-  const map=storage(),request=submission({...base,filePath:undefined},catalogue,'legacy');map.set(pendingKey,JSON.stringify(request));
-  const working=edit(reopen(),patch);assert.deepEqual(readPending(),request);assert.equal('strategy_id' in readPending(),false);assert.deepEqual(reopen(),working);
 });
