@@ -36,10 +36,17 @@ export function readPending(): Submission | null {
   if (value.strategy_id !== undefined && value.strategy_id !== null && !isStrategyId(value.strategy_id)) throw new Error('未确认请求的策略标识无效；原请求已保留。');
   return value as Submission;
 }
-export function matchesRequest(job: unknown, request: Submission): job is PythonJob {
+export function matchesRequest(job: unknown, request: Submission): boolean {
   const value = object(job), accepted = object(value.request);
   return value.contract_version === 'python-minute-jobs.v1' && typeof value.job_id === 'string' && /^m2job-[a-f0-9]{32}$/.test(value.job_id)
     && Object.entries(request).every(([key, item]) => JSON.stringify(accepted[key]) === JSON.stringify(item));
+}
+export function matchesCanonicalRequest(job: unknown, request: Submission, manifest: unknown): boolean {
+  const value=object(job),accepted=object(value.request),frozen=object(manifest),session=object(frozen.session);
+  if(!isStrategyId(request.strategy_id)||!isStrategyId(accepted.strategy_id)||accepted.strategy_id===request.strategy_id
+    ||frozen.schema_version!=='python-demand-job.v2'||frozen.job_id!==value.job_id||session.submitted_strategy_id!==request.strategy_id)return false;
+  const canonical={...request,strategy_id:accepted.strategy_id};
+  return matchesRequest(job,canonical)&&matchesRequest({...value,request:frozen.request},canonical);
 }
 export async function submit(request: Submission): Promise<PythonJob> {
   // Persist the exact request before sending: an uncertain response must never
@@ -48,7 +55,19 @@ export async function submit(request: Submission): Promise<PythonJob> {
   let job: PythonJob;
   try {
     job = await api<PythonJob>('/python/jobs', request);
-    if (!matchesRequest(job, request)) throw new ApiError('服务返回的任务与原请求不一致。请按原请求找回。', 'INVALID_JOB_RESPONSE', true);
+    if (!matchesRequest(job, request)) {
+      // An old pending request may contain an alias. Verify the frozen alias
+      // evidence, not today's file lookup: the file may since have disappeared.
+      let verified=false;
+      const canonical=object(object(job).request).strategy_id;
+      if(isStrategyId(request.strategy_id)&&isStrategyId(canonical)&&matchesRequest(job,{...request,strategy_id:canonical})){
+        try{
+          const manifest=await api('/history/jobs/'+encodeURIComponent(job.job_id)+'/manifest');
+          verified=matchesCanonicalRequest(job,request,manifest);
+        }catch{/* Preserve the exact pending request when evidence is unavailable. */}
+      }
+      if(!verified)throw new ApiError('服务返回的任务与原请求不一致，或缺少规范身份凭据。请按原请求找回。','INVALID_JOB_RESPONSE',true);
+    }
   } catch (error) {
     if (error instanceof ApiError && !error.uncertain) localStorage.removeItem(pendingKey);
     throw error;

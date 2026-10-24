@@ -21,7 +21,7 @@ test('Chinese nested paths are encoded once; typed names cannot escape their dir
 
 test('directory/file operations use the exact API with uncached reads and explicit overwrite',async()=>{
   const calls=[];
-  globalThis.fetch=async(url,options)=>{calls.push({url,...options});return json(options.method==='GET'?{path:'研究/策略.py',source:'中文\r\n'}:{path:JSON.parse(options.body).path});};
+  globalThis.fetch=async(url,options)=>{calls.push({url,...options});return json(options.method==='GET'?{path:'研究/策略.py',strategy_id:'研究/策略.py',source:'中文\r\n'}:{path:JSON.parse(options.body).path,...(options.method==='PUT'?{strategy_id:JSON.parse(options.body).path}:{})});};
   await createDirectory('研究');
   await saveStrategyFile('研究/策略.py','',false);
   await saveStrategyFile('研究/策略.py','中文\r\n',true);
@@ -47,7 +47,7 @@ test('confirmed storage failure remains unsaved and does not claim an uncertain 
 
 test('uncertain writes read back once but never resolve as successful, even for matching content',async()=>{
   for(const source of ['new','old']){
-    const calls=[];globalThis.fetch=async(url,options)=>{calls.push(options.method);return options.method==='PUT'?failure('STRATEGY_SAVE_UNCERTAIN',503,'uncertain'):json({path:'a.py',source});};
+    const calls=[];globalThis.fetch=async(url,options)=>{calls.push(options.method);return options.method==='PUT'?failure('STRATEGY_SAVE_UNCERTAIN',503,'uncertain'):json({path:'a.py',strategy_id:'a.py',source});};
     await assert.rejects(saveStrategyFile('a.py','new',true),e=>e instanceof StrategySaveError&&e.readbackMatches===(source==='new')&&e.message.includes('尚未确认'));
     assert.deepEqual(calls,['PUT','GET']);
   }

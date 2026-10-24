@@ -1,8 +1,10 @@
 import type { components } from '../generated/api';
-import { api, ApiError } from './api.ts';
+import { api, ApiError, object } from './api.ts';
+import { isStrategyId, isStrategyPath } from './strategy-path.ts';
 
 export type StrategyDirectory = components['schemas']['StrategyDirectory'];
 type StrategyPath = components['schemas']['StrategyPath'];
+type StrategyFilePath = components['schemas']['StrategyFilePath'];
 type StrategySource = components['schemas']['StrategySource'];
 type StrategySave = components['schemas']['StrategySave'];
 
@@ -19,29 +21,56 @@ export function childPath(folder: string, name: string, python = false) {
   return (folder ? folder + '/' : '') + (python ? fileName(leaf) : leaf);
 }
 
-export const createDirectory = (path: string) => api<StrategyPath>('/python/directories', {path});
+export function fileIdentity(value: unknown, uncertain = false): StrategyFilePath {
+  const result=object(value);
+  if(!isStrategyId(result.path)||result.strategy_id!==result.path)throw new ApiError('文件响应的路径或策略身份无效。','INVALID_RESPONSE',uncertain);
+  return {path:result.path,strategy_id:result.path};
+}
+export function strategyDirectory(value: unknown): StrategyDirectory {
+  const result=object(value),seen=new Set<string>();
+  if(!isStrategyPath(result.path,true)||typeof result.root!=='string'||!Array.isArray(result.entries))throw new ApiError('目录响应无法读取。','INVALID_RESPONSE',false);
+  for(const item of result.entries){
+    const entry=object(item);
+    if(!isStrategyPath(entry.path)||parentDirectory(entry.path)!==result.path||entry.name!==entry.path.split('/').at(-1)
+      ||!['directory','file'].includes(String(entry.kind))||seen.has(entry.path))throw new ApiError('目录项路径不属于当前目录或格式无效。','INVALID_RESPONSE',false);
+    if(entry.kind==='file')fileIdentity(entry);
+    else if(entry.strategy_id!=null)throw new ApiError('目录不能作为策略文件。','INVALID_RESPONSE',false);
+    seen.add(entry.path);
+  }
+  return value as StrategyDirectory;
+}
+export async function createDirectory(path: string) {
+  if(!isStrategyPath(path))throw new Error('文件夹路径无效。');
+  const result=await api<StrategyPath>('/python/directories',{path});
+  if(!isStrategyPath(result?.path))throw new ApiError('文件夹响应路径无效。','INVALID_RESPONSE',true);
+  return result;
+}
 export async function readStrategyFile(path: string, signal?: AbortSignal) {
+  if(!isStrategyId(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
   const result = await api<StrategySource>('/python/files?path=' + encodeURIComponent(path), undefined, signal);
-  if (result?.path !== path || typeof result.source !== 'string') throw new ApiError('文件响应无法读取或路径不一致。', 'INVALID_RESPONSE', false);
+  fileIdentity(result);
+  if (typeof result.source !== 'string') throw new ApiError('文件响应源码无法读取。', 'INVALID_RESPONSE', false);
   return result;
 }
 
 export class StrategySaveError extends Error {
   readbackMatches: boolean;
-  constructor(message: string, readbackMatches = false) { super(message); this.readbackMatches = readbackMatches; }
+  readbackPath?: string;
+  constructor(message: string, readbackMatches = false, readbackPath?: string) { super(message); this.readbackMatches = readbackMatches; this.readbackPath=readbackPath; }
 }
 
 export async function saveStrategyFile(path: string, source: string, overwrite: boolean) {
+  if(!isStrategyId(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
   const body: StrategySave = {path, source, overwrite};
   try {
-    const result = await api<StrategyPath>('/python/files', body, undefined, false, 'PUT');
-    if (result?.path !== path) throw new ApiError('保存响应与文件路径不一致。', 'INVALID_RESPONSE', true);
+    const result = await api<StrategyFilePath>('/python/files', body, undefined, false, 'PUT');
+    fileIdentity(result,true);
     return result;
   } catch (error) {
     if (error instanceof ApiError && error.uncertain) {
-      let matches = false, checked = false;
-      try { const current = await readStrategyFile(path); matches = current.path === path && current.source === source; checked = true; } catch { /* Keep the user's editor content if readback also fails. */ }
-      throw new StrategySaveError('保存结果尚未确认。' + (matches ? '服务已读回相同源码，但持久化仍未确认。' : checked ? '服务读回的源码与本次编辑不同。' : '重新读取文件也未成功。') + '编辑内容已保留，请稍后重试或重新打开核对。', matches);
+      let matches = false, checked = false, readbackPath:string|undefined;
+      try { const current = await readStrategyFile(path); matches = current.source === source; readbackPath=current.path; checked = true; } catch { /* Keep the user's editor content if readback also fails. */ }
+      throw new StrategySaveError('保存结果尚未确认。' + (matches ? '服务已读回相同源码，但持久化仍未确认。' : checked ? '服务读回的源码与本次编辑不同。' : '重新读取文件也未成功。') + '编辑内容已保留，请稍后重试或重新打开核对。', matches, readbackPath);
     }
     if (error instanceof ApiError && error.code === 'STRATEGY_FILE_EXISTS') throw new StrategySaveError('同名文件已存在；请打开该文件后编辑保存，或使用其他名称。');
     throw error;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { randomId } from '../shared/random-id';
 import { download, errorText, object } from '../shared/api';
-import { DEFAULT_FREQUENCY, newDraft, resolveFrequency, validateDraftConfig, type Draft } from '../shared/drafts';
+import { DEFAULT_FREQUENCY, editorHref, newDraft, resolveFrequency, validateDraftConfig, type Draft } from '../shared/drafts';
 import { todayInShanghai, validDate, validateDateRange } from '../shared/dates';
 import { unformatCapital } from '../shared/capital';
 import { childPath, createDirectory, displayName, fileHref, fileName, parentDirectory, readStrategyFile, saveStrategyFile, StrategySaveError } from '../shared/strategy-files';
@@ -10,13 +10,14 @@ import { ErrorNotice, JsonDetails, useResource } from '../shared/ui';
 import { environment, readPending, submission, submit, type Submission } from '../backtests/submission';
 import { backtestsHref } from '../backtests/history-model';
 import { requestStrategy } from '../backtests/history-api';
-import { commitEditorSave, editedDraft, findEditorDraft, openFileDraft, retainEditorDraft, savedEditorDraft } from '../shared/editor-state';
+import { commitEditorSave, editedDraft, findEditorDraft, openFileDraft, openResolvedFileDraft, retainEditorDraft, savedEditorDraft } from '../shared/editor-state';
 export function EditorPage() {
   const [params] = useState(() => new URLSearchParams(location.search));
   const draftId = params.get('draft'), jobId = params.get('job'), path = params.get('file');
   const readOnly = !!jobId, file = useRef<HTMLInputElement>(null);
   const startInput = useRef<HTMLInputElement>(null), endInput = useRef<HTMLInputElement>(null);
   const [error,setError] = useState(''), [saved,setSaved] = useState('未保存'), [unretained,setUnretained] = useState(false), [retentionError,setRetentionError] = useState('');
+  const [aliasBackup,setAliasBackup]=useState<Draft|null>(null);
   const [loading,setLoading] = useState(!!(path||draftId)), [loadFailed,setLoadFailed] = useState(false), [saving,setSaving] = useState(false), [loadedPath,setLoadedPath] = useState('');
   const [submitting,setSubmitting] = useState(false), [pending,setPending] = useState<Submission|null>(null), [pendingError,setPendingError] = useState('');
   const runGuard=useRef(false), leaving=useRef(false);
@@ -41,10 +42,12 @@ export function EditorPage() {
         if(remotePath){
           const source=await readStrategyFile(remotePath,controller.signal);
           if(controller.signal.aborted)return;
-          const next=openFileDraft(remotePath,source.source,stored);
+          const resolved=localError?{draft:openFileDraft(source.path,source.source),backup:null}:openResolvedFileDraft(remotePath,source,stored);
+          const next=resolved.draft;setAliasBackup(resolved.backup);
           showDraft({...next,...(localError?{capital:''}:{})});fileSource.current=source.source;
-          setLoadedPath(remotePath);setSaved(next.workingCopy?'未保存 · 已恢复浏览器编辑':'已从服务读取');setRetentionError(localError);
-        }else if(stored){showDraft(stored);setSaved('浏览器草稿 · 未保存到服务');}
+          setLoadedPath(source.path);history.replaceState(null,'',fileHref(source.path));
+          setSaved(next.workingCopy?'未保存 · 已恢复浏览器编辑':'已从服务读取');setRetentionError(localError);
+        }else if(stored){showDraft(stored);setSaved(stored.aliasSourcePath?'保留的别名草稿 · 未保存到服务':'浏览器草稿 · 未保存到服务');}
         else throw new Error('找不到此浏览器草稿。请返回策略列表。');
       }catch(e){if(!controller.signal.aborted){setError(errorText(e));setLoadFailed(true);}}
       finally{if(!controller.signal.aborted)setLoading(false);}
@@ -82,17 +85,18 @@ export function EditorPage() {
       validateDraftConfig(draft);target=loadedPath&&draft.name===displayName(loadedPath)?loadedPath:childPath(draft.folder,draft.name,true);
       setSaving(true);setError('');setSaved('保存中…');
       if(!loadedPath&&draftId&&draft.folder)await createDirectory(draft.folder);
-      await saveStrategyFile(target,draft.source,target===loadedPath);
-      const next=savedEditorDraft({...draft,id:loadedPath&&target!==loadedPath?randomId():draft.id,name:displayName(target),folder:parentDirectory(target),filePath:target,capital:unformatCapital(draft.capital),frequency:resolveFrequency(draft.frequency)});
-      setLoadedPath(target);showDraft(next);
-      history.replaceState(null,'',fileHref(target));
+      const persisted=await saveStrategyFile(target,draft.source,target===loadedPath);
+      const canonical=persisted.path;
+      const next=savedEditorDraft({...draft,id:loadedPath&&canonical!==loadedPath?randomId():draft.id,name:displayName(canonical),folder:parentDirectory(canonical),filePath:canonical,capital:unformatCapital(draft.capital),frequency:resolveFrequency(draft.frequency)});
+      setLoadedPath(canonical);showDraft(next);
+      history.replaceState(null,'',fileHref(canonical));
       try{
         commitEditorSave(draft,next,fileSource.current);
         setSaved('已保存');setUnretained(false);setRetentionError('');
       }catch(e){setSaved('源码已保存，配置未保存');setRetentionError('源码已写入服务，但浏览器配置保存失败：'+errorText(e));setUnretained(true);}
       fileSource.current=draft.source;
     }catch(e){
-      if(e instanceof StrategySaveError&&e.readbackMatches)setLoadedPath(target);
+      if(e instanceof StrategySaveError&&e.readbackMatches)setLoadedPath(e.readbackPath||target);
       setError(errorText(e));setSaved('未保存');
     }finally{setSaving(false);}
   }
@@ -125,6 +129,7 @@ export function EditorPage() {
   <section className="editor"><div className="codepane"><div className="pane-tools"><button disabled={locked} onClick={()=>save()}>保存</button><span className="note" role="status">{readOnly?'历史源码 · 只读':loading?'正在读取…':saved}</span><button disabled={locked} onClick={()=>file.current?.click()}>导入 Python</button><button disabled={!draft.source} onClick={()=>download(fileName(draft.name),draft.source)}>导出代码</button><input ref={file} type="file" accept=".py,.txt" hidden onChange={async e=>{const selected=e.target.files?.[0];if(!selected)return;try{if(selected.size>262144)throw new Error('源码不能超过 256 KiB。');const source=await selected.text();edit({source});setError('');}catch(err){setError(errorText(err));}e.target.value='';}}/></div><textarea className="code-editor" aria-label="Python 策略代码" spellCheck={false} readOnly={locked} value={draft.source} placeholder="在此编写或导入你的 Python 策略" onChange={e=>edit({source:e.target.value})} onKeyDown={e=>{if(e.key==='Tab'&&!locked){e.preventDefault();const el=e.currentTarget,a=el.selectionStart,b=el.selectionEnd;edit({source:draft.source.slice(0,a)+'    '+draft.source.slice(b)});requestAnimationFrame(()=>{el.selectionStart=el.selectionEnd=a+4;});}}}/></div>
   <div className="output"><div className="pane-tools config-tools"><label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft.start} readOnly={locked} onChange={e=>edit({start:e.target.value})}/></label><label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start)?draft.start:undefined} max={today} value={draft.end} readOnly={locked} onChange={e=>edit({end:e.target.value})}/></label><label>初始资金<CapitalInput value={draft.capital} readOnly={locked} onChange={capital=>edit({capital})}/></label><select aria-label="运行频率" value={frequency} disabled={locked} onChange={e=>edit({frequency:resolveFrequency(e.target.value)})}>{readOnly&&!frequency&&<option value="" disabled>未记录</option>}<option value="1m">分钟</option><option value="1d">日</option></select><span className="runtime-label">Python3</span><button className="primary" disabled={locked||!!pendingError||(!pending&&!serviceReady)} onClick={()=>void run()}>{submitting?'正在提交…':pending?'找回原回测':'开始回测'}</button></div>
   <ErrorNotice message={error||retentionError||pendingError||dateError||manifest.error||catalogue.error||serviceError} retry={catalogue.error?catalogue.refresh:undefined}/>
+  {aliasBackup&&<div className="notice" role="status">已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。<a href={editorHref(aliasBackup.id)}>查看保留草稿</a></div>}
   <div className="metrics">{['策略收益','基准收益','Alpha','Beta','Sharpe','最大回撤'].map(label=><div className="metric" key={label}><span>{label}</span><strong>—</strong></div>)}</div>
   <div className="editor-empty"><h2>{readOnly?'历史策略源码':'编写策略，设置回测参数'}</h2><p>{readOnly?'此页不修改已冻结的研究记录。':'证券和字段需求应由 Python 取数接口表达。'}</p>{readOnly&&<p className="note">可在独立结果页查看对应运行。</p>}<a href="strategies.html">返回策略列表 <i className="fa fa-long-arrow-right" aria-hidden="true"/></a></div>
   <div className="pane-tools">日志输出</div><div className="log">{readOnly?'只读查看历史源码。':pending?`尚未确认：${pending.name} · ${pending.frequency==='1d'?'日':'分钟'} · ${pending.start_date} 至 ${pending.end_date}。点击“找回原回测”将复用原源码、配置和请求编号。`:submitting?'正在提交当前源码…':'尚未提交任务。点击“开始回测”将在本机执行当前 Python，使用已声明的回溯研究模型；源码和配置将冻结在回测记录中。'}</div></div></section>

@@ -1,16 +1,14 @@
 import type { components } from '../generated/api';
 import { api, ApiError, object, type HistoryJob } from '../shared/api.ts';
-import { displayName } from '../shared/strategy-files.ts';
+import { displayName, readStrategyFile } from '../shared/strategy-files.ts';
+import { isStrategyId } from '../shared/strategy-path.ts';
+export { isStrategyId } from '../shared/strategy-path.ts';
 import { readDrafts } from '../shared/drafts.ts';
 import type { BacktestRecord, StrategyBacktests, StrategyIdentity } from './history-model.ts';
 
 type Response = components['schemas']['StrategyBacktests'];
 type Item = components['schemas']['StrategyBacktest'];
 const jobPattern = /^m2job-[a-f0-9]{32}$/;
-export function isStrategyId(value: unknown): value is string {
-  return typeof value === 'string' && value.endsWith('.py') && new TextEncoder().encode(value).length<=1024
-    && !/[\\:\u0000-\u001f\u007f]/.test(value) && value.split('/').every(part=>!!part&&part!=='.'&&part!=='..'&&new TextEncoder().encode(part).length<=255);
-}
 export function requestStrategy(request: unknown) {const id=object(request).strategy_id;return isStrategyId(id)?id:null;}
 export function strategyIdentity(id:string):StrategyIdentity {return {id,path:id,name:displayName(id)};}
 export function backtestQuery(strategyId:string, offset=0) {
@@ -20,8 +18,11 @@ export function backtestQuery(strategyId:string, offset=0) {
 export async function resolveStrategy(params:URLSearchParams,signal?:AbortSignal):Promise<StrategyIdentity> {
   for(const key of ['strategy','file','job','draft'])if(params.getAll(key).length>1)throw new Error('策略上下文不明确，请从策略文件重新打开回测列表。');
   const explicit=params.get('strategy'),file=params.get('file'),job=params.get('job');
-  if(explicit&&file&&explicit!==file)throw new Error('策略标识与文件路径不一致。');
-  let identity=explicit||file;
+  // A file entry is current filesystem context. An explicit strategy/job is a
+  // frozen identity and must stay exact, including old alias identities.
+  const resolvedFile=file?(await readStrategyFile(file,signal)).strategy_id:null;
+  if(explicit&&resolvedFile&&explicit!==resolvedFile)throw new Error('策略标识与文件路径不一致。');
+  let identity=explicit||resolvedFile;
   if(job){
     if(!jobPattern.test(job))throw new Error('任务编号无效。');
     const record=await api<HistoryJob>('/history/jobs/'+encodeURIComponent(job),undefined,signal);
@@ -35,7 +36,7 @@ export async function resolveStrategy(params:URLSearchParams,signal?:AbortSignal
     const draft=readDrafts().find(d=>d.id===params.get('draft'));
     if(!draft)throw new Error('找不到此浏览器草稿，请返回策略列表。');
     if(!draft.filePath)throw new Error('此草稿尚未保存为策略文件。保存后开始的回测会归入该策略，已有记录保留。');
-    identity=draft.filePath;
+    identity=(await readStrategyFile(draft.filePath,signal)).strategy_id;
   }
   if(!isStrategyId(identity))throw new Error('请从一个策略的“回测列表”入口查看记录。');
   return strategyIdentity(identity);
