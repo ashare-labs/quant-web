@@ -7,7 +7,13 @@ export const object = (value: unknown): Row => value && typeof value === 'object
 export const rows = (value: unknown): Row[] => Array.isArray(value) ? value.filter(v => v && typeof v === 'object' && !Array.isArray(v)) as Row[] : [];
 export class ApiError extends Error {
   code: string; uncertain: boolean;
-  constructor(message: string, code: string, uncertain: boolean) { super(message); this.code = code; this.uncertain = uncertain; }
+  status?: number; contentType?: string; requestId?: string;
+  constructor(message: string, code: string, uncertain: boolean, response?: Response) {
+    super(message); this.code = code; this.uncertain = uncertain;
+    this.status = response?.status;
+    this.contentType = response?.headers.get('content-type') || undefined;
+    this.requestId = response?.headers.get('x-quantweb-request-id') || undefined;
+  }
 }
 export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT'): Promise<T> {
   let response: Response;
@@ -19,11 +25,23 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
     if (signal?.aborted) throw error;
     throw new ApiError(body === undefined ? '无法连接服务，请检查服务状态后重试。' : '未能确认提交结果，请先找回原请求，避免重复提交。', 'NETWORK_ERROR', body !== undefined);
   }
+  let raw: string;
+  try { raw = await response.text(); } catch {
+    throw new ApiError(`读取服务响应时连接中断（HTTP ${response.status}）。` + (body === undefined ? '请恢复连接后重试。' : '提交结果尚未确认，原请求应保留并在连接恢复后重试。'), 'RESPONSE_INTERRUPTED', body !== undefined, response);
+  }
   let value: unknown;
-  try { value = await response.json(); } catch { throw new ApiError('服务返回了无法识别的响应。', 'INVALID_RESPONSE', body !== undefined); }
+  try { value = JSON.parse(raw); } catch {
+    const kind = !raw.trim() ? '空响应' : /text\/html/i.test(response.headers.get('content-type') || '') || /^\s*</.test(raw) ? 'HTML 页面' : '非 JSON 响应';
+    const requestId = response.headers.get('x-quantweb-request-id');
+    const message = `访问服务失败（HTTP ${response.status}；${kind}）。请检查访问地址、代理连接和服务状态。`
+      + (body === undefined ? '' : '提交结果尚未确认，请保留原请求并在连接恢复后重试。')
+      + (requestId ? `请求编号：${requestId}` : '');
+    throw new ApiError(message, response.ok ? 'INVALID_RESPONSE' : `HTTP_${response.status}`, body !== undefined, response);
+  }
   if (!response.ok) {
     const e = object(object(value).error);
-    throw new ApiError(String(e.message || '请求失败，请稍后重试。'), String(e.code || response.status), body !== undefined && (response.status >= 500 || e.code === 'DATABASE_OPERATION_REFUSED') && object(e.details).save_state !== 'not_saved');
+    const validation = rows(object(value).detail).slice(0, 3).map(item => `${Array.isArray(item.loc) ? item.loc.filter(part => part !== 'body').join('.') : '请求'}：${String(item.msg || '无效值')}`).join('；');
+    throw new ApiError(String(e.message || (validation ? `请求校验未通过：${validation}` : `请求失败（HTTP ${response.status}）。`)), String(e.code || response.status), body !== undefined && (response.status >= 500 || e.code === 'DATABASE_OPERATION_REFUSED') && object(e.details).save_state !== 'not_saved', response);
   }
   return value as T;
 }
