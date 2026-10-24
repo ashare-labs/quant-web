@@ -23,6 +23,22 @@ test('both explicit frequencies submit source demand without an external univers
   assert.throws(()=>submission({...draft,end:''},catalogue,'key'));
 });
 
+test('100亿元 reaches both submission bodies while invalid cash and permission refusals remain rejected',async()=>{
+  storage();
+  for(const frequency of ['1d','1m']){
+    const request=submission({...draft,frequency,capital:'10,000,000,000'},catalogue,'synthetic-key');
+    globalThis.fetch=async(_url,options)=>{
+      const body=JSON.parse(options.body);
+      assert.equal(body.initial_cash,10_000_000_000);
+      assert.equal(body.frequency,frequency);
+      return json({error:{code:'PERMISSION_DENIED',message:'Permission denied'}},403);
+    };
+    await assert.rejects(submit(request),e=>e instanceof ApiError&&e.status===403&&!e.uncertain);
+    assert.equal(readPending(),null);
+    for(const capital of ['10,000,000,000.01','0','-1','NaN','Infinity','1e309'])assert.throws(()=>submission({...draft,frequency,capital},catalogue,'key'),/初始资金/);
+  }
+});
+
 test('lost acceptance is recovered using identical frozen source, mode and idempotency key',async()=>{
   const data=storage(),request=submission(draft,catalogue,'original-key'),calls=[];
   globalThis.fetch=async(url,options)=>{assert.equal(data.has(pendingKey),true);calls.push({url,body:JSON.parse(options.body)});if(calls.length===1)throw Error('lost response');return json(job(request),201);};

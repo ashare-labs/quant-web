@@ -11,6 +11,6 @@ export function formatCapital(value: string): string {
 
 export function parseCapital(value: string): number {
   const raw = unformatCapital(value), cash = Number(raw);
-  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw) || !Number.isFinite(cash) || cash <= 0 || cash > 100000000) throw new Error('初始资金须大于 0 且不超过 1 亿元。');
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw) || !Number.isFinite(cash) || cash <= 0 || cash > 10_000_000_000) throw new Error('初始资金须大于 0 且不超过 100 亿元。');
   return cash;
 }

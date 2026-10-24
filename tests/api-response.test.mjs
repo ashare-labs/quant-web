@@ -40,3 +40,27 @@ test('a 502 empty response survives refresh and repeated recovery retains one ex
   assert.ok(calls.every(body=>JSON.stringify(body)===JSON.stringify(request)));
   assert.equal(readPending(),null);
 });
+
+test('chunked results larger than 64 MiB are decoded fully including the final fields',async()=>{
+  const encoder=new TextEncoder(),chunk=new Uint8Array(1024*1024).fill(120),size=65*chunk.length;
+  globalThis.fetch=async()=>{
+    let part=-1;
+    return new Response(new ReadableStream({pull(controller){
+      if(part===-1)controller.enqueue(encoder.encode('{"logs":"'));
+      else if(part<65)controller.enqueue(chunk);
+      else{controller.enqueue(encoder.encode('","summary":{"net_return":0},"last":"complete"}'));controller.close();}
+      part++;
+    }}),{headers:{'Content-Type':'application/json'}});
+  };
+  const result=await api('/history/jobs/synthetic/result');
+  assert.equal(result.logs.length,size);
+  assert.equal(result.logs.at(-1),'x');
+  assert.equal(result.summary.net_return,0);
+  assert.equal(result.last,'complete');
+});
+
+test('changed service defaults do not require equality with the initial database policy',async()=>{
+  const status={policy:{execution_seconds:180},policy_sha256:'b'.repeat(64),initial_policy_sha256:'a'.repeat(64),execution_policy_scope:'frozen_per_task'};
+  globalThis.fetch=async()=>new Response(JSON.stringify(status),{headers:{'Content-Type':'application/json'}});
+  assert.deepEqual(await api('/tasks/service'),status);
+});

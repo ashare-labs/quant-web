@@ -71,7 +71,8 @@ test('pasted grouped amounts and decimals yield the same numeric capital', () =>
     ['100,000', '100000', 100000],
     [' 1,234,567.0500 ', '1234567.0500', 1234567.05],
     ['0.50', '0.50', 0.5],
-    ['100,000,000', '100000000', 100000000],
+    ['100,000,000.01', '100000000.01', 100000000.01],
+    ['10,000,000,000', '10000000000', 10000000000],
   ]) {
     assert.equal(unformatCapital(pasted), raw);
     assert.equal(parseCapital(pasted), amount);
@@ -80,7 +81,7 @@ test('pasted grouped amounts and decimals yield the same numeric capital', () =>
 });
 
 test('capital limits remain enforced without turning bad text into another amount', () => {
-  for (const value of ['', ' ', '.', '-', '0', '-0.50', 'NaN', 'Infinity', '100,000,000.01', '1.2.3', 'abc100', '0x10']) {
+  for (const value of ['', ' ', '.', '-', '0', '-0.50', 'NaN', 'Infinity', '10,000,000,000.01', '1e309', '1.2.3', 'abc100', '0x10']) {
     assert.throws(() => parseCapital(value), /初始资金/);
   }
   assert.equal(formatCapital('abc100'), 'abc100');

@@ -2438,7 +2438,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default fc5f3b79825aa08374a75b63be6c4cbcc7f36aec
+             * @default 3eb3f6903baa4bf7c4ce9c80b44d7850b445107e
              */
             commit: string | null;
             /**
@@ -2449,17 +2449,17 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 5e3b165625fb3692b8bef4fd7a8d0659a32c9bbe
+             * @default 74aaa57f656bb895311348d52e85b0567eef5fe7
              */
             tree: string | null;
             /**
              * Version
-             * @default 0.10.0.dev21
+             * @default 0.10.0.dev22
              */
             version: string;
             /**
              * Wheel Sha256
-             * @default 5cf8d38b9730dd172a0cb47de0361cfeeb7410c4b7d46f75ad8a5c274a7c2900
+             * @default f24240ecf375355f8484233cd024eab6177845ca722f60343e32063ddb9268f6
              */
             wheel_sha256: string;
         };
@@ -2531,7 +2531,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev22
+             * @default 0.12.0.dev25
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -2747,15 +2747,15 @@ export interface components {
              */
             cached_rows: number;
             /**
-             * Callback Seconds
-             * @default 5
-             */
-            callback_seconds: number;
-            /**
              * Cpu Seconds
              * @default 120
              */
             cpu_seconds: number;
+            /**
+             * Disk Free Bytes
+             * @default 1073741824
+             */
+            disk_free_bytes: number;
             /**
              * Execution Seconds
              * @default 120
@@ -2782,11 +2782,6 @@ export interface components {
              */
             max_workers: number;
             /**
-             * Module Load Seconds
-             * @default 5
-             */
-            module_load_seconds: number;
-            /**
              * Open Files
              * @default 256
              */
@@ -2812,6 +2807,11 @@ export interface components {
              */
             read_rows: number;
             /**
+             * Retained Artifact Bytes
+             * @default 512000000000
+             */
+            retained_artifact_bytes: number;
+            /**
              * Rss Bytes
              * @default 1073741824
              */
@@ -2825,6 +2825,12 @@ export interface components {
         };
         /** ServiceStatus */
         ServiceStatus: {
+            /**
+             * Artifact Budget Scope
+             * @default per_task
+             * @constant
+             */
+            artifact_budget_scope: "per_task";
             /** Available Pending */
             available_pending: number;
             /**
@@ -2837,10 +2843,18 @@ export interface components {
             counts: {
                 [key: string]: number;
             };
+            /**
+             * Execution Policy Scope
+             * @default frozen_per_task
+             * @constant
+             */
+            execution_policy_scope: "frozen_per_task";
             /** Historical Counts */
             historical_counts?: {
                 [key: string]: number;
             };
+            /** Initial Policy Sha256 */
+            initial_policy_sha256: string;
             /**
              * Job Contract Version
              * @default research-jobs.v1
