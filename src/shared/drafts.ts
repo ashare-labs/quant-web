@@ -1,6 +1,7 @@
 import { DEFAULT_CAPITAL, parseCapital } from './capital.ts';
 import { todayInShanghai, validateDateRange } from './dates.ts';
 import type { components } from '../generated/api';
+import { randomId } from './random-id.ts';
 
 export type Frequency = components['schemas']['PythonCreate']['frequency'];
 // The source design selects its first option, 分钟. Never infer this from Python code.
@@ -19,7 +20,7 @@ export function readDrafts(): Draft[] {
 }
 export function saveDraft(draft: Draft) { const drafts = readDrafts(); const next = {...draft, frequency: resolveFrequency(draft.frequency)}; const index = drafts.findIndex(d => d.id === draft.id); if (index >= 0) drafts[index] = next; else drafts.unshift(next); localStorage.setItem(key, JSON.stringify(drafts)); }
 export function newDraft(name = '未命名策略', folder = ''): Draft {
-  return {id: crypto.randomUUID(), name, source: '', folder, start: '', end: '', capital: DEFAULT_CAPITAL, frequency: DEFAULT_FREQUENCY, updated: ''};
+  return {id: randomId(), name, source: '', folder, start: '', end: '', capital: DEFAULT_CAPITAL, frequency: DEFAULT_FREQUENCY, updated: ''};
 }
 export function readFolders(): string[] { const raw = localStorage.getItem(foldersKey); if (!raw) return []; const list: unknown = JSON.parse(raw); if (!Array.isArray(list) || !list.every(v => typeof v === 'string')) throw new Error('本地文件夹记录无法读取。'); return list; }
 export const editorHref = (id: string) => 'strategy-editor.html?draft=' + encodeURIComponent(id);

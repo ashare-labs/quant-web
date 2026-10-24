@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { randomId } from '../shared/random-id';
 import { download, errorText, object } from '../shared/api';
 import { DEFAULT_FREQUENCY, newDraft, readDrafts, resolveFrequency, saveDraft, validateDraftConfig, type Draft } from '../shared/drafts';
 import { todayInShanghai, validDate, validateDateRange } from '../shared/dates';
@@ -67,7 +68,7 @@ export function EditorPage() {
       setSaving(true);setError('');setSaved('保存中…');
       if(!loadedPath&&draftId&&draft.folder)await createDirectory(draft.folder);
       await saveStrategyFile(target,draft.source,target===loadedPath);
-      const next={...draft,id:loadedPath&&target!==loadedPath?crypto.randomUUID():draft.id,name:displayName(target),filePath:target,capital:unformatCapital(draft.capital),frequency:resolveFrequency(draft.frequency),updated:new Date().toISOString()};
+      const next={...draft,id:loadedPath&&target!==loadedPath?randomId():draft.id,name:displayName(target),filePath:target,capital:unformatCapital(draft.capital),frequency:resolveFrequency(draft.frequency),updated:new Date().toISOString()};
       setLoadedPath(target);setDraft(next);
       history.replaceState(null,'',fileHref(target));
       try{saveDraft(next);setSaved('已保存');setDirty(false);}
@@ -83,7 +84,7 @@ export function EditorPage() {
     try{
       const original=readPending();
       if(!original&&[startInput.current,endInput.current].some(input=>input?.validity.badInput))throw new Error('请选择有效的开始和结束日期。');
-      const request=original||submission({...draft,frequency},catalogue.data,crypto.randomUUID());
+      const request=original||submission({...draft,frequency},catalogue.data,randomId());
       setPending(request);
       const job=await submit(request);
       leaving.current=true;

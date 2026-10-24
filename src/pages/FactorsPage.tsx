@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { randomId } from '../shared/random-id';
 import { active, api, ApiError, csv, download, errorText, num, type JobLogs } from '../shared/api';
 import { Empty, ErrorNotice, JsonDetails, Modal, Reason, Status, useResource } from '../shared/ui';
 import type { Catalogue, Factor, Job, Result, Source, Submission } from '../factors/api';
@@ -29,7 +30,7 @@ export function FactorsPage() {
       const selected=retry&&pending?items.find(f=>f.id===pending.factor_id):factor;
       if(!selected)throw new Error('请选择可用的因子。');
       if(!retry&&!sources.data?.items.some(s=>s.id===draft.source&&compatible(s,selected)))throw new Error('所选来源不能计算此因子。');
-      const request=retry&&pending?pending:submission(draft,selected,catalogue.data.environment_id,crypto.randomUUID());
+      const request=retry&&pending?pending:submission(draft,selected,catalogue.data.environment_id,randomId());
       localStorage.setItem(pendingKey,JSON.stringify(request));setPending(request);
       const accepted=await api<Job>('/factors/jobs',request);
       if(accepted.contract_version!=='factor-jobs.v1'||!/^m2job-[a-f0-9]{32}$/.test(accepted.job_id)||!containsRequest(accepted.request,request))throw new Error('返回任务与原请求不一致。原请求已保留，请先核对服务状态。');
