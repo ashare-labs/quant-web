@@ -1,6 +1,7 @@
 import {api, errorText, object, type Row} from '../shared/api.ts';
 import {acceptedAnalysis, analysisPath, type Analysis} from '../results/model.ts';
 import type {BacktestRecord} from './history-model.ts';
+import { frozenSource } from '../strategies/project-model.ts';
 
 export interface ComparisonColumn {
   result: Row|null;
@@ -42,7 +43,7 @@ export async function readComparison(records:BacktestRecord[],mode:'results'|'so
     if(mode==='results')return readResult(record,signal);
     const result=await api<Row>('/history/jobs/'+encodeURIComponent(record.id)+'/manifest',undefined,signal);
     if(result.job_id!==record.id)throw new Error('返回的记录与所选回测不一致，已停止对比。');
-    if(typeof object(result.request).source!=='string')throw new Error('此记录没有可读取的冻结源码。');
+    frozenSource(result.request);
     return {...emptyColumn(),result};
   }));
 }

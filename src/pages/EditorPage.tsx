@@ -7,11 +7,22 @@ import { unformatCapital } from '../shared/capital';
 import { childPath, createDirectory, displayName, fileHref, fileName, parentDirectory, readStrategyFile, saveStrategyFile, StrategySaveError } from '../shared/strategy-files';
 import { CapitalInput } from '../shared/CapitalInput';
 import { ErrorNotice, JsonDetails, useResource } from '../shared/ui';
-import { environment, submitCurrent } from '../backtests/submission';
+import { checkSourceBudget, environment, submitCurrent } from '../backtests/submission';
 import { backtestsHref } from '../backtests/history-model';
 import { requestStrategy } from '../backtests/history-api';
 import { commitEditorSave, editedDraft, findEditorDraft, openFileDraft, openResolvedFileDraft, retainEditorDraft, savedEditorDraft } from '../shared/editor-state';
-export function EditorPage() {
+import { CodeEditor } from '../strategies/CodeEditor';
+import { ProjectEditor } from '../strategies/ProjectEditor';
+import { strategyEditorHref } from '../strategies/project-model';
+export function EditorPage(){
+  const params=new URLSearchParams(location.search),jobId=params.get('job'),project=params.get('project');
+  const manifest=useResource<Record<string,unknown>>(jobId?'/history/jobs/'+encodeURIComponent(jobId)+'/manifest':null);
+  if(project&&!jobId)return <ProjectEditor identity={project}/>;
+  if(jobId&&manifest.loading)return <p className="empty" role="status">正在读取历史源码…</p>;
+  if(jobId&&object(manifest.data?.request).project)return <ProjectEditor manifest={manifest.data!} jobId={jobId}/>;
+  return <SingleFileEditor frozenManifest={manifest.data??undefined} historyError={manifest.error}/>;
+}
+function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<string,unknown>;historyError:string}) {
   const [params] = useState(() => new URLSearchParams(location.search));
   const draftId = params.get('draft'), jobId = params.get('job'), path = params.get('file');
   const readOnly = !!jobId, file = useRef<HTMLInputElement>(null);
@@ -26,7 +37,7 @@ export function EditorPage() {
   const [draft,setDraft] = useState<Draft>(() => ({...newDraft(), ...(readOnly ? {capital:'',frequency:undefined} : {})}));
   const draftRef=useRef(draft), fileSource=useRef<string|null>(null);
   function showDraft(next:Draft){draftRef.current=next;setDraft(next);}
-  const manifest = useResource<Record<string,unknown>>(jobId?'/history/jobs/'+encodeURIComponent(jobId)+'/manifest':null);
+  const manifest = {data:frozenManifest,error:historyError};
   const catalogue = useResource<Record<string,unknown>>(readOnly?null:'/python/catalogue');
   useEffect(()=>{
     if(readOnly||(!path&&!draftId))return;
@@ -119,8 +130,8 @@ export function EditorPage() {
   const frequency=draft.frequency??(readOnly?'':DEFAULT_FREQUENCY);
   const recordedStrategy=requestStrategy(manifest.data?.request),savedPath=loadedPath||draft.filePath;
   const listHref=jobId?backtestsHref({job:jobId}):savedPath?backtestsHref({strategy:savedPath}):draftId?backtestsHref({draft:draftId}):null;
-  return <><div className="subnav"><div><a href="strategies.html" aria-label="返回策略列表"><i className="fa fa-angle-left" aria-hidden="true"/></a> <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e=>edit({name:e.target.value})}/></div><nav>{readOnly&&recordedStrategy?<a href={fileHref(recordedStrategy)}>编辑策略</a>:<span>编辑策略</span>}{listHref?<a href={listHref}>回测列表</a>:<span aria-disabled="true" title="保存策略后可查看回测列表">回测列表</span>}</nav></div>
-  <section className="editor"><div className="codepane"><div className="pane-tools"><button disabled={locked} onClick={()=>save()}>保存</button><span className="note" role="status">{readOnly?'历史源码 · 只读':loading?'正在读取…':saved}</span><button disabled={locked} onClick={()=>file.current?.click()}>导入 Python</button><button disabled={!draft.source} onClick={()=>download(fileName(draft.name),draft.source)}>导出代码</button><input ref={file} type="file" accept=".py,.txt" hidden onChange={async e=>{const selected=e.target.files?.[0];if(!selected)return;try{if(selected.size>262144)throw new Error('源码不能超过 256 KiB。');const source=await selected.text();edit({source});setError('');}catch(err){setError(errorText(err));}e.target.value='';}}/></div><textarea className="code-editor" aria-label="Python 策略代码" spellCheck={false} readOnly={locked} value={draft.source} placeholder={"from aquant import *\n\n# 在此编写或导入你的 Python 策略"} onChange={e=>edit({source:e.target.value})} onKeyDown={e=>{if(e.key==='Tab'&&!locked){e.preventDefault();const el=e.currentTarget,a=el.selectionStart,b=el.selectionEnd;edit({source:draft.source.slice(0,a)+'    '+draft.source.slice(b)});requestAnimationFrame(()=>{el.selectionStart=el.selectionEnd=a+4;});}}}/></div>
+  return <><div className="subnav"><div><a href="strategies.html" aria-label="返回策略列表"><i className="fa fa-angle-left" aria-hidden="true"/></a> <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e=>edit({name:e.target.value})}/></div><nav>{readOnly&&recordedStrategy?<a href={strategyEditorHref(recordedStrategy)}>编辑策略</a>:<span>编辑策略</span>}{listHref?<a href={listHref}>回测列表</a>:<span aria-disabled="true" title="保存策略后可查看回测列表">回测列表</span>}</nav></div>
+  <section className="editor"><div className="codepane"><div className="pane-tools"><button disabled={locked} onClick={()=>save()}>保存</button><span className="note" role="status">{readOnly?'历史源码 · 只读':loading?'正在读取…':saved}</span><button disabled={locked} onClick={()=>file.current?.click()}>导入 Python</button><button disabled={!draft.source} onClick={()=>download(fileName(draft.name),draft.source)}>导出代码</button><input ref={file} type="file" accept=".py,.txt" hidden onChange={async e=>{const selected=e.target.files?.[0];if(!selected)return;try{const source=await selected.text();checkSourceBudget({'strategy.py':source},catalogue.data);edit({source});setError('');}catch(err){setError(errorText(err));}e.target.value='';}}/></div><CodeEditor key={loadedPath||draftId||jobId||'single'} path={loadedPath||'strategy.py'} value={draft.source} readOnly={locked} onChange={source=>edit({source})}/></div>
   <div className="output"><div className="pane-tools config-tools"><label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft.start} readOnly={locked} onChange={e=>edit({start:e.target.value})}/></label><label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start)?draft.start:undefined} max={today} value={draft.end} readOnly={locked} onChange={e=>edit({end:e.target.value})}/></label><label>初始资金<CapitalInput value={draft.capital} readOnly={locked} onChange={capital=>edit({capital})}/></label><select aria-label="运行频率" value={frequency} disabled={locked} onChange={e=>edit({frequency:resolveFrequency(e.target.value)})}>{readOnly&&!frequency&&<option value="" disabled>未记录</option>}<option value="1m">分钟</option><option value="1d">日</option></select><span className="runtime-label">Python3 · aquant</span><button className="primary" disabled={locked||!serviceReady} onClick={()=>void run()}>{submitting?'正在提交…':'开始回测'}</button></div>
   <ErrorNotice message={error||retentionError||dateError||manifest.error||catalogue.error||serviceError} retry={catalogue.error?catalogue.refresh:undefined}/>
   {aliasBackup&&<div className="notice" role="status">已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。<a href={editorHref(aliasBackup.id)}>查看保留草稿</a></div>}

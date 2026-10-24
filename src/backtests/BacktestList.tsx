@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { pct } from '../shared/api';
-import { fileHref } from '../shared/strategy-files';
+import { strategyEditorHref } from '../strategies/project-model';
 import { ErrorNotice } from '../shared/ui';
 import { BacktestComparison } from './BacktestComparison';
 import { createdTime, duration, frequencyLabel, lastPage, optionalColumns, optionalValue, pageOf, pageSize, recordStatus, resultHref, returnClass, selectRecords, type BacktestRecord, type OptionalColumn, type StrategyBacktests, type StrategyIdentity } from './history-model';
@@ -18,7 +18,7 @@ export function BacktestList({identity, data, loading, error, refresh, editor}: 
   const chosen = filtered.filter(record=>selected.has(record.id));
   const extraColumns = optionalColumns.filter(column=>column.key!=='created'&&columns.has(column.key));
   const latest = selectRecords(data?.records || [],'')[0], strategy = data?.strategy || identity;
-  const editorLink = editor || (strategy.path ? fileHref(strategy.path) : null);
+  const editorLink = editor || (strategy.id ? strategyEditorHref(strategy.id) : null);
   useEffect(()=>{if(allCheckbox.current)allCheckbox.current.indeterminate=checked>0&&checked<visible.length;},[checked,visible.length]);
   useEffect(()=>{setSearch('');setPage(1);setSelected(new Set());setComparison(null);},[identity.id]);
   function toggle(id:string, checked:boolean) {setSelected(previous=>{const next=new Set(previous);checked?next.add(id):next.delete(id);return next;});}

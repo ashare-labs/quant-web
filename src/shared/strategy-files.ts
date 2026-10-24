@@ -1,6 +1,6 @@
 import type { components } from '../generated/api';
 import { api, ApiError, object } from './api.ts';
-import { isStrategyId, isStrategyPath } from './strategy-path.ts';
+import { isProjectId, isStrategyFilePath, isStrategyPath } from './strategy-path.ts';
 
 export type StrategyDirectory = components['schemas']['StrategyDirectory'];
 type StrategyPath = components['schemas']['StrategyPath'];
@@ -23,7 +23,7 @@ export function childPath(folder: string, name: string, python = false) {
 
 export function fileIdentity(value: unknown, uncertain = false): StrategyFilePath {
   const result=object(value);
-  if(!isStrategyId(result.path)||result.strategy_id!==result.path)throw new ApiError('文件响应的路径或策略身份无效。','INVALID_RESPONSE',uncertain);
+  if(!isStrategyFilePath(result.path)||result.strategy_id!==result.path)throw new ApiError('文件响应的路径或策略身份无效。','INVALID_RESPONSE',uncertain);
   return {path:result.path,strategy_id:result.path};
 }
 export function strategyDirectory(value: unknown): StrategyDirectory {
@@ -32,8 +32,9 @@ export function strategyDirectory(value: unknown): StrategyDirectory {
   for(const item of result.entries){
     const entry=object(item);
     if(!isStrategyPath(entry.path)||parentDirectory(entry.path)!==result.path||entry.name!==entry.path.split('/').at(-1)
-      ||!['directory','file'].includes(String(entry.kind))||seen.has(entry.path))throw new ApiError('目录项路径不属于当前目录或格式无效。','INVALID_RESPONSE',false);
+      ||!['directory','file','project'].includes(String(entry.kind))||seen.has(entry.path))throw new ApiError('目录项路径不属于当前目录或格式无效。','INVALID_RESPONSE',false);
     if(entry.kind==='file')fileIdentity(entry);
+    else if(entry.kind==='project'){if(!isProjectId(entry.strategy_id))throw new ApiError('项目身份无效。','INVALID_RESPONSE',false);}
     else if(entry.strategy_id!=null)throw new ApiError('目录不能作为策略文件。','INVALID_RESPONSE',false);
     seen.add(entry.path);
   }
@@ -46,7 +47,7 @@ export async function createDirectory(path: string) {
   return result;
 }
 export async function readStrategyFile(path: string, signal?: AbortSignal) {
-  if(!isStrategyId(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
+  if(!isStrategyFilePath(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
   const result = await api<StrategySource>('/python/files?path=' + encodeURIComponent(path), undefined, signal);
   fileIdentity(result);
   if (typeof result.source !== 'string') throw new ApiError('文件响应源码无法读取。', 'INVALID_RESPONSE', false);
@@ -60,7 +61,7 @@ export class StrategySaveError extends Error {
 }
 
 export async function saveStrategyFile(path: string, source: string, overwrite: boolean) {
-  if(!isStrategyId(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
+  if(!isStrategyFilePath(path))throw new ApiError('策略文件路径无效。','INVALID_PATH',false);
   const body: StrategySave = {path, source, overwrite};
   try {
     const result = await api<StrategyFilePath>('/python/files', body, undefined, false, 'PUT');

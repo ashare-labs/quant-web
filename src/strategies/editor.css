@@ -1,0 +1,166 @@
+.python-code-editor {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 200px;
+  background: #272822;
+  color: #e6e6cf;
+  line-height: 1.8;
+}
+
+.python-code-editor.ace_editor { line-height: 1.8; }
+
+.python-code-editor.ace-monokai .ace_gutter {
+  background: #272822;
+  color: #85877d;
+}
+
+.python-code-editor.ace-monokai .ace_gutter-active-line,
+.python-code-editor.ace-monokai .ace_marker-layer .ace_active-line {
+  background: #303129;
+}
+
+/* The original code-pane rule targets textarea; Ace owns its hidden text input. */
+.codepane .python-code-editor textarea.ace_text-input {
+  flex: none;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  line-height: normal;
+  background: transparent;
+  color: transparent;
+}
+
+.project-code-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.project-code-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.codepane .project-code-main .python-code-editor { min-height: 0; }
+
+.project-file-tab {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-height: 39px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #3d3f36;
+  background: #24251f;
+  color: #e6e6cf;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.project-file-tab .muted { color: #a0a296; }
+
+.project-files {
+  display: flex;
+  flex: 0 0 184px;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 184px;
+  border-right: 1px solid #45463f;
+  background: #23241f;
+  color: #c5c8b8;
+  font-size: 12px;
+}
+
+.project-files.is-collapsed { flex-basis: 34px; width: 34px; }
+
+.project-files-heading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 39px;
+  border-bottom: 1px solid #3d3f36;
+}
+
+.project-files-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  padding-left: 12px;
+}
+
+.project-files-title > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-files-title > .fa { color: #b8bdac; }
+.project-files-scroll { flex: 1; min-height: 0; overflow: auto; padding: 7px 0; }
+.project-files-list { list-style: none; margin: 0; padding: 0; }
+
+.project-files button {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  outline-offset: -2px;
+}
+
+.project-files button:hover { background: #34372e; }
+.project-files button:focus-visible { outline: 2px solid #82b2e8; }
+.project-files button:disabled:hover { background: transparent; }
+
+.project-file-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  width: 100%;
+  padding: 6px 9px 6px 26px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.project-file-row > .fa { flex-shrink: 0; color: #a1a995; }
+.project-file-row > .fa-angle-right,.project-file-row > .fa-angle-down { width: 7px; }
+.project-file-name { overflow: hidden; text-overflow: ellipsis; }
+.project-files .project-file-row.is-active { background: #3c4335; color: #eef2df; }
+.project-files .project-file-row.is-active > .fa { color: #a9cb78; }
+.project-entry-tag { margin-left: auto; color: #a8c77c; font-size: 10px; }
+.project-system-file { padding-left: 26px; margin-top: 5px; color: #a4a999; }
+.project-system-tag { margin-left: auto; color: #969a8d; font-size: 10px; }
+
+.project-file-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  border-top: 1px solid #3d3f36;
+  padding: 5px 6px;
+}
+
+.project-files .project-tree-button { min-height: 34px; min-width: 32px; padding: 6px 8px; }
+.project-files-heading .project-tree-button { flex-shrink: 0; }
+
+@media (max-width: 1100px) {
+  .project-files { flex-basis: 158px; width: 158px; }
+}
+
+@media (max-width: 480px) {
+  .project-files { flex-basis: 142px; width: 142px; }
+  .project-files .project-tree-button { min-width: 30px; padding: 6px; }
+  .project-file-actions { gap: 2px; padding-inline: 4px; }
+  .project-entry-tag,.project-system-tag { font-size: 9px; }
+}
+.project-rename{border:0;background:transparent;color:var(--accent,#255DA8);padding:4px 8px;cursor:pointer}
+.project-entry-label{font-size:11px;color:#bfc7a8;margin-left:8px;white-space:nowrap}
+.source-file-select{display:flex;gap:12px;align-items:center;margin:12px 0}
+.source-file-select select{min-width:240px;max-width:100%}
+.comparison-code{height:440px;min-width:0;display:flex;background:#272822}
+.comparison-code .python-code-editor{min-height:0}
+.editor-loading{padding:24px;color:#a4a999}

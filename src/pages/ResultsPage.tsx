@@ -4,7 +4,7 @@ import {DataTable} from '../shared/DataTable';
 import {Empty,ErrorNotice,JsonDetails,Reason,Status,useResource} from '../shared/ui';
 import {backtestsHref} from '../backtests/history-model';
 import {requestStrategy} from '../backtests/history-api';
-import {fileHref} from '../shared/strategy-files';
+import {strategyEditorHref} from '../strategies/project-model';
 import {editorHref} from '../shared/drafts';
 import {acceptedAnalysis,analysisPath,holdingRows,money,reasonText,timeParts,tradeRows} from '../results/model';
 import {ResultOverview} from '../results/ResultOverview';
@@ -26,7 +26,7 @@ export function ResultsPage(){
   const request=object(j?.request),frequency=request.frequency==='1d'?'日频':request.frequency==='1m'?'分钟':String(request.frequency||'—');
   const name=String(j?.request.name||r?.name||'回测结果');
   const strategyId=requestStrategy(request),listHref=strategyId?backtestsHref({strategy:strategyId}):id?backtestsHref({job:id}):null;
-  const editHref=strategyId?fileHref(strategyId):q.get('draft')?editorHref(q.get('draft')!):null;
+  const editHref=strategyId?strategyEditorHref(strategyId):q.get('draft')?editorHref(q.get('draft')!):null;
   const refresh=()=>{job.refresh();result.refresh();log.refresh();derived.refresh();};
   const dailyReturns=new Map(analysis?.series.map(point=>[point.date,point])??[]);
   async function cancel(){

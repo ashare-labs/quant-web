@@ -705,6 +705,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/python/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Strategy Project */
+        get: operations["read_strategy_project_api_v1_python_projects_get"];
+        /** Save Strategy Project */
+        put: operations["save_strategy_project_api_v1_python_projects_put"];
+        /** Create Strategy Project */
+        post: operations["create_strategy_project_api_v1_python_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/python/projects/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move Strategy Project */
+        post: operations["move_strategy_project_api_v1_python_projects_move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/runs": {
         parameters: {
             query?: never;
@@ -2126,6 +2162,63 @@ export interface components {
              */
             start: string;
         };
+        /** ProjectCreate */
+        ProjectCreate: {
+            /**
+             * Entrypoint
+             * @default main.py
+             */
+            entrypoint: string;
+            /** Path */
+            path: string;
+        };
+        /** ProjectMove */
+        ProjectMove: {
+            /** Destination */
+            destination: string;
+            /** Expected Revision */
+            expected_revision: string;
+            /** Path */
+            path: string;
+            /** Strategy Id */
+            strategy_id: string;
+        };
+        /** ProjectSave */
+        ProjectSave: {
+            /**
+             * Entrypoint
+             * @default main.py
+             */
+            entrypoint: string;
+            /** Expected Revision */
+            expected_revision: string;
+            /** Files */
+            files: {
+                [key: string]: string;
+            };
+            /** Path */
+            path: string;
+            /** Strategy Id */
+            strategy_id: string;
+        };
+        /** ProjectSource */
+        ProjectSource: {
+            /**
+             * Entrypoint
+             * @default main.py
+             */
+            entrypoint: string;
+            /** Files */
+            files: {
+                [key: string]: string;
+            };
+            /** Path */
+            path: string;
+            /** Revision */
+            revision: string;
+            /** Strategy Id */
+            strategy_id: string;
+        };
         /** PythonCreate */
         PythonCreate: {
             /**
@@ -2159,13 +2252,14 @@ export interface components {
             parameters?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+            project?: components["schemas"]["PythonProject"] | null;
             /**
              * Securities
              * @default []
              */
             securities: string[];
             /** Source */
-            source: string;
+            source?: string | null;
             /**
              * Start Date
              * Format: date
@@ -2278,7 +2372,7 @@ export interface components {
              * @default python-demand-job.v2
              * @enum {string}
              */
-            schema_version: "python-minute-job.v1" | "python-demand-job.v2";
+            schema_version: "python-minute-job.v1" | "python-demand-job.v2" | "python-project-job.v3";
             /** Service Identity */
             service_identity: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2293,6 +2387,17 @@ export interface components {
             session_sha256: string;
             /** Source Sha256 */
             source_sha256: string;
+        };
+        /** PythonProject */
+        PythonProject: {
+            /** Entrypoint */
+            entrypoint: string;
+            /** Files */
+            files: {
+                [key: string]: string;
+            };
+            /** Project Id */
+            project_id: string;
         };
         /** PythonResult */
         PythonResult: {
@@ -2531,7 +2636,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev25
+             * @default 0.12.0.dev27
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -3041,7 +3146,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "directory" | "file";
+            kind: "directory" | "file" | "project";
             /** Name */
             name: string;
             /** Path */
@@ -6568,6 +6673,317 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PythonJobView"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_strategy_project_api_v1_python_projects_get: {
+        parameters: {
+            query?: {
+                path?: string | null;
+                strategy_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSource"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_strategy_project_api_v1_python_projects_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSource"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_strategy_project_api_v1_python_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSource"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    move_strategy_project_api_v1_python_projects_move_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectMove"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSource"];
                 };
             };
             /** @description Forbidden */

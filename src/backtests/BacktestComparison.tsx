@@ -4,9 +4,11 @@ import { ErrorNotice, Modal } from '../shared/ui';
 import { metricDefinitions, metricText, reasonText, resultMetrics } from '../results/model';
 import { comparisonNotes, readComparison, type ComparisonColumn } from './comparison-api';
 import { createdTime, frequencyLabel, recordStatus, type BacktestRecord } from './history-model';
+import { frozenSource, sameProjectSource, sourceChanges } from '../strategies/project-model';
+import { CodeEditor } from '../strategies/CodeEditor';
 
 export function BacktestComparison({records, mode, close}: {records: BacktestRecord[]; mode:'results'|'source'; close:()=>void}) {
-  const [data,setData] = useState<ComparisonColumn[]|null>(null), [error,setError] = useState('');
+  const [data,setData] = useState<ComparisonColumn[]|null>(null), [error,setError] = useState(''),[selectedFile,setSelectedFile]=useState('');
   useEffect(() => {
     const controller = new AbortController();
     setData(null);setError('');
@@ -21,6 +23,9 @@ export function BacktestComparison({records, mode, close}: {records: BacktestRec
     ['初始资金',r=>num(r.initialCash,2)],['期末权益',(_,i)=>num(object(data?.[i].result?.summary).final_equity,2)],
   ];
   const metrics=data?.map(column=>resultMetrics(object(column.result?.summary),column.analysis));
+  const sources=data&&mode==='source'?data.map(column=>frozenSource(column.result?.request)):null;
+  const changes=sources?sourceChanges(sources[0],sources[1]):[],currentFile=changes.some(item=>item.path===selectedFile)?selectedFile:changes[0]?.path;
+  const changeLabels:Record<string,string>={added:'新增',removed:'删除',changed:'修改',unchanged:'相同'};
   return <Modal title={mode==='source'?'代码对比':'回测对比'} close={close} wide>
     <ErrorNotice message={error}/>
     {!data&&!error&&<p className="empty" role="status">正在读取所选回测…</p>}
@@ -42,6 +47,8 @@ export function BacktestComparison({records, mode, close}: {records: BacktestRec
       </tbody></table></div>
       <p className="note">与收益概述使用同一份冻结结果分析；缺失值保留“—”。运行频率、资金和参数不同可并列查看。</p>
     </>}
-    {data&&mode==='source'&&<><p role="status">{object(data[0].result?.request).source===object(data[1].result?.request).source?'两次回测的源码相同。':'两次回测的源码不同。'}</p><div className="source-comparison">{records.map((record,index)=><section key={record.id}><h3>{record.name}</h3><p className="note">{createdTime(record.createdAt).join(' ')}</p><pre tabIndex={0} aria-label={'第 '+(index+1)+' 次回测源码'}><code>{String(object(data[index].result?.request).source)}</code></pre></section>)}</div></>}
+    {sources&&<><p role="status">{sameProjectSource(sources[0],sources[1])?'两次回测的完整源码与入口相同。':'两次回测的源码或入口不同。'}</p>
+      <label className="source-file-select">对比文件<select value={currentFile} onChange={e=>setSelectedFile(e.target.value)}>{changes.map(item=><option key={item.path} value={item.path}>{item.path} · {changeLabels[item.status]}</option>)}</select></label>
+      <div className="source-comparison">{records.map((record,index)=><section key={record.id}><h3>{record.name}</h3><p className="note">{createdTime(record.createdAt).join(' ')} · 入口：{sources[index].entrypoint}</p>{Object.hasOwn(sources[index].files,currentFile)?<div className="comparison-code"><CodeEditor key={record.id} path={currentFile} value={sources[index].files[currentFile]} readOnly onChange={()=>{}}/></div>:<p className="empty">此版本不包含 {currentFile}</p>}</section>)}</div></>}
   </Modal>;
 }

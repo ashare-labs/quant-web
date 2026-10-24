@@ -3,24 +3,26 @@
 | 顺序 | 页面 | 入口 | 已实现能力 |
 | --- | --- | --- | --- |
 | 1 | 入口总览 | index.html | 三个模块导航、服务连接状态 |
-| 2 | 策略列表 | strategies.html | 全部文件、目录导航、搜索、新建文件/文件夹、服务端文件读取 |
-| 3 | 策略编辑 | strategy-editor.html | Python 编辑、导入导出、服务端源码保存，开始/结束日期、初始资金与运行频率同页；历史源码只读 |
+| 2 | 策略列表 | strategies.html | 分类目录导航、搜索、新建单文件/策略项目/文件夹、服务端读取 |
+| 3 | 策略编辑 | strategy-editor.html | Python 高亮编辑、项目文件树、导入导出、完整源码保存，开始/结束日期、初始资金与运行频率同页；历史源码只读 |
 | 4 | 历史回测结果 | backtest-results.html | 状态、权益、成交、持仓、日志、取消、可读 CSV 与诊断 JSON |
 | 5 | 模拟策略列表 | simulations.html | 既有会话列表/状态筛选/历史记录；写操作不可用 |
 | 6 | 因子看板 | factors.html | 目录分类/来源筛选/搜索/排序/分页，定义详情，真实来源/证券/日期计算评价，日志、取消、刷新找回、导出 |
 | 7 | 当前策略的回测列表 | backtests.html | 按完整策略身份查询全部运行、搜索、分页、可选列、冻结结果/源码对比、回到策略和单次结果 |
 
-接口契约采用 AQ f683085（0.12.0.dev25）导出，配对 AD 3eb3f69（0.10.0.dev22），包含本机文件保存、按需取数、策略归属查询和按任务冻结的执行预算。`contracts/api.openapi.json` 与该提交导出一致，TypeScript 契约通过 `contracts:generate` 重新生成；paper 契约未变。本候选的正式服务联合接入由后端负责，旧服务404仍明确报错，不能当作没有记录。
+接口契约采用 AQ 0.12.0.dev27 的项目支持工作树导出，配对 AD 3eb3f69（0.10.0.dev22），包含本机项目保存、完整源码快照、按需取数、策略归属查询和按任务冻结的执行预算。`contracts/api.openapi.json` 与该候选导出一致，TypeScript 契约通过 `contracts:generate` 重新生成；paper 契约未变。本候选的正式服务联合接入由后端负责，旧服务404仍明确报错，不能当作没有记录。
 
 | 用户操作 | API 或存储 |
 | --- | --- |
 | 列出目录/文件、新建文件夹 | GET /api/v1/python/directories?path=；POST /api/v1/python/directories `{path}` |
 | 打开源码 | GET /api/v1/python/files?path= |
 | 新建空文件、保存源码 | PUT /api/v1/python/files `{path, source, overwrite}` |
+| 创建、读取、保存项目 | POST/GET/PUT /api/v1/python/projects；GET 可用 path 或 strategy_id；PUT 包含 expected_revision |
+| 项目改名或移动 | POST /api/v1/python/projects/move；稳定 strategy_id 保持 |
 | 当前未保存源码、名称、日期、资金和运行频率 | 同一条现有浏览器 Draft；按完整文件路径或草稿 ID 恢复；不冒充服务端已保存内容 |
 | 结果页对应源码 | GET /api/v1/history/jobs/{id}/manifest |
 | 独立回测结果、日志 | GET /api/v1/history/jobs/{id}、/{id}/result、/{id}/logs |
-| 某策略全部回测 | GET /api/v1/python/backtests?strategy_id=完整相对路径&limit=100&offset=0 |
+| 某策略全部回测 | GET /api/v1/python/backtests?strategy_id=相对路径或稳定项目ID&limit=100&offset=0 |
 | 创建 Python 回测 | GET /api/v1/python/catalogue；POST /api/v1/python/jobs，显式 frequency；不发送外部 securities 或 warmup_sessions |
 | 当前 Python 状态、取消 | GET /api/v1/python/jobs/{id}；POST /{id}/cancel |
 | 因子目录、数据来源 | GET /api/v1/factors/catalogue、/sources |
@@ -30,7 +32,7 @@
 
 ## 明确缺口
 
-- 服务端文件接口只存 Python 源码，不存日期/资金/频率，不提供重命名、策略删除或版本系统。目录响应没有修改时间，列表相应显示“—”，不借用浏览器时间冒充文件时间。
+- 旧单文件接口只存 Python 源码，不提供文件重命名/删除；项目接口支持整体改名移动及内部文件编辑。两种模式均不存日期/资金/频率，不提供完整策略项目删除或通用版本系统。目录响应没有修改时间，列表相应显示“—”，不借用浏览器时间冒充文件时间。
 - paper 创建/推进/暂停/恢复已退役，页面不把本地记录冒充运行中的模拟交易。
 - 指数历史成分池、稿件里的组合回测/交易过滤/预计算全目录 IC 排名无对应接口。不复制稿件的历史账户数据；列表 IC/IR 不伪造，所选真实任务的统计评价可读。
 - 任意 Python 内存不能断点续跑；无假恢复按钮。状态优先使用 display_status；retired/runtime_unavailable 不展示为等待运行。
@@ -44,7 +46,7 @@
 
 ## 策略所属回测列表
 
-`strategy_id` 的身份模型为 `saved_relative_path`：完整相对路径代表保存的策略位置；不同目录的同名文件互不合并；同一位置编辑源码后的运行仍在同一列表；改名后保存会创建新的文件位置，原文件和原记录保留。已保存文件的新请求显式绑定该身份，尚未保存的纯浏览器草稿仍可提交但保持未归属。请求的策略身份不会为了列表归属而被客户端猜配或改写。
+旧单文件 `strategy_id` 的身份模型为 `saved_relative_path`：完整相对路径代表保存的策略位置；不同目录的同名文件互不合并；同一位置编辑源码后的运行仍在同一列表；改名后保存会创建新的文件位置，原文件和原记录保留。已保存文件的新请求显式绑定该身份，尚未保存的纯浏览器草稿仍可提交但保持未归属。请求的策略身份不会为了列表归属而被客户端猜配或改写。
 
 列表只发显式 `strategy_id` 的 `/python/backtests` 请求，不调用省略身份的未关联列表，不自行从 name、source、hash 或 localStorage 推测归属。响应及每行身份必须与选中策略相同；跨页加载直到 total，数量变化、缺页、重复 ID 或混入其他策略均报错，不呈现为完整成功。全部结果载入后按创建时间倒序显示、在当前策略内搜索，每页20条。当前运行中的任务每5秒重新读取；失败和无结果记录仍可进入单次详情。
 
@@ -135,3 +137,21 @@ Air Chrome 使用构建产物和独立故障接口验证了上述交互；故障
 ## aquant 策略导入
 
 编辑器提示 `from aquant import *`，也接受命名导入和 `import aquant as api`。运行时由 ashare-quant worker 提供，频率仍显式选择日或分钟。配套后端 catalogue.strategy_api 声明 module=aquant、distribution=ashare-quant、binding=runtime_only；旧入口提交返回 AQUANT_LEGACY_IMPORT。编辑器不静默替换源文或写入服务文件。历史页保留冻结旧源码；localStorage 草稿（包括不同设备和 Origin）需先导出备份，按后端 aquant-migration 指南审核后再导入保存。后端与此文案须一起集成；不以公网 aquant 安装代替受控后端包。
+
+## 多文件策略项目（0.5.0）
+
+保留原 `design.css`、导航与 46%/54% 分栏、#21305E 顶栏及 #272822 代码区。在原代码区域增量加入折叠文件树和当前文件标签，右侧日期/资金/日分钟、六指标、日志位置不变。正式依赖 `ace-builds@1.43.3` 提供 Python/TOML 词法高亮、行号、4 空格缩进、按文件保留撤销与光标；没有新增 IDE、环境管理、插件系统、终端、股票池或找回原回测交互。
+
+列表区分可嵌套分类文件夹、不可嵌套策略项目和原单文件策略。新建项目默认 `main.py`，从原列表进入 `strategy-editor.html?project=aqproj-…`。编辑器可添加、改名/移动、删除项目内 `.py`，通过文件路径生成子目录，不持久空目录。入口必须保留且可以切换；改名会同步入口路径，代码中的 import 由用户修改。项目文件名及目录段符合 Python 模块名规则；路径穿越、大小写歧义、模块/包重名最终由后端校验。`aquant.toml` 仅展示系统描述：格式版本、稳定项目身份和入口；日期资金不进入描述。第三方依赖不打包进源码。
+
+项目模型与请求直接引用生成的 `PythonProject`、`ProjectSource`、`ProjectCreate/Save/Move` 类型。完整浏览器工作副本按稳定项目身份保留 `files`、入口、原始 revision、当前文件和运行参数。刷新/返回会重新按 ID 定位最新项目路径，并恢复所有未保存文件；服务版本变化时保留本地源码与旧 revision，标出冲突。保存不要求回测日期或资金已填。`expected_revision` 防止静默覆盖，用户可核对文件差异后明确选择服务版本，或保留当前编辑再保存。载入删除了当前文件的新版本时回到入口，不展示幽灵空文件。
+
+保存和移动的网络/持久化不确定状态只触发一次只读核对，不自动重复写入，不声称已确认成功。移动后按稳定 ID 定位；若读回源码也发生变化，保留原保存基线并进入冲突核对。损坏的浏览器工作副本不被新记录覆盖；存储配额失败保留内存编辑、离页提醒并阻止未跟踪的新提交。
+
+开始回测使用同一份完整 `project={project_id,entrypoint,files}` 与 `strategy_id`，不再附加 `source`。当前文件及所有其他未保存文件一并冻结，源文件、入口和参数均进入幂等内容签名；只改变辅助模块也会生成不同请求。文件映射键的顺序不造成误判。原单文件请求及未确认请求的签名格式兼容保留。项目与单文件均移除固定256KiB前端限额，以 catalogue 的 `resource_budget.file_bytes/artifact_bytes` 提示实际资源预算，后端仍做完整资源控制。
+
+项目回测列表接受 `identity_model=stable_project_id`，旧单文件仍要求 `saved_relative_path`。结果和回测列表跳回稳定ID编辑入口，项目改名移动不丢原归属；删除了当前项目也不阻止历史记录按冻结ID读取。历史 `python-project-job.v3` 按 manifest.request.project 展示完整文件树与入口；旧 `source` 历史原样读取。源码比较对全文件集合和入口判等，逐文件标出新增、删除、修改和相同，未把入口不变误报为整个项目未变。
+
+本轮验收包括生成契约对齐、TypeScript、既有回归和新增项目状态/HTTP协议测试；不修改用户策略和历史。浏览器视觉与真实点击验收为 **blocked**：Air 锁屏且明确禁止绕过，未调用浏览器/CUA/Playwright。构建与纯状态测试不代替视觉验收。真实日频/分钟引擎及包导入验证由 AQ 配对工作树负责，发布仍需协调人统一合并切换。
+
+升级无需重写旧策略或历史；新项目在首次创建时生成普通目录及系统描述。部署需同步 AQ 0.12.0.dev27 与 Web 0.5.0，并备份策略根目录和各浏览器 Origin 的工作副本。回退需同时回退成对服务/静态包，保留新项目目录和浏览器草稿作为可恢复数据；旧前端不能管理多文件项目，不应把项目辅助文件另存为独立策略。

@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 const pkg=JSON.parse(readFileSync('package.json','utf8'));
 mkdirSync('.local/packages',{recursive:true});
 const name=`.local/packages/quant-web-${pkg.version}.tgz`;
-execFileSync('tar',['-czf',name,'dist','README.md','docs','package.json']);
+execFileSync('tar',['-czf',name,'dist','README.md','docs','design-qa.md','CONTRIBUTING.md','package.json']);
 const sha256=createHash('sha256').update(readFileSync(name)).digest('hex');
 writeFileSync(name+'.sha256',sha256+'  '+name+'\n');
 console.log(JSON.stringify({file:name,sha256}));

@@ -2,7 +2,7 @@ import { DEFAULT_CAPITAL, parseCapital } from './capital.ts';
 import { todayInShanghai, validateDateRange } from './dates.ts';
 import type { components } from '../generated/api';
 import { randomId } from './random-id.ts';
-import { isStrategyId } from './strategy-path.ts';
+import { isStrategyFilePath } from './strategy-path.ts';
 
 export type Frequency = components['schemas']['PythonCreate']['frequency'];
 // The source design selects its first option, 分钟. Never infer this from Python code.
@@ -16,7 +16,7 @@ const key = 'quantweb-strategy-drafts-v1', foldersKey = 'quantweb-folders-v1';
 export function readDrafts(): Draft[] {
   const raw = localStorage.getItem(key); if (!raw) return [];
   const value: unknown = JSON.parse(raw);
-  if (!Array.isArray(value) || !value.every(v => v && ['id','name','source','folder','start','end','capital','updated'].every(k => typeof v[k] === 'string') && (v.filePath === undefined || typeof v.filePath === 'string') && (v.frequency === undefined || v.frequency === '1m' || v.frequency === '1d') && (v.workingCopy === undefined || typeof v.workingCopy === 'boolean') && (v.aliasSourcePath === undefined || isStrategyId(v.aliasSourcePath)))) throw new Error('本地草稿格式无法读取；原始内容已保留，请导出浏览器存储后检查。');
+  if (!Array.isArray(value) || !value.every(v => v && ['id','name','source','folder','start','end','capital','updated'].every(k => typeof v[k] === 'string') && (v.filePath === undefined || typeof v.filePath === 'string') && (v.frequency === undefined || v.frequency === '1m' || v.frequency === '1d') && (v.workingCopy === undefined || typeof v.workingCopy === 'boolean') && (v.aliasSourcePath === undefined || isStrategyFilePath(v.aliasSourcePath)))) throw new Error('本地草稿格式无法读取；原始内容已保留，请导出浏览器存储后检查。');
   return value as Draft[];
 }
 export function saveDraftUpdates(updates: Draft[]) {

@@ -1,6 +1,6 @@
 import { newDraft, readDrafts, saveDraft, saveDraftUpdates, type Draft } from './drafts.ts';
 import { displayName, fileIdentity, parentDirectory } from './strategy-files.ts';
-import { isStrategyId } from './strategy-path.ts';
+import { isStrategyFilePath } from './strategy-path.ts';
 import { randomId } from './random-id.ts';
 
 // The existing draft is the one editable working copy. Historical manifests
@@ -16,7 +16,7 @@ export function openFileDraft(path: string, source: string, stored?: Draft): Dra
 }
 
 export function openResolvedFileDraft(requestedPath: string, response: {path:string;strategy_id:string;source:string}, stored?: Draft) {
-  if(!isStrategyId(requestedPath))throw new Error('策略文件路径无效。');
+  if(!isStrategyFilePath(requestedPath))throw new Error('策略文件路径无效。');
   const canonical=fileIdentity(response).path;
   if(stored?.filePath&&stored.filePath!==requestedPath&&stored.filePath!==canonical)throw new Error('草稿与此次读取的策略文件不一致，原内容已保留。');
   const existing=findEditorDraft(canonical,null);

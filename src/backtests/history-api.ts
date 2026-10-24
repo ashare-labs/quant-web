@@ -1,7 +1,8 @@
 import type { components } from '../generated/api';
 import { api, ApiError, object, type HistoryJob } from '../shared/api.ts';
 import { displayName, readStrategyFile } from '../shared/strategy-files.ts';
-import { isStrategyId } from '../shared/strategy-path.ts';
+import { isProjectId, isStrategyId } from '../shared/strategy-path.ts';
+import { readProject } from '../strategies/project-api.ts';
 export { isStrategyId } from '../shared/strategy-path.ts';
 import { readDrafts } from '../shared/drafts.ts';
 import type { BacktestRecord, StrategyBacktests, StrategyIdentity } from './history-model.ts';
@@ -10,7 +11,7 @@ type Response = components['schemas']['StrategyBacktests'];
 type Item = components['schemas']['StrategyBacktest'];
 const jobPattern = /^m2job-[a-f0-9]{32}$/;
 export function requestStrategy(request: unknown) {const id=object(request).strategy_id;return isStrategyId(id)?id:null;}
-export function strategyIdentity(id:string):StrategyIdentity {return {id,path:id,name:displayName(id)};}
+export function strategyIdentity(id:string):StrategyIdentity {return {id,path:isProjectId(id)?null:id,name:isProjectId(id)?'策略项目':displayName(id)};}
 export function backtestQuery(strategyId:string, offset=0) {
   if(!isStrategyId(strategyId))throw new Error('策略标识无效，请从策略文件重新打开回测列表。');
   return '/python/backtests?'+new URLSearchParams({strategy_id:strategyId,limit:'100',offset:String(offset)}).toString();
@@ -39,6 +40,9 @@ export async function resolveStrategy(params:URLSearchParams,signal?:AbortSignal
     identity=(await readStrategyFile(draft.filePath,signal)).strategy_id;
   }
   if(!isStrategyId(identity))throw new Error('请从一个策略的“回测列表”入口查看记录。');
+  if(isProjectId(identity)){
+    try{const project=await readProject(identity,signal);return {id:identity,path:project.path,name:displayName(project.path)};}catch(error){if(signal?.aborted)throw error;/* Frozen history remains available after a project is removed. */}
+  }
   return strategyIdentity(identity);
 }
 export function normalizeBacktest(item:Item,strategyId:string):BacktestRecord {
@@ -64,7 +68,7 @@ export async function readStrategyBacktests(identity:StrategyIdentity,signal?:Ab
   const records:BacktestRecord[]=[],ids=new Set<string>();let total:number|undefined,unassociatedCount=0;
   for(let offset=0;total===undefined||offset<total;offset+=100){
     const response=await api<Response>(backtestQuery(identity.id,offset),undefined,signal);
-    if(!response||response.strategy_id!==identity.id||response.identity_model!=='saved_relative_path'||!Array.isArray(response.items)
+    if(!response||response.strategy_id!==identity.id||String(response.identity_model)!==(isProjectId(identity.id)?'stable_project_id':'saved_relative_path')||!Array.isArray(response.items)
       ||!Number.isSafeInteger(response.total)||response.total<0||response.offset!==offset||response.limit!==100
       ||!Number.isSafeInteger(response.unassigned_count)||response.unassigned_count<0){
       throw new ApiError('服务未返回所选策略的完整回测列表，请检查策略回测接口。','INVALID_STRATEGY_HISTORY',false);

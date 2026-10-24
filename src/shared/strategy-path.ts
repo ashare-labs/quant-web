@@ -5,6 +5,9 @@ export function isStrategyPath(value: unknown, allowRoot = false): value is stri
     && !/[\\:\u0000-\u001f\u007f]/.test(value)
     && value.split('/').every(part => !!part && part !== '.' && part !== '..' && new TextEncoder().encode(part).length <= 255));
 }
-export function isStrategyId(value: unknown): value is string {
+export function isStrategyFilePath(value: unknown): value is string {
   return isStrategyPath(value) && value.endsWith('.py');
 }
+
+export function isProjectId(value: unknown): value is string {return typeof value === 'string' && /^aqproj-[a-f0-9]{32}$/.test(value);}
+export function isStrategyId(value: unknown): value is string {return isProjectId(value) || isStrategyFilePath(value);}
