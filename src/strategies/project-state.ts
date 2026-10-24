@@ -33,8 +33,10 @@ export function savedProjectDraft(draft:ProjectDraft,saved:StrategyProject):Proj
   const active=draft.active==='aquant.toml'||Object.hasOwn(saved.files,draft.active)?draft.active:saved.entrypoint;
   return {...draft,...saved,active,workingCopy:false,updated:new Date().toISOString()};
 }
-export function relocatedProjectDraft(draft:ProjectDraft,previous:StrategyProject,current:StrategyProject){
-  if(draft.strategy_id!==current.strategy_id||previous.strategy_id!==current.strategy_id)throw new Error('移动后的项目身份不一致。');
-  const conflict=!sameProjectSource(previous,current);
-  return {draft:{...draft,path:current.path,revision:conflict?draft.revision:current.revision},conflict};
+export function relocatedProjectDraft(draft:ProjectDraft,current:StrategyProject){
+  if(draft.strategy_id!==current.strategy_id)throw new Error('移动后的项目身份不一致。');
+  // A location change cannot accept a new source baseline, including a conflict
+  // already present before the move. Only save or explicit review can do that.
+  const conflict=draft.revision!==current.revision&&!sameProjectSource(draft,current);
+  return {draft:{...draft,path:current.path},conflict};
 }

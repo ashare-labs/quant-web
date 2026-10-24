@@ -69,8 +69,8 @@ test('adopting a remote version selects its entry when the active helper was rem
 });
 test('an uncertain move never silently adopts a revision with external source edits',()=>{
   const current=editProjectDraft(draft(),{files:{...files,'signals.py':'local'}}),external=project({path:'新分类/改名',revision:newRevision,files:{...files,'signals.py':'remote edit'}});
-  const recovered=relocatedProjectDraft(current,project(),external);assert.equal(recovered.conflict,true);assert.equal(recovered.draft.path,'新分类/改名');assert.equal(recovered.draft.revision,revision);assert.equal(recovered.draft.files['signals.py'],'local');
-  const justMoved=relocatedProjectDraft(current,project(),project({path:'新分类/改名',revision:newRevision}));assert.equal(justMoved.conflict,false);assert.equal(justMoved.draft.revision,newRevision);
+  const recovered=relocatedProjectDraft(current,external);assert.equal(recovered.conflict,true);assert.equal(recovered.draft.path,'新分类/改名');assert.equal(recovered.draft.revision,revision);assert.equal(recovered.draft.files['signals.py'],'local');
+  const justMoved=relocatedProjectDraft(current,project({path:'新分类/改名'}));assert.equal(justMoved.conflict,false);assert.equal(justMoved.draft.revision,revision);
 });
 test('corrupt and quota-failed project storage preserves original records',()=>{
   const map=storage(),key='quantweb-project-draft-v1:'+id;map.set(key,'{broken');

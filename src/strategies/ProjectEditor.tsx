@@ -26,8 +26,11 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
   const catalogue=useResource<Record<string,unknown>>(readOnly?null:'/python/catalogue');
   const locked=readOnly||loading||loadFailed||!!busy||!draft;
   function show(next:ProjectDraft){draftRef.current=next;setDraft(next);}
-  function retain(next:ProjectDraft){try{retainProjectDraft(next);setUnretained(false);setRetentionError('');}catch(e){setUnretained(true);setRetentionError('浏览器未能保留完整项目编辑：'+errorText(e));throw e;}}
-  function edit(patch:Partial<ProjectDraft>){if(!draftRef.current||locked)return;const next=editProjectDraft(draftRef.current,patch);show(next);setError('');try{retain(next);}catch{/* Keep the in-memory copy and leave-page guard. */}}
+  function retain(next:ProjectDraft,sourceSaved=false){
+    try{retainProjectDraft(next);setUnretained(false);setRetentionError('');return true;}
+    catch(e){setUnretained(true);setRetentionError((sourceSaved?'项目源码已保存到服务；浏览器未能保留回测参数和编辑状态：':'浏览器未能保留完整项目编辑：')+errorText(e));return false;}
+  }
+  function edit(patch:Partial<ProjectDraft>){if(!draftRef.current||locked)return;const next=editProjectDraft(draftRef.current,patch);show(next);setError('');retain(next);}
   useEffect(()=>{
     if(readOnly){
       try{const request=object(manifest?.request),source=frozenSource(request);if(!source.projectId)throw new Error('历史项目源码无法读取。');
@@ -47,7 +50,7 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
   },[identity,manifest,jobId,readOnly,reload]);
   useEffect(()=>{const prevent=(e:BeforeUnloadEvent)=>{if(unretained&&!leaving.current){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[unretained]);
   useEffect(()=>{const update=()=>setToday(todayInShanghai());const timer=setInterval(update,60000);window.addEventListener('focus',update);return()=>{clearInterval(timer);window.removeEventListener('focus',update);};},[]);
-  function select(path:string){if(!draftRef.current)return;const next={...draftRef.current,active:path};show(next);if(!readOnly)try{retain(next);}catch{/* Preserve current tab in memory. */}}
+  function select(path:string){if(!draftRef.current)return;const next={...draftRef.current,active:path};show(next);if(!readOnly)retain(next);}
   function openAction(kind:FileAction['kind'],path=''){setAction({kind,path});setName(kind==='rename'?path:kind==='move'?draft!.path:'');setActionError('');}
   async function performAction(){
     if(!action||!draftRef.current||operation.current)return;
@@ -62,32 +65,33 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
       else{
         retain(current);operation.current=true;setBusy('move');
         const moved=await moveProject(remoteRef.current!,name.trim());remoteRef.current=moved;
-        const next={...current,path:moved.path,revision:moved.revision};show(next);retain(next);history.replaceState(null,'',projectHref(next.strategy_id));
+        const relocated=relocatedProjectDraft(current,moved);show(relocated.draft);if(relocated.conflict)setConflict(true);retain(relocated.draft);history.replaceState(null,'',projectHref(current.strategy_id));
       }
       setAction(null);
     }catch(e){
-      if(e instanceof ProjectWriteError&&e.current&&draftRef.current&&remoteRef.current){const recovered=relocatedProjectDraft(draftRef.current,remoteRef.current,e.current);remoteRef.current=e.current;show(recovered.draft);if(recovered.conflict)setConflict(true);try{retain(recovered.draft);}catch{/* Keep the recovered location in memory. */}}
+      if(e instanceof ProjectWriteError&&e.current&&draftRef.current){const recovered=relocatedProjectDraft(draftRef.current,e.current);remoteRef.current=e.current;show(recovered.draft);if(recovered.conflict)setConflict(true);retain(recovered.draft);}
       if(e instanceof ApiError&&e.code==='STRATEGY_PROJECT_REVISION_CONFLICT')setConflict(true);
       setActionError(errorText(e));
     }finally{operation.current=false;setBusy('');}
   }
   async function save(){
-    if(locked||operation.current||!draftRef.current)return;operation.current=true;setBusy('save');setError('');
+    if(locked||conflict||operation.current||!draftRef.current)return;operation.current=true;setBusy('save');setError('');
     try{const current=draftRef.current;retain(current);checkSourceBudget(current.files,catalogue.data);
-      const saved=await saveProject(current);remoteRef.current=saved;const next=savedProjectDraft(current,saved);show(next);retain(next);setConflict(false);
+      // Browser retention is best effort; an explicit disk save must still run.
+      const saved=await saveProject(current);remoteRef.current=saved;const next=savedProjectDraft(current,saved);show(next);setConflict(false);retain(next,true);
     }catch(e){
-      if(e instanceof ProjectWriteError&&e.current&&draftRef.current){remoteRef.current=e.current;const next={...draftRef.current,path:e.current.path,revision:e.current.revision,workingCopy:true};show(next);try{retain(next);}catch{/* Keep complete edits until storage recovers. */}}
+      if(e instanceof ProjectWriteError&&e.current&&draftRef.current){remoteRef.current=e.current;const next={...draftRef.current,path:e.current.path,revision:e.current.revision,workingCopy:true};show(next);retain(next);}
       if(e instanceof ApiError&&e.code==='STRATEGY_PROJECT_REVISION_CONFLICT')setConflict(true);setError(errorText(e));
     }finally{operation.current=false;setBusy('');}
   }
   async function run(){
     if(locked||operation.current||!draftRef.current)return;operation.current=true;setBusy('run');setError('');
-    try{retain(draftRef.current);if([startInput.current,endInput.current].some(input=>input?.validity.badInput))throw new Error('请选择有效的开始和结束日期。');
+    try{if(!retain(draftRef.current))return;if([startInput.current,endInput.current].some(input=>input?.validity.badInput))throw new Error('请选择有效的开始和结束日期。');
       const job=await submitProjectCurrent(draftRef.current,catalogue.data);leaving.current=true;location.assign('backtest-results.html?job='+encodeURIComponent(job.job_id));
     }catch(e){setError(errorText(e));}finally{operation.current=false;setBusy('');}
   }
   async function inspectRemote(){if(!draft||operation.current)return;operation.current=true;setBusy('review');try{setReview(await readProject(draft.strategy_id));}catch(e){setError(errorText(e));}finally{operation.current=false;setBusy('');}}
-  function resolveConflict(keep:boolean){if(!review||!draft)return;const next=keep?{...draft,path:review.path,revision:review.revision,workingCopy:!sameProjectSource(draft,review)}:savedProjectDraft(draft,review);remoteRef.current=review;show(next);try{retain(next);setReview(null);setConflict(false);setError('');}catch{/* Keep conflict review open when draft persistence fails. */}}
+  function resolveConflict(keep:boolean){if(!review||!draft)return;const next=keep?{...draft,path:review.path,revision:review.revision,workingCopy:!sameProjectSource(draft,review)}:savedProjectDraft(draft,review);remoteRef.current=review;show(next);setReview(null);setConflict(false);setError('');retain(next);}
   let dateError='',serviceError='',serviceReady=false;
   if(draft&&!readOnly)try{validateDateRange(draft,{today,allowIncomplete:true});}catch(e){dateError=errorText(e);}
   if(catalogue.data)try{environment(catalogue.data);serviceReady=true;}catch(e){serviceError=errorText(e);}
@@ -97,8 +101,8 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
   <section className="editor"><div className="codepane"><div className="pane-tools"><button disabled={locked||conflict} onClick={()=>void save()}>{busy==='save'?'保存中…':'保存'}</button><span className="note" role="status">{readOnly?'历史项目源码 · 只读':loading?'正在读取…':loadFailed?'读取失败 · 浏览器工作副本':draft?.workingCopy?'未保存 · '+(unretained?'浏览器未保留':'浏览器已保留'):'已从服务读取'}</span><button disabled={locked||system} onClick={()=>importInput.current?.click()}>导入 Python</button><button disabled={!source} onClick={()=>download(active,source)}>导出当前文件</button><input ref={importInput} type="file" accept=".py" hidden onChange={async e=>{const selected=e.target.files?.[0];e.target.value='';if(!selected||!draftRef.current||operation.current)return;operation.current=true;setBusy('import');try{const content=await selected.text(),files={...draftRef.current.files,[active]:content};checkSourceBudget(files,catalogue.data);edit({files});}catch(err){setError(errorText(err));}finally{operation.current=false;setBusy('');}}}/></div>
     {draft?<div className="project-code-body"><ProjectFiles files={draft.files} entrypoint={draft.entrypoint} active={active} onSelect={select} onCreate={()=>openAction('create')} onRename={path=>openAction('rename',path)} onDelete={path=>openAction('delete',path)} onEntry={path=>edit({entrypoint:path})} readOnly={locked} projectName={projectName} collapsed={collapsed} onToggle={()=>setCollapsed(value=>!value)}/><div className="project-code-main"><div className="project-file-tab"><span>{active}</span>{active===draft.entrypoint&&<span className="project-entry-label">入口</span>}{system&&<span className="project-entry-label">系统信息 · 只读</span>}</div><CodeEditor key={draft.strategy_id} value={source} path={active} readOnly={locked||system} onChange={value=>edit({files:{...draftRef.current!.files,[active]:value}})}/></div></div>:<div className="empty">{loading?'正在读取项目…':'项目尚未加载。'}</div>}</div>
     <div className="output"><div className="pane-tools config-tools"><label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft?.start??''} readOnly={locked} onChange={e=>edit({start:e.target.value})}/></label><label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={draft&&validDate(draft.start)?draft.start:undefined} max={today} value={draft?.end??''} readOnly={locked} onChange={e=>edit({end:e.target.value})}/></label><label>初始资金<CapitalInput value={draft?.capital??''} readOnly={locked} onChange={capital=>edit({capital})}/></label><select aria-label="运行频率" value={draft?.frequency??'1m'} disabled={locked} onChange={e=>edit({frequency:resolveFrequency(e.target.value)})}><option value="1m">分钟</option><option value="1d">日</option></select><span className="runtime-label">Python3 · aquant</span><button className="primary" disabled={locked||!serviceReady} onClick={()=>void run()}>{busy==='run'?'正在提交…':'开始回测'}</button></div>
-    <ErrorNotice message={error||retentionError||dateError||catalogue.error||serviceError} retry={loadFailed?()=>setReload(n=>n+1):catalogue.error?catalogue.refresh:undefined}/>
-    {conflict&&<div className="notice" role="status">服务中的项目已变化，浏览器里的全部编辑仍保留。保存前请核对版本。<button disabled={locked} onClick={()=>void inspectRemote()}>核对服务版本</button></div>}
+    <ErrorNotice message={[error,retentionError].filter(Boolean).join(' ')||dateError||catalogue.error||serviceError} retry={loadFailed?()=>setReload(n=>n+1):catalogue.error?catalogue.refresh:undefined}/>
+    {conflict&&<div className="notice" role="status">服务中的项目已变化，当前全部编辑仍保留。保存前请核对版本。<button disabled={locked} onClick={()=>void inspectRemote()}>核对服务版本</button></div>}
     <div className="metrics">{['策略收益','基准收益','Alpha','Beta','Sharpe','最大回撤'].map(label=><div className="metric" key={label}><span>{label}</span><strong>—</strong></div>)}</div>
     <div className="editor-empty"><h2>{readOnly?'历史策略源码':'编写策略，设置回测参数'}</h2><p>{readOnly?'此页展示当次回测冻结的完整项目源码。':'策略 API：from aquant import *。项目模块使用相对导入，例如 from .signals import signal。'}</p>{readOnly&&<p className="note">可在独立结果页查看对应运行。</p>}<a href="strategies.html">返回策略列表 <i className="fa fa-long-arrow-right" aria-hidden="true"/></a></div>
     <div className="pane-tools">日志输出</div><div className="log">{readOnly?'只读查看历史项目源码。':busy==='run'?'正在提交完整项目源码…':'点击“开始回测”将在本机执行当前项目入口；全部文件（包括未保存编辑）、入口和配置将冻结在回测记录中。'}</div></div></section>
