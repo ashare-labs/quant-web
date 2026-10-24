@@ -131,3 +131,7 @@ Air Chrome 使用构建产物和独立故障接口验证了上述交互；故障
 策略编辑器不再有全局 pending 状态、找回按钮、旧请求优先分支或因旧记录损坏而禁用开始的逻辑。它始终从当前草稿校验并创建请求；每份草稿仅保留未确认提交的内容签名和幂等编号，供完全相同内容的网络重试使用。不同内容或不同草稿不会被未确认请求替代。确定接受或拒绝后，重复开始会生成新回测。
 
 此交互原来直接重发 `POST /api/v1/python/jobs`，没有专属后端接口或数据库字段。后端 `PythonJobs.create → Repository.existing` 的共享幂等校验、冻结策略身份、历史读取和工作进程租约恢复继续保留；MCP 的任务查询也不是编辑器恢复入口。没有改写或删除任何历史任务。
+
+## aquant 策略导入
+
+编辑器提示 `from aquant import *`，也接受命名导入和 `import aquant as api`。运行时由 ashare-quant worker 提供，频率仍显式选择日或分钟。配套后端 catalogue.strategy_api 声明 module=aquant、distribution=ashare-quant、binding=runtime_only；旧入口提交返回 AQUANT_LEGACY_IMPORT。编辑器不静默替换源文或写入服务文件。历史页保留冻结旧源码；localStorage 草稿（包括不同设备和 Origin）需先导出备份，按后端 aquant-migration 指南审核后再导入保存。后端与此文案须一起集成；不以公网 aquant 安装代替受控后端包。
