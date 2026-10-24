@@ -48,14 +48,17 @@ export function normalizeBacktest(item:Item,strategyId:string):BacktestRecord {
     ||typeof item.stored_status!=='string'||typeof item.execution_state!=='string'||typeof item.result_available!=='boolean') {
     throw new ApiError('返回的回测记录与当前策略不一致或格式无效，已停止显示。','INVALID_STRATEGY_BACKTEST',false);
   }
-  const error=object(item.error),resultError=object(item.result_error);
+  const error=object(item.error),resultError=object(item.result_error),analysisError=object(item.analysis_error);
+  const snapshot=object(item.result).snapshot_sha256;
   return {id:item.job_id,name:item.name,createdAt:item.created_at,start:item.start_date,end:item.end_date,
     frequency:item.frequency,initialCash:typeof item.initial_cash==='number'&&Number.isFinite(item.initial_cash)?item.initial_cash:null,
     // This contract does not expose execution duration or Python version. Do not
     // substitute queue lifetime, the browser runtime, or recomputed metrics.
     durationSeconds:null,pythonVersion:null,status:item.display_status||item.stored_status,
     executionState:item.execution_state,error:typeof error.message==='string'?error.message:typeof resultError.message==='string'?resultError.message:null,
-    hasResult:item.result_available,summary:item.result_available?object(item.summary):{}};
+    analysisError:typeof analysisError.message==='string'?analysisError.message:null,
+    hasResult:item.result_available,sourceSha256:typeof snapshot==='string'&&/^[a-f0-9]{64}$/.test(snapshot)?snapshot:null,
+    summary:item.result_available?object(item.summary):{}};
 }
 export async function readStrategyBacktests(identity:StrategyIdentity,signal?:AbortSignal):Promise<StrategyBacktests> {
   const records:BacktestRecord[]=[],ids=new Set<string>();let total:number|undefined,unassociatedCount=0;

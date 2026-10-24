@@ -243,6 +243,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/history/jobs/{job_id}/result/analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analysis */
+        get: operations["analysis_api_v1_history_jobs__job_id__result_analysis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/history/strategies": {
         parameters: {
             query?: never;
@@ -654,6 +671,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/python/jobs/{job_id}/result/analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Analysis */
+        get: operations["analysis_api_v1_python_jobs__job_id__result_analysis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/python/jobs/{job_id}/resume": {
         parameters: {
             query?: never;
@@ -966,6 +1000,22 @@ export interface components {
         };
         /** ActionRequest */
         ActionRequest: Record<string, never>;
+        /** AnalysisMetric */
+        AnalysisMetric: {
+            /** Reason */
+            reason: string | null;
+            /** Sample Count */
+            sample_count: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "unavailable";
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: number | null;
+        };
         /** Capabilities */
         Capabilities: {
             /**
@@ -2388,7 +2438,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default 145d700fbf53385cdc5790b171b9e3a880b65092
+             * @default fc5f3b79825aa08374a75b63be6c4cbcc7f36aec
              */
             commit: string | null;
             /**
@@ -2399,7 +2449,7 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 634c04ccdb6f9a5ae46743d689ff23970fb94ae8
+             * @default 5e3b165625fb3692b8bef4fd7a8d0659a32c9bbe
              */
             tree: string | null;
             /**
@@ -2409,7 +2459,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default fc868ea835b9c073127537568b5debfeaee541a57da27b870f6dfd39a27ad7fa
+             * @default 5cf8d38b9730dd172a0cb47de0361cfeeb7410c4b7d46f75ad8a5c274a7c2900
              */
             wheel_sha256: string;
         };
@@ -2529,6 +2579,73 @@ export interface components {
              * @constant
              */
             time_semantics: "source_labels_not_verified_bar_boundaries";
+        };
+        /** ResultAnalysis */
+        ResultAnalysis: {
+            /** Analysis Id */
+            analysis_id: string;
+            /** Benchmark */
+            benchmark: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Calculation Version
+             * @constant
+             */
+            calculation_version: "returns-v1";
+            /** Costs */
+            costs: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Drawdowns */
+            drawdowns: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Engine */
+            engine: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Initial Equity */
+            initial_equity: number;
+            /** Job Id */
+            job_id: string;
+            /** Metrics */
+            metrics: {
+                [key: string]: components["schemas"]["AnalysisMetric"];
+            };
+            /** Monthly */
+            monthly: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Policy */
+            policy: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Quality */
+            quality: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Rolling */
+            rolling: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Sample Count */
+            sample_count: number;
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "aq.analysis.v1";
+            /** Series */
+            series: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Source Sha256 */
+            source_sha256: string;
+            /** Trading */
+            trading: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
         };
         /** ResultReference */
         ResultReference: {
@@ -2790,6 +2907,10 @@ export interface components {
         };
         /** StrategyBacktest */
         StrategyBacktest: {
+            /** Analysis Error */
+            analysis_error: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /** Can Cancel */
             can_cancel: boolean;
             /**
@@ -4107,6 +4228,82 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    analysis_api_v1_history_jobs__job_id__result_analysis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultAnalysis"];
                 };
             };
             /** @description Forbidden */
@@ -6201,6 +6398,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PythonResult"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"] | components["schemas"]["ValidationResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    analysis_api_v1_python_jobs__job_id__result_analysis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultAnalysis"];
                 };
             };
             /** @description Forbidden */

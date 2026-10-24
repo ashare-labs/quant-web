@@ -60,4 +60,5 @@ main.backtest-list{max-width:none;margin:0;padding:0;color:#333}
 .source-comparison section{min-width:0}.source-comparison h3{font-size:14px;font-weight:400;overflow-wrap:anywhere}
 .source-comparison pre{background:#f7f8fa;border:1px solid var(--border);padding:12px;height:55vh;overflow:auto;white-space:pre;overflow-wrap:normal;word-break:normal}
 .comparison-table td,.comparison-table th{vertical-align:top;min-width:140px}
+.comparison-table .comparison-reason,.backtest-list .run-analysis-error{display:block;margin-top:4px;color:var(--muted);font-size:12px;font-weight:400}
 @media(max-width:800px){.backtest-subnav{height:auto;min-height:56px;flex-wrap:wrap;gap:8px;padding:12px 16px}.backtest-subnav .strategy-context{width:100%}.backtest-subnav nav{height:32px;gap:22px}.backtest-controls{padding:18px 16px 22px}.backtest-actions{flex-wrap:wrap;gap:12px}.backtest-search{order:3;width:100%;margin:0}.backtest-columns{gap:12px 22px;margin-top:22px}.backtest-list .notice{margin:0 16px 16px}.source-comparison{grid-template-columns:1fr}.source-comparison pre{height:35vh}}

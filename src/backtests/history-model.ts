@@ -14,7 +14,9 @@ export interface BacktestRecord {
   status: string;
   executionState: string;
   error: string | null;
+  analysisError: string | null;
   hasResult: boolean;
+  sourceSha256: string | null;
   summary: Row;
 }
 export interface StrategyBacktests {
