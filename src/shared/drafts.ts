@@ -10,15 +10,24 @@ export function resolveFrequency(value: unknown = DEFAULT_FREQUENCY): Frequency 
   if (value === '1m' || value === '1d') return value;
   throw new Error('请选择有效的运行频率（分钟或日）。');
 }
-export interface Draft {id: string; name: string; source: string; folder: string; start: string; end: string; capital: string; updated: string; filePath?: string; frequency?: Frequency}
+export interface Draft {id: string; name: string; source: string; folder: string; start: string; end: string; capital: string; updated: string; filePath?: string; frequency?: Frequency; workingCopy?: boolean}
 const key = 'quantweb-strategy-drafts-v1', foldersKey = 'quantweb-folders-v1';
 export function readDrafts(): Draft[] {
   const raw = localStorage.getItem(key); if (!raw) return [];
   const value: unknown = JSON.parse(raw);
-  if (!Array.isArray(value) || !value.every(v => v && ['id','name','source','folder','start','end','capital','updated'].every(k => typeof v[k] === 'string') && (v.filePath === undefined || typeof v.filePath === 'string') && (v.frequency === undefined || v.frequency === '1m' || v.frequency === '1d'))) throw new Error('本地草稿格式无法读取；原始内容已保留，请导出浏览器存储后检查。');
+  if (!Array.isArray(value) || !value.every(v => v && ['id','name','source','folder','start','end','capital','updated'].every(k => typeof v[k] === 'string') && (v.filePath === undefined || typeof v.filePath === 'string') && (v.frequency === undefined || v.frequency === '1m' || v.frequency === '1d') && (v.workingCopy === undefined || typeof v.workingCopy === 'boolean'))) throw new Error('本地草稿格式无法读取；原始内容已保留，请导出浏览器存储后检查。');
   return value as Draft[];
 }
-export function saveDraft(draft: Draft) { const drafts = readDrafts(); const next = {...draft, frequency: resolveFrequency(draft.frequency)}; const index = drafts.findIndex(d => d.id === draft.id); if (index >= 0) drafts[index] = next; else drafts.unshift(next); localStorage.setItem(key, JSON.stringify(drafts)); }
+export function saveDraftUpdates(updates: Draft[]) {
+  const drafts=readDrafts();
+  for(const draft of updates){
+    const next={...draft,frequency:resolveFrequency(draft.frequency)};
+    const index=drafts.findIndex(d=>d.id===draft.id);
+    if(index>=0)drafts[index]=next;else drafts.unshift(next);
+  }
+  localStorage.setItem(key,JSON.stringify(drafts));
+}
+export function saveDraft(draft: Draft) { saveDraftUpdates([draft]); }
 export function newDraft(name = '未命名策略', folder = ''): Draft {
   return {id: randomId(), name, source: '', folder, start: '', end: '', capital: DEFAULT_CAPITAL, frequency: DEFAULT_FREQUENCY, updated: ''};
 }

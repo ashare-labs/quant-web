@@ -5,6 +5,7 @@ import { Empty, ErrorNotice, JsonDetails, Reason, Status, useResource } from '..
 import { backtestsHref } from '../backtests/history-model';
 import { requestStrategy } from '../backtests/history-api';
 import { fileHref } from '../shared/strategy-files';
+import { editorHref } from '../shared/drafts';
 const LineChart=lazy(()=>import('../shared/LineChart'));
 export function ResultsPage() {
   const q=new URLSearchParams(location.search),id=q.get('job'),family=q.get('family')||'python',history=q.get('history')==='1';
@@ -15,9 +16,10 @@ export function ResultsPage() {
   const j=job.data,r=result.data,summary=object(r?.summary),native=object(r?.native),accounts=rows(native.accounts),trades=rows(native.trades),positions=accounts.flatMap(a=>Object.entries(object(a.positions)).map(([security,p])=>({at:a.at,security,...object(p)}))),name=String(j?.request.name||r?.name||'回测结果');
   const request=object(j?.request),frequency=request.frequency==='1d'?'日频':request.frequency==='1m'?'分钟':String(request.frequency||'—');
   const strategyId=requestStrategy(request),listHref=strategyId?backtestsHref({strategy:strategyId}):id?backtestsHref({job:id}):null;
+  const editHref=strategyId?fileHref(strategyId):q.get('draft')?editorHref(q.get('draft')!):null;
   const metrics=[['策略收益',pct(summary.net_return)],['基准收益',pct(summary.benchmark_return)],['Alpha',num(summary.alpha)],['Beta',num(summary.beta)],['Sharpe',num(summary.sharpe)],['最大回撤',pct(summary.max_drawdown)],['期末权益',num(summary.final_equity)]];
   async function cancel(){if(!path||!j||history||!active(j))return;setBusy(true);try{await api(path+'/cancel',{});job.refresh();setError('');}catch(e){setError(errorText(e));}finally{setBusy(false);}}
-  return <><div className="subnav"><div><a href="strategies.html"><i className="fa fa-angle-left" aria-hidden="true"/> 策略列表</a> / {name}</div><nav>{strategyId&&<a href={fileHref(strategyId)}>编辑策略</a>}{id&&<a href={'strategy-editor.html?job='+encodeURIComponent(id)}>查看源码</a>}{listHref&&<a href={listHref}>回测列表</a>}</nav></div>
+  return <><div className="subnav"><div><a href="strategies.html"><i className="fa fa-angle-left" aria-hidden="true"/> 策略列表</a> / {name}</div><nav>{editHref&&<a href={editHref}>编辑策略</a>}{id&&<a href={'strategy-editor.html?job='+encodeURIComponent(id)}>查看源码</a>}{listHref&&<a href={listHref}>回测列表</a>}</nav></div>
   {j&&<div className="run-settings"><span>设置：{String(request.start_date||'—')} 至 {String(request.end_date||'—')}</span><span>初始资金 ¥ {num(request.initial_cash)}</span><span>{frequency}</span><Status job={j}/></div>}
   <div className="result"><aside className="side" aria-label="结果视图">{['收益概述','交易详情','持仓详情','每日权益','运行日志'].map(v=><button key={v} className={tab===v?'active':''} aria-pressed={tab===v} onClick={()=>setTab(v)}>{v}</button>)}</aside><section className="result-content">
     <div className="titlebar"><h1>{tab}</h1><div className="inline-actions"><button onClick={()=>{job.refresh();result.refresh();log.refresh();}} disabled={!path}>刷新</button>{!history&&j&&active(j)&&<button disabled={busy||j.status==='cancelling'} onClick={cancel}>取消运行</button>}</div></div>
