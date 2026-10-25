@@ -14,7 +14,7 @@ export function requestStrategy(request: unknown) {const id=object(request).stra
 export function strategyIdentity(id:string):StrategyIdentity {return {id,path:isProjectId(id)?null:id,name:isProjectId(id)?'策略项目':displayName(id)};}
 export function backtestQuery(strategyId:string, offset=0) {
   if(!isStrategyId(strategyId))throw new Error('策略标识无效，请从策略文件重新打开回测列表。');
-  return '/python/backtests?'+new URLSearchParams({strategy_id:strategyId,limit:'100',offset:String(offset)}).toString();
+  return '/python/backtests?'+new URLSearchParams({strategy_id:strategyId,limit:'100',offset:String(offset),analysis_version:'returns-v2'}).toString();
 }
 export async function resolveStrategy(params:URLSearchParams,signal?:AbortSignal):Promise<StrategyIdentity> {
   for(const key of ['strategy','file','job','draft'])if(params.getAll(key).length>1)throw new Error('策略上下文不明确，请从策略文件重新打开回测列表。');
@@ -77,7 +77,7 @@ export async function readStrategyBacktests(identity:StrategyIdentity,signal?:Ab
   const records:BacktestRecord[]=[],ids=new Set<string>();let total:number|undefined,unassociatedCount=0;
   for(let offset=0;total===undefined||offset<total;offset+=100){
     const response=await api<Response>(backtestQuery(identity.id,offset),undefined,signal);
-    if(!response||response.strategy_id!==identity.id||String(response.identity_model)!==(isProjectId(identity.id)?'stable_project_id':'saved_relative_path')||!Array.isArray(response.items)
+    if(!response||response.analysis_version!=='returns-v2'||response.strategy_id!==identity.id||String(response.identity_model)!==(isProjectId(identity.id)?'stable_project_id':'saved_relative_path')||!Array.isArray(response.items)
       ||!Number.isSafeInteger(response.total)||response.total<0||response.offset!==offset||response.limit!==100
       ||!Number.isSafeInteger(response.unassigned_count)||response.unassigned_count<0){
       throw new ApiError('服务未返回所选策略的完整回测列表，请检查策略回测接口。','INVALID_STRATEGY_HISTORY',false);

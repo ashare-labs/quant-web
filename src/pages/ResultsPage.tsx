@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {active,api,download,errorText,num,object,pct,rows,shownStatus,type HistoryJob,type JobLogs,type PythonJob,type Row} from '../shared/api';
 import {DataTable} from '../shared/DataTable';
 import {Empty,ErrorNotice,JsonDetails,Reason,Status,useResource} from '../shared/ui';
@@ -6,7 +6,7 @@ import {backtestsHref} from '../backtests/history-model';
 import {requestStrategy} from '../backtests/history-api';
 import {strategyEditorHref} from '../strategies/project-model';
 import {editorHref} from '../shared/drafts';
-import {acceptedAnalysis,analysisPath,holdingRows,money,reasonText,timeParts,tradeRows} from '../results/model';
+import {selectedAnalysis,analysisPath,holdingRows,money,reasonText,timeParts,tradeRows,type BenchmarkOption} from '../results/model';
 import {ResultOverview} from '../results/ResultOverview';
 import {RunProgress} from '../results/RunProgress';
 import {stopJobPolling} from '../results/progress';
@@ -16,6 +16,7 @@ export function ResultsPage(){
   const q=new URLSearchParams(location.search),id=q.get('job'),family=q.get('family')||'python',history=q.get('history')==='1';
   const valid=id&&/^m2job-[a-f0-9]{32}$/.test(id),path=valid?(history?'/history/jobs/':family==='factors'?'/factors/jobs/':'/python/jobs/')+id:null;
   const [tab,setTab]=useState('收益概述'),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+  const [benchmark,setBenchmark]=useState('frozen'),[benchmarkOptions,setBenchmarkOptions]=useState<BenchmarkOption[]>([{value:'frozen',label:'原始基准'},{value:'none',label:'无基准'}]);
   const job=useResource<PythonJob|HistoryJob>(path,5000,false,{retainOnError:true,stopWhen:stopJobPolling});
   const j=job.data?.job_id===id?job.data:null;
   const log=useResource<JobLogs>(path&&tab==='运行日志'?path+'/logs':null,j&&active(j)?5000:0);
@@ -23,10 +24,13 @@ export function ResultsPage(){
   const r=result.data,verifiedResult=r?.job_id===id?r:null,native=object(r?.native);
   const sourceSha=object(j?.result).snapshot_sha256;
   const expectedHash=typeof sourceSha==='string'?sourceSha:undefined;
-  const inline=acceptedAnalysis(verifiedResult?.analysis,id||'',expectedHash);
-  const derived=useResource<Row>(analysisPath(path,verifiedResult,inline,family));
-  const analysis=inline??acceptedAnalysis(derived.data,id||'',expectedHash);
-  const analysisError=derived.data&&!analysis?'派生分析与本次结果的身份或格式不一致。':derived.error;
+  const inline=selectedAnalysis(verifiedResult?.analysis,id||'',expectedHash,benchmark);
+  const derived=useResource<Row>(analysisPath(path,verifiedResult,inline,family,benchmark));
+  const analysis=inline??selectedAnalysis(derived.data,id||'',expectedHash,benchmark);
+  const requestedBenchmark=useRef(benchmark),changing=requestedBenchmark.current!==benchmark;
+  useEffect(()=>{requestedBenchmark.current=benchmark;},[benchmark]);
+  const analysisError=derived.data&&!analysis&&!changing?'派生分析与本次结果的身份、口径或格式不一致。':derived.error;
+  useEffect(()=>{if(analysis?.comparison)setBenchmarkOptions(analysis.comparison.options);},[analysis]);
   const request=object(j?.request),frequency=request.frequency==='1d'?'日频':request.frequency==='1m'?'分钟':String(request.frequency||'—');
   const name=String(j?.request.name||r?.name||'回测结果');
   const strategyId=requestStrategy(request),listHref=strategyId?backtestsHref({strategy:strategyId}):id?backtestsHref({job:id}):null;
@@ -59,7 +63,8 @@ export function ResultsPage(){
         {!r&&result.loading&&<Empty>正在读取冻结结果…</Empty>}
         {!r&&family!=='python'&&!result.error&&!job.error&&<Empty>{active(j)?'任务正在处理。结果会在运行完成后显示。':'此任务尚无已发布结果。'}</Empty>}
         {r&&r.job_id!==id?<ErrorNotice message="返回的结果与所选任务不一致，已停止显示。"/>:r&&family==='factors'?<div className="notice">这是一条因子研究记录。<a href={'factors.html?factor='+encodeURIComponent(String(object(j.request).factor_id||''))+'&job='+encodeURIComponent(id!)}>查看因子值与评价</a></div>:r&&<>
-          {tab==='收益概述'&&<ResultOverview result={r} analysis={analysis} loading={derived.loading} error={analysisError}/>}
+          {tab==='收益概述'&&<ResultOverview result={r} analysis={analysis} loading={derived.loading||changing} error={analysisError}
+            benchmark={{selection:benchmark,options:benchmarkOptions,onSelect:setBenchmark}}/>}
           {tab==='交易详情'&&<>
             <DataTable name="交易明细" data={tradeRows(native,analysis)} columns={[
               {key:'date',label:'日期'},{key:'order_time',label:'委托时间'},{key:'security',label:'标的'},
@@ -90,7 +95,7 @@ export function ResultsPage(){
         {r&&<details className="diagnostics"><summary>数据来源与诊断</summary><p className="note">诊断 JSON 保留服务原始结果，可能包含源码、内部标识和重复字段。</p>
           <button onClick={()=>download(name+'-诊断.json',JSON.stringify(r,null,2),'application/json')}>导出诊断 JSON</button>
           <JsonDetails title="数据与模型" value={{release:r.release,preparation:r.preparation}}/>
-          {analysis&&<JsonDetails title="指标口径与来源" value={{schema:analysis.schema_version,version:analysis.calculation_version,source_sha256:analysis.source_sha256,engine:analysis.engine,policy:analysis.policy,quality:analysis.quality}}/>}
+          {analysis&&<JsonDetails title="指标口径与来源" value={{schema:analysis.schema_version,version:analysis.calculation_version,analysis_id:analysis.analysis_id,source_sha256:analysis.source_sha256,benchmark:analysis.benchmark,comparison:analysis.comparison,engine:analysis.engine,policy:analysis.policy,quality:analysis.quality}}/>}
           {analysisError&&<p className="note">分析读取：{analysisError}</p>}
         </details>}
       </>}
