@@ -48,10 +48,10 @@ function App(){
   return <>
   <a className="skip-link" href="#content">跳至内容</a>
   <header><a className="brand" href="index.html" aria-label="QuantWeb 首页"><img src="/brand.jpg" alt=""/><span>QuantWeb</span></a>
-    <nav aria-label="主导航">{[['strategies.html','策略回测'],['simulations.html','模拟交易'],['factors.html','因子看板']].map(([href,label]) => {
+    <div className="header-actions"><nav aria-label="主导航">{[['strategies.html','策略回测'],['simulations.html','模拟交易'],['factors.html','因子看板']].map(([href,label]) => {
       const current = route === href || (href === 'strategies.html' && ['strategy-editor.html','backtest-results.html','backtests.html'].includes(route));
       return <a key={href} href={href} className={current ? 'active' : ''} aria-current={current ? 'page' : undefined}>{label}</a>;
-    })}</nav><AccountControls/></header><div id="content"><AccountGate><Boundary key={address}><Page/></Boundary></AccountGate></div>
+    })}</nav><AccountControls/></div></header><div id="content"><AccountGate><Boundary key={address}><Page/></Boundary></AccountGate></div>
   </>;
 }
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
