@@ -27,7 +27,9 @@ export function performanceOption(analysis:Analysis,range:[number,number],visibl
   const episode=(drawdown==='excess'?analysis.excess_drawdowns:analysis.drawdowns)?.[0];
   const series:unknown[]=lines.filter(line=>visible[line.key]).map(line=>({
     id:line.key,name:line.name,type:'line',showSymbol:false,connectNulls:false,
-    data:[log?1:0,...(log?line.nav:line.values)],lineStyle:{width:line.key==='strategy'?2:1.5,color:colors[line.key]},itemStyle:{color:colors[line.key]},
+    // Explicit log coordinates avoid whole-decade bounds flattening small
+    // returns. This is only a display transform; tooltips keep backend values.
+    data:[0,...(log?line.nav.map(v=>v===null?null:Math.log(v)):line.values)],lineStyle:{width:line.key==='strategy'?2:1.5,color:colors[line.key]},itemStyle:{color:colors[line.key]},
     ...(line.key===drawdown&&episode?{markArea:{silent:true,itemStyle:{color:'rgba(92,112,135,0.10)'},
       label:{show:true,position:'insideTopLeft',color:'#667482',fontSize:11},
       data:[[{name:drawdown==='excess'?'超额最大回撤':'策略最大回撤',xAxis:episode.peak_date??'期初'}, {xAxis:episode.trough_date}]]}}:{}),
@@ -52,8 +54,8 @@ export function performanceOption(analysis:Analysis,range:[number,number],visibl
       const profits=lines.filter(line=>visible[line.key]).map(line=>`${escaped(line.name)}　${percent(line.values[index-1])}`);
       return [escaped(row.date),...profits,`当日盈亏　${money(row.pnl)} 元`,`买入成交额　${money(row.buy_value)} 元`,`卖出成交额　${money(row.sell_value)} 元`].join('<br/>');
     }},axisPointer:{link:[{xAxisIndex:'all'}]},xAxis:axes,
-    yAxis:[{type:log?'log':'value',gridIndex:0,logBase:10,scale:log,
-      axisLabel:{formatter:(v:number)=>((log?v-1:v)*100).toFixed(1)+'%',color:'#667482'},splitLine:{lineStyle:{color:'#edf0f3'}}},
+    yAxis:[{type:'value',gridIndex:0,scale:log,
+      axisLabel:{formatter:(v:number)=>((log?Math.expm1(v):v)*100).toFixed(1)+'%',color:'#667482'},splitLine:{lineStyle:{color:'#edf0f3'}}},
       {type:'value',gridIndex:1,name:'每日盈亏（元）',nameLocation:'end',nameTextStyle:{align:'left',color:'#667482'},axisLabel:{formatter:(v:number)=>v.toLocaleString(),color:'#667482'},splitLine:{lineStyle:{color:'#edf0f3'}}},
       {type:'value',gridIndex:2,name:'每日买卖（元）',nameTextStyle:{align:'left',color:'#667482'},axisLabel:{formatter:(v:number)=>Math.abs(v).toLocaleString(),color:'#667482'},splitLine:{lineStyle:{color:'#edf0f3'}}}],
     dataZoom:[{type:'slider',xAxisIndex:[0,1,2],bottom:2,height:22,startValue:range[0],endValue:range[1],filterMode:'none'},

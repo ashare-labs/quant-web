@@ -38,11 +38,21 @@ test('log coordinates use positive NAV, not logarithms of negative returns',()=>
   const copy=structuredClone(a);copy.series[0].nav=.9;copy.series[0].cumulative_return=-.1;
   assert.ok(logarithmAvailable(copy));
   const option=performanceOption(copy,[0,copy.series.length],all,true,'none');
-  assert.equal(option.yAxis[0].type,'log');assert.equal(option.yAxis[0].axisLabel.formatter(.9),'-10.0%');
-  assert.equal(option.series.find(s=>s.id==='strategy').data[1],.9);
-  assert.deepEqual(option.series.find(s=>s.id==='excess').data,[1,...copy.series.map(r=>r.relative_nav)]);
+  assert.equal(option.yAxis[0].axisLabel.formatter(Math.log(.9)),'-10.0%');
+  assert.equal(option.series.find(s=>s.id==='strategy').data[1],Math.log(.9));
+  assert.deepEqual(option.series.find(s=>s.id==='excess').data,[0,...copy.series.map(r=>r.relative_nav===null?null:Math.log(r.relative_nav))]);
   copy.series[0].nav=0;assert.equal(logarithmAvailable(copy),false);
-  assert.equal(performanceOption(copy,[0,copy.series.length],all,true,'none').yAxis[0].type,'value');
+  assert.equal(performanceOption(copy,[0,copy.series.length],all,true,'none').series.find(s=>s.id==='strategy').data[1],-.1);
+});
+test('log display gives equal distances to equal NAV ratios without whole-decade bounds',()=>{
+  const copy=structuredClone(a);
+  [1,1.02,1.0404].forEach((nav,i)=>{copy.series[i].nav=nav;copy.series[i].cumulative_return=nav-1;});
+  const option=performanceOption(copy,[0,3],all,true,'none');
+  const [start,next,last]=option.series.find(s=>s.id==='strategy').data.slice(1,4);
+  assert.ok(Math.abs((next-start)-(last-next))<1e-14);
+  assert.ok(last<.05);assert.equal(option.yAxis[0].scale,true);
+  assert.equal(option.yAxis[0].axisLabel.formatter(last),'4.0%');
+  assert.ok(option.tooltip.formatter([{dataIndex:3}]).includes('4.04%'));
 });
 test('drawdown highlights use backend peak and trough including an initial-capital peak',()=>{
   const copy=structuredClone(a);copy.excess_drawdowns=[{peak_date:null,trough_date:copy.series[3].date}];
