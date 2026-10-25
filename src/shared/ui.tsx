@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText, statusLabels, shownStatus, object } from './api';
 import { accountMode, accountSession } from '../auth/session';
+import type {ReadProgress} from './response-read';
 export function useResource<T>(path: string | null, poll = 0, paper = false,
-  options: {retainOnError?: boolean; stopWhen?: (value:T)=>boolean} = {}) {
+  options: {retainOnError?: boolean; stopWhen?: (value:T)=>boolean; timeoutMs?: number; trackRead?: boolean} = {}) {
   const [data, setData] = useState<T | null>(null), [error, setError] = useState(''), [loading, setLoading] = useState(false), [version, setVersion] = useState(0);
+  const [readProgress,setReadProgress]=useState<ReadProgress|null>(null),operation=useRef<{cancel:()=>void}|null>(null);
   const previousPath=useRef<string|null>(null),retain=accountMode||!!options.retainOnError,stopWhen=options.stopWhen;
+  const timeoutMs=options.timeoutMs??0,trackRead=!!options.trackRead;
   useEffect(()=>{
     if(!accountMode)return;
     let previous=accountSession.snapshot().status;
@@ -15,19 +18,31 @@ export function useResource<T>(path: string | null, poll = 0, paper = false,
     });
   },[]);
   useEffect(() => {
-    const controller = new AbortController(); let timer: ReturnType<typeof setTimeout>;
+    let controller:AbortController|undefined,disposed=false;
+    let timer:ReturnType<typeof setTimeout>|undefined,deadline:ReturnType<typeof setTimeout>|undefined;
+    const stop=()=>{controller?.abort();clearTimeout(timer);clearTimeout(deadline);};
+    const cancel=(message:string)=>{stop();if(!disposed){setLoading(false);setReadProgress(null);setError(message);}};
+    const current={cancel:()=>cancel('已取消本次读取。可以重试；回测与已保存结果不变。')};
+    operation.current=current;
+    const leave=()=>{disposed=true;stop();};
+    const returnToPage=(event:PageTransitionEvent)=>{if(event.persisted)setVersion(value=>value+1);};
+    globalThis.addEventListener?.('pagehide',leave);
+    globalThis.addEventListener?.('pageshow',returnToPage);
     if(!retain||previousPath.current!==path)setData(null);
-    previousPath.current=path;setError(''); setLoading(!!path);
+    previousPath.current=path;setError(''); setLoading(!!path);setReadProgress(null);
     async function read() {
-      if (!path) return;
+      if (!path||disposed) return;
+      controller=new AbortController();const signal=controller.signal;
+      if(trackRead)setReadProgress({phase:'connecting',receivedBytes:0,totalBytes:null});
+      if(timeoutMs>0)deadline=setTimeout(()=>cancel(`读取超过 ${timeoutMs/1000} 秒，已取消本次读取。可以重试或返回回测列表。`),timeoutMs);
       let done=false;
-      try { const value = await api<T>(path, undefined, controller.signal, paper); if (!controller.signal.aborted) { setData(value); setError(''); done=!!stopWhen?.(value); } }
-      catch (e) { if (!controller.signal.aborted) { if(!retain)setData(null); setError(errorText(e)); } }
-      finally { if (!controller.signal.aborted) { setLoading(false); if (poll&&!done) timer = setTimeout(read, poll); } }
+      try { const value = await api<T>(path, undefined, signal, paper,undefined,trackRead?progress=>{if(!disposed&&!signal.aborted)setReadProgress(progress);}:undefined); if (!disposed&&!signal.aborted) { setData(value); setError(''); done=!!stopWhen?.(value); } }
+      catch (e) { if (!disposed&&!signal.aborted) { if(!retain)setData(null); setError(errorText(e)); } }
+      finally { clearTimeout(deadline);if (!disposed&&!signal.aborted) { setLoading(false);setReadProgress(null); if (poll&&!done) timer = setTimeout(read, poll); } }
     }
-    void read(); return () => { controller.abort(); clearTimeout(timer); };
-  }, [path, poll, paper, version,retain,stopWhen]);
-  return {data, error, loading, refresh: () => setVersion(v => v + 1)};
+    void read(); return () => {leave();globalThis.removeEventListener?.('pagehide',leave);globalThis.removeEventListener?.('pageshow',returnToPage);if(operation.current===current)operation.current=null;};
+  }, [path, poll, paper, version,retain,stopWhen,timeoutMs,trackRead]);
+  return {data, error, loading, readProgress, cancel:()=>operation.current?.cancel(), refresh: () => setVersion(v => v + 1)};
 }
 export function ErrorNotice({message, retry}: {message: string; retry?: () => void}) {
   return message ? <div className="notice error" role="alert"><span>{message}</span>{retry && <button onClick={retry}>重试</button>}</div> : null;

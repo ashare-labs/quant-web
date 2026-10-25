@@ -34,7 +34,7 @@ export function ResultOverview({result,analysis,loading,error,benchmark}:{result
         {analysis.benchmark?.status==='ok'?` · ${String(analysis.benchmark.name||analysis.benchmark.security)}（${analysis.benchmark.return_type==='total_return'?'全收益':'价格收益'}）`:' · 基准未就绪'}
         {object(analysis.quality.corporate_account_model).tax==='gross_cash_no_tax'?' · 分红按税前模型':''} · 相对净值超额</p>
     </>:<>
-      <p className="note" role="status">{loading?'正在读取派生分析…':error?'派生分析暂不可用，当前显示冻结结果。':'此记录尚未提供派生分析。'} <span title={error}>缺少的指标保留为空。</span></p>
+      <p className="note" role="status">{loading?'正在读取派生分析…':error?'派生分析暂不可用。':'此记录尚未提供派生分析。'} <span title={error}>缺少的指标保留为空。</span></p>
       {accounts.length>0&&<Suspense fallback={<p className="note">正在绘制权益图…</p>}><LegacyChart title="账户权益 · 每日收盘"
         labels={accounts.map(a=>String(a.at||''))} series={[{name:'账户权益',values:accounts.map(a=>finite(a.total_value)?a.total_value:null)}]}/></Suspense>}
     </>}

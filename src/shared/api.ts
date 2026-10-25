@@ -1,5 +1,6 @@
 import type { components } from '../generated/api';
 import { accountMode, accountSession } from '../auth/session.ts';
+import {readResponse, type ReadProgress} from './response-read.ts';
 export type PythonJob = components['schemas']['PythonJobView'];
 export type PythonResult = components['schemas']['PythonResult'];
 export type JobLogs = components['schemas']['JobLogs'];
@@ -16,7 +17,7 @@ export class ApiError extends Error {
     this.requestId = response?.headers.get('x-quantweb-request-id') || undefined;
   }
 }
-export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT'): Promise<T> {
+export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT', onRead?: (progress: ReadProgress) => void): Promise<T> {
   const authority=accountSession.requireCurrent();
   const current=()=>{if(accountMode&&accountSession.snapshot().epoch!==authority.epoch)throw new ApiError('账号会话已变化，旧请求的响应已丢弃。','SESSION_CHANGED',body!==undefined);};
   let response: Response;
@@ -33,7 +34,8 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
   current();
   if(accountMode&&response.status===401){accountSession.rejectUnauthorized(authority.epoch);throw new ApiError('会话已过期或被撤销，请重新登录。','AUTHENTICATION_REQUIRED',false,response);}
   let raw: string;
-  try { raw = await response.text(); } catch {
+  try { raw = onRead ? await readResponse(response, signal, onRead) : await response.text(); } catch (error) {
+    if (signal?.aborted) throw error;
     throw new ApiError(`读取服务响应时连接中断（HTTP ${response.status}）。` + (body === undefined ? '请恢复连接后重试。' : '提交结果尚未确认，请在连接恢复后重试。'), 'RESPONSE_INTERRUPTED', body !== undefined, response);
   }
   current();
