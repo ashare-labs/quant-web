@@ -1,7 +1,7 @@
 import test,{afterEach} from 'node:test';
 import assert from 'node:assert/strict';
 import {backtestQuery,isStrategyId,normalizeBacktest,readStrategyBacktests,resolveStrategy,strategyIdentity} from '../src/backtests/history-api.ts';
-import {backtestsHref,createdTime,duration,frequencyLabel,optionalValue,pageOf,recordStatus,resultHref,selectRecords} from '../src/backtests/history-model.ts';
+import {backtestsHref,createdTime,duration,durationTitle,recordDuration,frequencyLabel,optionalValue,pageOf,recordStatus,resultHref,selectRecords} from '../src/backtests/history-model.ts';
 import {submission,submit} from '../src/backtests/submission.ts';
 
 // Constructed protocol fixtures only. Product code always reads the real service.
@@ -70,4 +70,29 @@ test('new submissions bind the saved file slot and report uncertain transport fa
   assert.throws(()=>submission({...draft,filePath:'../a.py'},catalogue,'new'),/标识无效/);
   const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
   globalThis.fetch=async()=>{throw Error('lost');};await assert.rejects(submit(body));
+});
+
+const progress=(overrides={})=>({job_id:item().job_id,started_at:'2026-10-25T01:00:00Z',sampled_at:'2026-10-25T01:00:26Z',elapsed_seconds:26.86,terminal:false,...overrides});
+test('running and terminal list timing reuse server execution snapshots without counting queue time',()=>{
+  const running=normalizeBacktest(item(1,{stored_status:'running',display_status:'running',progress:progress()}),strategy);
+  assert.equal(running.durationSeconds,26.86);assert.equal(running.durationState,'running');assert.equal(recordDuration(running),'00分26秒');assert.match(durationTitle(running),/运行中/);
+  for(const status of ['succeeded','failed','cancelled']){
+    const finished=normalizeBacktest(item(1,{stored_status:status,display_status:status,progress:progress({terminal:true,finished_at:'2026-10-25T01:00:26Z'})}),strategy);
+    assert.equal(finished.durationSeconds,26.86);assert.equal(finished.durationState,'finished');assert.match(durationTitle(finished),/已结束/);
+    assert.deepEqual(normalizeBacktest(item(1,{stored_status:status,display_status:status,progress:progress({terminal:true,finished_at:'2026-10-25T01:00:26Z'})}),strategy),finished);
+  }
+});
+test('a terminal database row does not turn an interrupted last sample into a complete duration',()=>{
+  const interrupted=normalizeBacktest(item(1,{stored_status:'failed',progress:progress({terminal:true,finished_at:null})}),strategy);
+  assert.equal(interrupted.durationState,'observed');assert.equal(recordDuration(interrupted),'≥ 00分26秒');assert.match(durationTitle(interrupted),/完整用时未知/);
+  const retired=normalizeBacktest(item(1,{stored_status:'running',execution_state:'runtime_unavailable',progress:progress()}),strategy);
+  assert.equal(retired.durationState,'observed');
+});
+test('missing, mismatched or invalid timing stays unknown, including after refresh',()=>{
+  for(const value of [null,{},progress({job_id:item(2).job_id}),progress({elapsed_seconds:-1}),progress({elapsed_seconds:Infinity}),progress({elapsed_seconds:'26'}),progress({started_at:'bad'}),progress({sampled_at:null})]){
+    const record=normalizeBacktest(item(1,{progress:value}),strategy);
+    assert.equal(record.durationSeconds,null);assert.equal(record.durationState,'unknown');assert.equal(recordDuration(record),'—');
+  }
+  const zero=normalizeBacktest(item(1,{stored_status:'running',progress:progress({elapsed_seconds:0})}),strategy);
+  assert.equal(zero.durationSeconds,0);assert.equal(recordDuration(zero),'00分00秒');
 });

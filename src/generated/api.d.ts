@@ -2637,7 +2637,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev29
+             * @default 0.12.0.dev30
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -3013,6 +3013,7 @@ export interface components {
             job_id: string;
             /** Name */
             name: string;
+            progress?: components["schemas"]["TaskProgress"] | null;
             result: components["schemas"]["ResultReference"] | null;
             /** Result Available */
             result_available: boolean;
@@ -3171,6 +3172,8 @@ export interface components {
             current_rss_bytes?: number | null;
             /** Elapsed Seconds */
             elapsed_seconds: number;
+            /** Finished At */
+            finished_at?: string | null;
             /** Job Id */
             job_id: string;
             /** Last Rss Bytes */

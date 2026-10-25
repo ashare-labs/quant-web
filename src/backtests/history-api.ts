@@ -54,11 +54,20 @@ export function normalizeBacktest(item:Item,strategyId:string):BacktestRecord {
   }
   const error=object(item.error),resultError=object(item.result_error),analysisError=object(item.analysis_error);
   const snapshot=object(item.result).snapshot_sha256;
+  const progress=object(item.progress);
+  const timestamp=(value:unknown)=>typeof value==='string'&&Number.isFinite(Date.parse(value));
+  const durationSeconds=progress.job_id===item.job_id && timestamp(progress.started_at) && timestamp(progress.sampled_at)
+    && typeof progress.elapsed_seconds==='number' && Number.isFinite(progress.elapsed_seconds) && progress.elapsed_seconds>=0
+    ? progress.elapsed_seconds : null;
+  const ended=['succeeded','failed','cancelled'].includes(item.stored_status);
+  const durationState:BacktestRecord['durationState']=durationSeconds===null?'unknown'
+    :ended&&progress.terminal===true&&timestamp(progress.finished_at)?'finished'
+    :item.execution_state==='current_runtime'&&['running','cancelling'].includes(item.stored_status)&&progress.terminal===false?'running':'observed';
   return {id:item.job_id,name:item.name,createdAt:item.created_at,start:item.start_date,end:item.end_date,
     frequency:item.frequency,initialCash:typeof item.initial_cash==='number'&&Number.isFinite(item.initial_cash)?item.initial_cash:null,
-    // This contract does not expose execution duration or Python version. Do not
-    // substitute queue lifetime, the browser runtime, or recomputed metrics.
-    durationSeconds:null,pythonVersion:null,status:item.display_status||item.stored_status,
+    // Use the server's monotonic execution sample, never queue lifetime or a
+    // browser timer. Missing legacy observations and Python versions stay unknown.
+    durationSeconds,durationState,pythonVersion:null,status:item.display_status||item.stored_status,
     executionState:item.execution_state,error:typeof error.message==='string'?error.message:typeof resultError.message==='string'?resultError.message:null,
     analysisError:typeof analysisError.message==='string'?analysisError.message:null,
     hasResult:item.result_available,sourceSha256:typeof snapshot==='string'&&/^[a-f0-9]{64}$/.test(snapshot)?snapshot:null,

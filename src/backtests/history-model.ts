@@ -10,6 +10,7 @@ export interface BacktestRecord {
   frequency: string;
   initialCash: number | null;
   durationSeconds: number | null;
+  durationState: 'running' | 'finished' | 'observed' | 'unknown';
   pythonVersion: string | null;
   status: string;
   executionState: string;
@@ -48,6 +49,16 @@ export function duration(seconds: number | null) {
   if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return '—';
   const rounded = Math.floor(seconds);
   return (rounded >= 3600 ? Math.floor(rounded/3600)+'时' : '') + String(Math.floor(rounded/60)%60).padStart(2,'0')+'分'+String(rounded%60).padStart(2,'0')+'秒';
+}
+export function recordDuration(record: Pick<BacktestRecord, 'durationSeconds'|'durationState'>) {
+  const text = duration(record.durationSeconds);
+  return record.durationState === 'observed' && text !== '—' ? '≥ '+text : text;
+}
+export function durationTitle(record: Pick<BacktestRecord, 'durationState'>) {
+  return {running:'运行中：截至最新采样的执行用时，不含排队时间',
+    finished:'已结束：从开始执行至结束采样的用时，不含排队时间',
+    observed:'仅有最后一次采样：实际执行用时至少为此值，完整用时未知',
+    unknown:'此回测没有可靠的执行耗时记录'}[record.durationState];
 }
 export function createdTime(value: string) {
   if (!Number.isFinite(Date.parse(value))) return ['—', ''];
