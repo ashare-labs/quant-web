@@ -1,5 +1,5 @@
 import {api, errorText, object, type Row} from '../shared/api.ts';
-import {acceptedAnalysis, analysisPath, type Analysis} from '../results/model.ts';
+import {selectedAnalysis, analysisPath, type Analysis} from '../results/model.ts';
 import type {BacktestRecord} from './history-model.ts';
 import { frozenSource } from '../strategies/project-model.ts';
 
@@ -24,12 +24,12 @@ async function readResult(record:BacktestRecord,signal?:AbortSignal):Promise<Com
     column.resultError=errorText(e);return column;
   }
   if(!record.sourceSha256){column.analysisError='缺少冻结结果摘要，无法核对分析来源。';return column;}
-  const inline=acceptedAnalysis(column.result.analysis,record.id,record.sourceSha256);
-  const derivedPath=analysisPath(path,column.result,inline,'python');
+  const inline=selectedAnalysis(column.result.analysis,record.id,record.sourceSha256);
+  const derivedPath=analysisPath(path,column.result,inline,'python','frozen');
   if(inline){column.analysis=inline;return column;}
   try {
     const raw=await api<Row>(derivedPath!,undefined,signal);
-    column.analysis=acceptedAnalysis(raw,record.id,record.sourceSha256);
+    column.analysis=selectedAnalysis(raw,record.id,record.sourceSha256);
     if(!column.analysis)column.analysisError='派生分析与本次结果的身份或格式不一致。';
   } catch(e) {
     if(signal?.aborted)throw e;
@@ -58,5 +58,7 @@ export function comparisonNotes(columns:ComparisonColumn[]):string[] {
     notes.push('年化因子不同，年化指标不可直接比较。');
   if(new Set(analyses.map(a=>a.policy.risk_free_annual)).size>1)
     notes.push('无风险利率不同，夏普、索提诺和阿尔法需按各自口径解读。');
+  if(new Set(analyses.map(a=>a.calculation_version)).size>1)
+    notes.push('计算版本不同，超额收益需按各自口径解读。');
   return notes;
 }

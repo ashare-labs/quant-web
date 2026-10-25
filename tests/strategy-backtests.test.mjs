@@ -9,11 +9,11 @@ const originalFetch=globalThis.fetch,originalStorage=globalThis.localStorage;
 afterEach(()=>{globalThis.fetch=originalFetch;if(originalStorage===undefined)delete globalThis.localStorage;else globalThis.localStorage=originalStorage;});
 const strategy='研究/同名 策略.py',other='另一个目录/同名 策略.py',identity=strategyIdentity(strategy);
 const item=(n=1,overrides={})=>({job_id:'m2job-'+n.toString(16).padStart(32,'0'),strategy_id:strategy,name:'同名策略',created_at:'2024-03-08T02:30:00Z',updated_at:'2024-03-08T03:30:00Z',start_date:'2024-03-04',end_date:'2024-03-08',frequency:'1d',initial_cash:100000,status:'succeeded',stored_status:'succeeded',display_status:'succeeded',execution_state:'current_runtime',result_available:true,result:{},summary:{net_return:0,max_drawdown:0.1},error:null,result_error:null,...overrides});
-const response=(items,overrides={})=>({strategy_id:strategy,identity_model:'saved_relative_path',total:items.length,unassigned_count:9,offset:0,limit:100,items,...overrides});
+const response=(items,overrides={})=>({analysis_version:'returns-v2',strategy_id:strategy,identity_model:'saved_relative_path',total:items.length,unassigned_count:9,offset:0,limit:100,items,...overrides});
 const json=value=>new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}});
 
 test('strategy query keeps the full directory identity and never falls back to an unassigned/global query',()=>{
-  const q=new URLSearchParams(backtestQuery(strategy).split('?')[1]);assert.equal(q.get('strategy_id'),strategy);assert.equal(q.get('limit'),'100');
+  const q=new URLSearchParams(backtestQuery(strategy).split('?')[1]);assert.equal(q.get('strategy_id'),strategy);assert.equal(q.get('limit'),'100');assert.equal(q.get('analysis_version'),'returns-v2');
   assert.notEqual(backtestQuery(strategy),backtestQuery(other));
   for(const invalid of ['',undefined,'../a.py','/a.py','a//b.py','a\\b.py','a.txt','a\nb.py','x/'.repeat(600)+'a.py']){assert.equal(isStrategyId(invalid),false);assert.throws(()=>backtestQuery(invalid));}
   assert.equal(new URLSearchParams(backtestsHref({strategy}).split('?')[1]).get('strategy'),strategy);

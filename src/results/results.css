@@ -4,6 +4,14 @@
 .result-analysis .metric small{display:block;min-height:17px;margin-top:7px;font-size:11px;color:var(--muted)}
 .result-analysis .result-account-summary{display:flex;gap:28px;flex-wrap:wrap;padding:16px 0;color:var(--muted);font-size:12px}
 .result-analysis .result-account-summary b{color:var(--fg);font-weight:400;margin-left:8px;font-variant-numeric:tabular-nums}
+.result-analysis .result-benchmark,.result-analysis .result-chart-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px}
+.result-analysis .result-benchmark{padding:8px 0 12px;border-bottom:1px solid var(--border)}
+.result-analysis .result-benchmark span{color:var(--muted)}
+.result-analysis .result-benchmark select,.result-analysis .result-chart-options select{font-size:12px;min-height:30px;padding:4px 8px;margin-left:6px;max-width:240px}
+.result-analysis .result-chart-legend,.result-analysis .result-chart-options{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.result-analysis .result-chart-legend label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.result-analysis .result-chart-legend input{width:13px;height:13px;min-height:0;padding:0;margin:0;accent-color:var(--accent)}
+.result-analysis .result-chart-legend i{display:inline-block;width:16px;height:2px}
 .result-analysis .result-chart-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:16px 0 18px;font-size:12px}
 .result-analysis .result-range,.result-analysis .result-dates{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .result-analysis .result-range span{color:var(--muted);margin-right:4px}

@@ -142,7 +142,7 @@ test('source budgets use service limits, with no arbitrary 256 KiB project or si
 test('project history resolves moved display name by ID but remains readable after project deletion',async()=>{
   globalThis.fetch=async()=>json(project({path:'新分类/新名'}));assert.deepEqual(await resolveStrategy(new URLSearchParams({strategy:id})),{id,path:'新分类/新名',name:'新名'});
   globalThis.fetch=async()=>json({error:{message:'missing'}},404);assert.deepEqual(await resolveStrategy(new URLSearchParams({strategy:id})),strategyIdentity(id));
-  globalThis.fetch=async()=>json({strategy_id:id,identity_model:'stable_project_id',total:0,unassigned_count:0,offset:0,limit:100,items:[]});assert.equal((await readStrategyBacktests(strategyIdentity(id))).records.length,0);
+  globalThis.fetch=async()=>json({strategy_id:id,identity_model:'stable_project_id',analysis_version:'returns-v2',total:0,unassigned_count:0,offset:0,limit:100,items:[]});assert.equal((await readStrategyBacktests(strategyIdentity(id))).records.length,0);
 });
 test('frozen source comparison includes helper changes, file additions/deletions and entry changes; old source stays intact',async()=>{
   const first=frozenSource({project:{project_id:id,entrypoint:'main.py',files}}),second=frozenSource({project:{project_id:id,entrypoint:'other.py',files:{'main.py':files['main.py'],'other.py':'pass'}}});

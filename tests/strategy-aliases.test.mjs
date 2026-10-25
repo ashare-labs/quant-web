@@ -82,7 +82,7 @@ test('Unicode equivalents only converge when the service actually resolves the r
 });
 
 test('current file list resolves aliases but explicit frozen history remains exact, including after deletion',async()=>{
-  const calls=[];globalThis.fetch=async(url)=>{calls.push(url);if(url.includes('/files?'))return json(file());return json({strategy_id:canonical,identity_model:'saved_relative_path',total:0,unassigned_count:10,offset:0,limit:100,items:[]});};
+  const calls=[];globalThis.fetch=async(url)=>{calls.push(url);if(url.includes('/files?'))return json(file());return json({strategy_id:canonical,identity_model:'saved_relative_path',analysis_version:'returns-v2',total:0,unassigned_count:10,offset:0,limit:100,items:[]});};
   const resolved=await resolveStrategy(new URLSearchParams({file:alias}));assert.equal(resolved.id,canonical);await readStrategyBacktests(resolved);
   assert.equal(new URLSearchParams(calls[1].split('?')[1]).get('strategy_id'),canonical);
   globalThis.fetch=async()=>{throw Error('file deleted');};assert.equal((await resolveStrategy(new URLSearchParams({strategy:alias}))).id,alias);

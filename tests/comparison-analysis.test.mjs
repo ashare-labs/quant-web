@@ -26,7 +26,7 @@ function serve(fixtures=cases){
     calls.push({url,options});
     const fixture=fixtures.find(f=>url.includes(f.job.job_id));assert.ok(fixture);
     if(url.endsWith('/result'))return json(fixture.result);
-    if(url.endsWith('/analysis'))return json(fixture.analysis);
+    if(url.endsWith('/result/analysis?analysis_version=returns-v2&benchmark=frozen'))return json(fixture.analysis);
     throw Error('Unexpected request '+url);
   };
   return calls;
@@ -37,7 +37,7 @@ test('comparison reads the same twenty analysis metrics as the result page using
   fixtures[0].result.summary.benchmark_return=99; // Frozen summary must not win over analysis.
   const columns=await readComparison([record(fixtures[0]),record(fixtures[1])],'results',controller.signal);
   assert.equal(calls.length,4);
-  for(const call of calls){assert.equal(call.options.method,'GET');assert.equal(call.options.signal,controller.signal);assert.match(call.url,/^\/api\/v1\/history\/jobs\/m2job-[a-f0-9]{32}\/(result|analysis)$/);}
+  for(const call of calls){assert.equal(call.options.method,'GET');assert.equal(call.options.signal,controller.signal);assert.match(call.url,/^\/api\/v1\/history\/jobs\/m2job-[a-f0-9]{32}\/result(\/analysis\?analysis_version=returns-v2&benchmark=frozen)?$/);}
   columns.forEach((column,index)=>{
     assert.equal(column.resultError,null);assert.equal(column.analysisError,null);
     const shown=resultMetrics(column.result.summary,column.analysis);
@@ -86,7 +86,7 @@ test('wrong task result is withheld without discarding another valid comparison 
 });
 
 test('analysis identity, version and policy validation retain only original basic results on failure',async()=>{
-  for(const mutate of [a=>a.source_sha256='f'.repeat(64),a=>a.job_id='another',a=>a.calculation_version='different',a=>a.policy.evaluation_frequency='1m']){
+  for(const mutate of [a=>a.source_sha256='f'.repeat(64),a=>a.job_id='another',a=>a.calculation_version='different',a=>a.calculation_version='returns-v1',a=>a.policy.evaluation_frequency='1m']){
     const fixtures=clone(cases);mutate(fixtures[0].analysis);serve(fixtures);
     const [column]=await readComparison([record()],'results');
     assert.equal(column.analysis,null);assert.match(column.analysisError,/身份或格式/);

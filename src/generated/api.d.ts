@@ -2637,7 +2637,7 @@ export interface components {
             backend_source_sha256: string;
             /**
              * Backend Version
-             * @default 0.12.0.dev30
+             * @default 0.12.0.dev31
              */
             backend_version: string;
             data_owner?: components["schemas"]["ResearchOwner"];
@@ -2696,9 +2696,13 @@ export interface components {
             } | null;
             /**
              * Calculation Version
-             * @constant
+             * @enum {string}
              */
-            calculation_version: "returns-v1";
+            calculation_version: "returns-v1" | "returns-v2";
+            /** Comparison */
+            comparison?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /** Costs */
             costs: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -2711,6 +2715,10 @@ export interface components {
             engine: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+            /** Excess Drawdowns */
+            excess_drawdowns?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[] | null;
             /** Initial Equity */
             initial_equity: number;
             /** Job Id */
@@ -2731,6 +2739,7 @@ export interface components {
             quality: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+            return_difference?: components["schemas"]["AnalysisMetric"] | null;
             /** Rolling */
             rolling: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -3044,6 +3053,12 @@ export interface components {
         };
         /** StrategyBacktests */
         StrategyBacktests: {
+            /**
+             * Analysis Version
+             * @default returns-v1
+             * @enum {string}
+             */
+            analysis_version: "returns-v1" | "returns-v2";
             /**
              * Identity Model
              * @default saved_relative_path
@@ -4410,7 +4425,10 @@ export interface operations {
     };
     analysis_api_v1_history_jobs__job_id__result_analysis_get: {
         parameters: {
-            query?: never;
+            query?: {
+                analysis_version?: "returns-v1" | "returns-v2";
+                benchmark?: string;
+            };
             header?: never;
             path: {
                 job_id: string;
@@ -5586,6 +5604,7 @@ export interface operations {
                 strategy_id?: string | null;
                 limit?: number;
                 offset?: number;
+                analysis_version?: "returns-v1" | "returns-v2";
             };
             header?: never;
             path?: never;
@@ -6580,7 +6599,10 @@ export interface operations {
     };
     analysis_api_v1_python_jobs__job_id__result_analysis_get: {
         parameters: {
-            query?: never;
+            query?: {
+                analysis_version?: "returns-v1" | "returns-v2";
+                benchmark?: string;
+            };
             header?: never;
             path: {
                 job_id: string;

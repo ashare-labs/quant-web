@@ -1,15 +1,21 @@
 import {lazy,Suspense} from 'react';
 import {csv,download,object,pct,rows,type Row} from '../shared/api';
 import {DataTable} from '../shared/DataTable';
-import {finite,metricCsv,metricDefinitions,metricText,money,reasonText,resultMetrics,type Analysis} from './model';
+import {finite,metricCsv,metricDefinition,metricDefinitions,metricText,money,reasonText,resultMetrics,type Analysis,type BenchmarkOption} from './model';
 const ResultChart=lazy(()=>import('./ResultChart'));
 const LegacyChart=lazy(()=>import('../shared/LineChart'));
 
-export function ResultOverview({result,analysis,loading,error}:{result:Row;analysis:Analysis|null;loading:boolean;error:string}){
+export function ResultOverview({result,analysis,loading,error,benchmark}:{result:Row;analysis:Analysis|null;loading:boolean;error:string;
+  benchmark:{selection:string;options:BenchmarkOption[];onSelect:(value:string)=>void}}){
   const summary=object(result.summary),native=object(result.native),metrics=resultMetrics(summary,analysis),accounts=rows(native.accounts);
   const worst=analysis?.drawdowns[0];
   return <>
-    <div className="metrics result-metrics">{metricDefinitions.map(([key,label,definition])=>{
+    <div className="result-benchmark"><label>比较基准 <select aria-label="比较基准" value={benchmark.selection} onChange={e=>benchmark.onSelect(e.target.value)}>
+      {benchmark.options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}
+    </select></label><span role="status">{loading?'正在读取比较…':error?'比较暂不可用':analysis?.comparison?.source==='derived'?'派生比较 · 原结果保留':analysis?.benchmark?.selection_source==='default'?'原始基准 · 默认沪深300':'原始基准'}
+      {!loading&&!error&&analysis?.metrics.benchmark_return.value===null?' · '+reasonText(analysis.metrics.benchmark_return.reason):''}</span></div>
+    <div className="metrics result-metrics">{metricDefinitions.map(([key,label])=>{
+      const definition=metricDefinition(key,analysis);
       const m=metrics[key],reason=reasonText(m.reason),color=m.value!==null&&['net_return','annual_return','excess_return','benchmark_return','daily_excess_return'].includes(key)?m.value>0?'positive':m.value<0?'negative':'':'';
       return <div className="metric" key={key}><span><abbr tabIndex={0} title={definition}>{label}</abbr></span>
         <strong className={color} title={reason||definition}>{metricText(m)}</strong>
@@ -26,13 +32,13 @@ export function ResultOverview({result,analysis,loading,error}:{result:Row;analy
       <p className="note result-policy">日终评价 · {analysis.sample_count} 个交易日 · 年化因子 {String(analysis.policy.annualization)} ·
         无风险年利率 {pct(analysis.policy.risk_free_annual)}{analysis.policy.risk_free_source==='assumed_zero'?'（零利率假设）':''}
         {analysis.benchmark?.status==='ok'?` · ${String(analysis.benchmark.name||analysis.benchmark.security)}（${analysis.benchmark.return_type==='total_return'?'全收益':'价格指数'}）`:' · 基准未就绪'}
-        {object(analysis.quality.corporate_account_model).tax==='gross_cash_no_tax'?' · 分红按税前模型':''}</p>
+        {object(analysis.quality.corporate_account_model).tax==='gross_cash_no_tax'?' · 分红按税前模型':''} · 相对净值超额</p>
     </>:<>
       <p className="note" role="status">{loading?'正在读取派生分析…':error?'派生分析暂不可用，当前显示冻结结果。':'此记录尚未提供派生分析。'} <span title={error}>缺少的指标保留为空。</span></p>
       {accounts.length>0&&<Suspense fallback={<p className="note">正在绘制权益图…</p>}><LegacyChart title="账户权益 · 每日收盘"
         labels={accounts.map(a=>String(a.at||''))} series={[{name:'账户权益',values:accounts.map(a=>finite(a.total_value)?a.total_value:null)}]}/></Suspense>}
     </>}
-    <div className="result-export"><button onClick={()=>download(String(result.name||'回测')+'-指标.csv',csv(metricCsv(summary,analysis)),'text/csv;charset=utf-8')}>导出指标 CSV</button></div>
+    <div className="result-export"><button disabled={loading} onClick={()=>download(String(result.name||'回测')+'-指标.csv',csv(metricCsv(summary,analysis)),'text/csv;charset=utf-8')}>导出指标 CSV</button></div>
     {analysis&&<details className="result-more"><summary>更多分析：回撤恢复、月度与滚动表现</summary>
       <h2>回撤与恢复</h2><DataTable name="回撤区间" data={analysis.drawdowns} columns={[
         {key:'peak_date',label:'峰值日',value:r=>r.peak_date??'期初'},{key:'trough_date',label:'谷值日'},
