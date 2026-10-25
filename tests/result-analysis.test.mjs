@@ -83,5 +83,5 @@ test('an end date on a non-session selects the previous session, not a future on
 
 test('new styling is scoped to the results page rather than changing other pages',()=>{
   const css=readFileSync(new URL('../src/results/results.css',import.meta.url),'utf8');
-  for(const line of css.split('\n').filter(Boolean))assert.ok(line.startsWith('.result-analysis ')||line.startsWith('@media('));
+  for(const line of css.split('\n').filter(Boolean))assert.ok(line.startsWith('.result-analysis ')||line.startsWith('.run-progress')||line.startsWith('@media('));
 });

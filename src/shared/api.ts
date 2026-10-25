@@ -50,6 +50,7 @@ export interface HistoryJob {
   job_id: string; family: string; request: Row; status: string; display_status?: string | null; stored_status?: string | null;
   execution_state?: string; execution_reason?: Row | null; created_at: string; updated_at: string;
   read_only: true; can_resume: false; result: Row | null; error: Row | null;
+  progress?: components['schemas']['TaskProgress'] | null;
 }
 export const statusLabels: Record<string, string> = {
   queued: '等待运行', running: '运行中', cancelling: '正在取消', cancelled: '已取消', failed: '运行失败', succeeded: '已完成',

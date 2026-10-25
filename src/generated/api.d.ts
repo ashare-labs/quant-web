@@ -2332,6 +2332,7 @@ export interface components {
              * @default queued
              */
             phase: string;
+            progress?: components["schemas"]["TaskProgress"] | null;
             /** Recovery Required */
             recovery_required: boolean;
             request: components["schemas"]["PythonCreate"];
@@ -2543,7 +2544,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default 3eb3f6903baa4bf7c4ce9c80b44d7850b445107e
+             * @default 1da924989d93da9793579950c845490114ba586b
              */
             commit: string | null;
             /**
@@ -2554,17 +2555,17 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default 74aaa57f656bb895311348d52e85b0567eef5fe7
+             * @default b7342863aa82e2e7f1ebe11eb6f6e1c1ea128e7b
              */
             tree: string | null;
             /**
              * Version
-             * @default 0.10.0.dev22
+             * @default 0.10.0.dev24
              */
             version: string;
             /**
              * Wheel Sha256
-             * @default f24240ecf375355f8484233cd024eab6177845ca722f60343e32063ddb9268f6
+             * @default 39dd29d8bb624fa275cae37a5af1736750d8151c318da7f9f565ec994ad71ced
              */
             wheel_sha256: string;
         };
@@ -2847,30 +2848,10 @@ export interface components {
              */
             artifact_bytes: number;
             /**
-             * Cached Rows
-             * @default 250000
-             */
-            cached_rows: number;
-            /**
-             * Cpu Seconds
-             * @default 120
-             */
-            cpu_seconds: number;
-            /**
              * Disk Free Bytes
              * @default 1073741824
              */
             disk_free_bytes: number;
-            /**
-             * Execution Seconds
-             * @default 120
-             */
-            execution_seconds: number;
-            /**
-             * File Bytes
-             * @default 67108864
-             */
-            file_bytes: number;
             /**
              * Max Attempts
              * @default 8
@@ -2887,40 +2868,10 @@ export interface components {
              */
             max_workers: number;
             /**
-             * Open Files
-             * @default 256
-             */
-            open_files: number;
-            /**
-             * Output Bytes
-             * @default 1048576
-             */
-            output_bytes: number;
-            /**
-             * Preparation Seconds
-             * @default 60
-             */
-            preparation_seconds: number;
-            /**
-             * Query Rows
-             * @default 100000
-             */
-            query_rows: number;
-            /**
-             * Read Rows
-             * @default 1000000
-             */
-            read_rows: number;
-            /**
              * Retained Artifact Bytes
              * @default 512000000000
              */
             retained_artifact_bytes: number;
-            /**
-             * Rss Bytes
-             * @default 1073741824
-             */
-            rss_bytes: number;
             /**
              * Schema Version
              * @default m2-job-service-policy.v1
@@ -3209,6 +3160,55 @@ export interface components {
             source_sha256: string;
             /** Version Id */
             version_id: string;
+        };
+        /** TaskProgress */
+        TaskProgress: {
+            /** Attempt */
+            attempt: number;
+            /** Completed Trading Days */
+            completed_trading_days?: number | null;
+            /** Current Rss Bytes */
+            current_rss_bytes?: number | null;
+            /** Elapsed Seconds */
+            elapsed_seconds: number;
+            /** Job Id */
+            job_id: string;
+            /** Last Rss Bytes */
+            last_rss_bytes?: number | null;
+            /**
+             * Memory Scope
+             * @default strategy_process
+             * @constant
+             */
+            memory_scope: "strategy_process";
+            /** Peak Rss Bytes */
+            peak_rss_bytes?: number | null;
+            /**
+             * Phase
+             * @enum {string}
+             */
+            phase: "preparing" | "executing" | "finalizing" | "publishing";
+            /**
+             * Sampled At
+             * Format: date-time
+             */
+            sampled_at: string;
+            /** Sequence */
+            sequence: number;
+            /** Simulation Date */
+            simulation_date?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Terminal
+             * @default false
+             */
+            terminal: boolean;
+            /** Total Trading Days */
+            total_trading_days?: number | null;
         };
         /** TradingFacts */
         TradingFacts: {

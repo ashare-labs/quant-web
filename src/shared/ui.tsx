@@ -1,18 +1,22 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText, statusLabels, shownStatus, object } from './api';
-export function useResource<T>(path: string | null, poll = 0, paper = false) {
+export function useResource<T>(path: string | null, poll = 0, paper = false,
+  options: {retainOnError?: boolean; stopWhen?: (value:T)=>boolean} = {}) {
   const [data, setData] = useState<T | null>(null), [error, setError] = useState(''), [loading, setLoading] = useState(false), [version, setVersion] = useState(0);
+  const previousPath=useRef<string|null>(null),retain=!!options.retainOnError,stopWhen=options.stopWhen;
   useEffect(() => {
     const controller = new AbortController(); let timer: ReturnType<typeof setTimeout>;
-    setData(null); setError(''); setLoading(!!path);
+    if(!retain||previousPath.current!==path)setData(null);
+    previousPath.current=path;setError(''); setLoading(!!path);
     async function read() {
       if (!path) return;
-      try { const value = await api<T>(path, undefined, controller.signal, paper); if (!controller.signal.aborted) { setData(value); setError(''); } }
-      catch (e) { if (!controller.signal.aborted) { setData(null); setError(errorText(e)); } }
-      finally { if (!controller.signal.aborted) { setLoading(false); if (poll) timer = setTimeout(read, poll); } }
+      let done=false;
+      try { const value = await api<T>(path, undefined, controller.signal, paper); if (!controller.signal.aborted) { setData(value); setError(''); done=!!stopWhen?.(value); } }
+      catch (e) { if (!controller.signal.aborted) { if(!retain)setData(null); setError(errorText(e)); } }
+      finally { if (!controller.signal.aborted) { setLoading(false); if (poll&&!done) timer = setTimeout(read, poll); } }
     }
     void read(); return () => { controller.abort(); clearTimeout(timer); };
-  }, [path, poll, paper, version]);
+  }, [path, poll, paper, version,retain,stopWhen]);
   return {data, error, loading, refresh: () => setVersion(v => v + 1)};
 }
 export function ErrorNotice({message, retry}: {message: string; retry?: () => void}) {

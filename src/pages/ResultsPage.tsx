@@ -8,15 +8,19 @@ import {strategyEditorHref} from '../strategies/project-model';
 import {editorHref} from '../shared/drafts';
 import {acceptedAnalysis,analysisPath,holdingRows,money,reasonText,timeParts,tradeRows} from '../results/model';
 import {ResultOverview} from '../results/ResultOverview';
+import {RunProgress} from '../results/RunProgress';
+import {stopJobPolling} from '../results/progress';
 import '../results/results.css';
 
 export function ResultsPage(){
   const q=new URLSearchParams(location.search),id=q.get('job'),family=q.get('family')||'python',history=q.get('history')==='1';
   const valid=id&&/^m2job-[a-f0-9]{32}$/.test(id),path=valid?(history?'/history/jobs/':family==='factors'?'/factors/jobs/':'/python/jobs/')+id:null;
-  const job=useResource<PythonJob|HistoryJob>(path,5000),log=useResource<JobLogs>(path?path+'/logs':null,5000);
-  const result=useResource<Row>(path&&job.data?.result?path+'/result':null);
   const [tab,setTab]=useState('收益概述'),[error,setError]=useState(''),[busy,setBusy]=useState(false);
-  const j=job.data,r=result.data,verifiedResult=r?.job_id===id?r:null,native=object(r?.native);
+  const job=useResource<PythonJob|HistoryJob>(path,5000,false,{retainOnError:true,stopWhen:stopJobPolling});
+  const j=job.data?.job_id===id?job.data:null;
+  const log=useResource<JobLogs>(path&&tab==='运行日志'?path+'/logs':null,j&&active(j)?5000:0);
+  const result=useResource<Row>(path&&j?.result?path+'/result':null);
+  const r=result.data,verifiedResult=r?.job_id===id?r:null,native=object(r?.native);
   const sourceSha=object(j?.result).snapshot_sha256;
   const expectedHash=typeof sourceSha==='string'?sourceSha:undefined;
   const inline=acceptedAnalysis(verifiedResult?.analysis,id||'',expectedHash);
@@ -51,7 +55,9 @@ export function ResultsPage(){
         {['retired','runtime_unavailable'].includes(shownStatus(j))&&<Reason value={j.execution_reason}/>}<Reason value={j.error}/>
         {history&&<p className="note">只读历史 · 冻结文件完整性已由服务核对。派生分析不修改原成交和权益。</p>}
         {!history&&j.can_resume===false&&['failed','cancelled'].includes(j.status)&&<p className="notice">此 Python 任务不支持断点恢复。可读取已有日志；不能恢复已结束的内存状态。</p>}
-        {!r&&!result.error&&!job.error&&<Empty>{result.loading?'正在读取冻结结果…':active(j)?'任务正在处理。结果会在运行完成后显示。':'此任务尚无已发布结果。'}</Empty>}
+        {!r&&family==='python'&&<RunProgress job={j} disconnected={!!job.error}/>}
+        {!r&&result.loading&&<Empty>正在读取冻结结果…</Empty>}
+        {!r&&family!=='python'&&!result.error&&!job.error&&<Empty>{active(j)?'任务正在处理。结果会在运行完成后显示。':'此任务尚无已发布结果。'}</Empty>}
         {r&&r.job_id!==id?<ErrorNotice message="返回的结果与所选任务不一致，已停止显示。"/>:r&&family==='factors'?<div className="notice">这是一条因子研究记录。<a href={'factors.html?factor='+encodeURIComponent(String(object(j.request).factor_id||''))+'&job='+encodeURIComponent(id!)}>查看因子值与评价</a></div>:r&&<>
           {tab==='收益概述'&&<ResultOverview result={r} analysis={analysis} loading={derived.loading} error={analysisError}/>}
           {tab==='交易详情'&&<>

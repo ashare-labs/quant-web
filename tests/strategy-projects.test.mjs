@@ -136,7 +136,7 @@ test('quota failure prevents an untracked project run and mismatched auxiliary f
 test('source budgets use service limits, with no arbitrary 256 KiB project or single-file ceiling',()=>{
   const source='# '+ 'x'.repeat(300000);assert.doesNotThrow(()=>projectSubmission(draft({files:{'main.py':source}}),catalogue,'key'));
   assert.doesNotThrow(()=>submission({name:'single',source,start:'2024-03-01',end:'2024-03-08',capital:'100000',frequency:'1d'},catalogue,'key'));
-  assert.throws(()=>checkSourceBudget({'main.py':'1234'},{resource_budget:{file_bytes:3}}),/main.py/);
+  assert.doesNotThrow(()=>checkSourceBudget({'main.py':'1234'},{resource_budget:{file_bytes:3}}));
   assert.throws(()=>checkSourceBudget({'main.py':'123','a.py':'456'},{resource_budget:{artifact_bytes:5}}),/资源预算/);
 });
 test('project history resolves moved display name by ID but remains readable after project deletion',async()=>{

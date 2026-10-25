@@ -38,9 +38,8 @@ export function canonicalValue(value:unknown):unknown {
 }
 export function checkSourceBudget(files:Record<string,string>,catalogue:unknown){
   const budget=object(object(catalogue).resource_budget);let total=0;
-  for(const [path,source] of Object.entries(files)){
+  for(const source of Object.values(files)){
     const bytes=new TextEncoder().encode(source).length;total+=bytes;
-    if(typeof budget.file_bytes==='number'&&budget.file_bytes>0&&bytes>budget.file_bytes)throw new Error(path+' 超过当前服务单文件资源预算（'+budget.file_bytes+' 字节）。');
   }
   if(typeof budget.artifact_bytes==='number'&&budget.artifact_bytes>0&&total>budget.artifact_bytes)throw new Error('项目源码超过当前服务资源预算（'+budget.artifact_bytes+' 字节）。');
 }
