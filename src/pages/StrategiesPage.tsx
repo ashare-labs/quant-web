@@ -6,6 +6,7 @@ import { ErrorNotice, Modal, useResource } from '../shared/ui';
 import { backtestsHref } from '../backtests/history-model';
 import { createProject } from '../strategies/project-api';
 import { projectHref } from '../strategies/project-model';
+import { navigate } from '../shared/navigation';
 
 export function StrategiesPage() {
   const [search,setSearch] = useState(''), [modal,setModal] = useState(''), [name,setName] = useState(''), [error,setError] = useState(''), [pending,setPending] = useState(false);
@@ -35,10 +36,10 @@ export function StrategiesPage() {
       const path = childPath(folder, name, modal === '新建策略');
       if (modal === '新建策略') {
         if (folder) await createDirectory(folder);
-        const saved=await saveStrategyFile(path, '', false); location.href = fileHref(saved.path);
+        const saved=await saveStrategyFile(path, '', false); navigate(fileHref(saved.path));
       }
-      else if (modal === '新建项目') {const project=await createProject(path);location.href=projectHref(project.strategy_id);}
-      else { const saved=await createDirectory(path); location.href = folderHref(saved.path); }
+      else if (modal === '新建项目') {const project=await createProject(path);navigate(projectHref(project.strategy_id));}
+      else { const saved=await createDirectory(path);navigate(folderHref(saved.path)); }
     } catch(err) { setError(errorText(err)); }
     finally { setPending(false); }
   }

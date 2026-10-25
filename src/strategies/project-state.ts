@@ -1,3 +1,4 @@
+import { accountStorage } from '../auth/session.ts';
 import { DEFAULT_CAPITAL } from '../shared/capital.ts';
 import { DEFAULT_FREQUENCY, resolveFrequency, type Frequency } from '../shared/drafts.ts';
 import { object } from '../shared/api.ts';
@@ -5,16 +6,16 @@ import { projectResponse, sameProjectSource, type StrategyProject } from './proj
 
 export interface ProjectDraft extends StrategyProject {start:string;end:string;capital:string;frequency:Frequency;active:string;workingCopy:boolean;updated:string}
 const keyPrefix='quantweb-project-draft-v1:';
-export function readProjectDraft(id:string):ProjectDraft|undefined{
-  const raw=localStorage.getItem(keyPrefix+id);if(!raw)return;
+export function readProjectDraft(id:string,storage=accountStorage()):ProjectDraft|undefined{
+  const raw=storage.getItem(keyPrefix+id);if(!raw)return;
   const data=object(JSON.parse(raw)),project=projectResponse(data);
   if(project.strategy_id!==id||!['start','end','capital','active','updated'].every(key=>typeof data[key]==='string')||typeof data.workingCopy!=='boolean')throw new Error('项目浏览器草稿无法读取，原内容已保留。');
   return {...project,start:data.start as string,end:data.end as string,capital:data.capital as string,frequency:resolveFrequency(data.frequency),active:data.active as string,updated:data.updated as string,workingCopy:data.workingCopy};
 }
-export function retainProjectDraft(draft:ProjectDraft){
+export function retainProjectDraft(draft:ProjectDraft,storage=accountStorage()){
   // Refuse to erase a corrupt existing record while preserving the current input in memory.
-  readProjectDraft(draft.strategy_id);
-  localStorage.setItem(keyPrefix+draft.strategy_id,JSON.stringify(draft));
+  readProjectDraft(draft.strategy_id,storage);
+  storage.setItem(keyPrefix+draft.strategy_id,JSON.stringify(draft));
 }
 export function openProjectDraft(project:StrategyProject,stored?:ProjectDraft):{draft:ProjectDraft;conflict:boolean}{
   if(stored&&stored.strategy_id!==project.strategy_id)throw new Error('浏览器草稿不属于当前策略项目。');

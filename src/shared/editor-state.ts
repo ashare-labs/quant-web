@@ -2,11 +2,12 @@ import { newDraft, readDrafts, saveDraft, saveDraftUpdates, type Draft } from '.
 import { displayName, fileIdentity, parentDirectory } from './strategy-files.ts';
 import { isStrategyFilePath } from './strategy-path.ts';
 import { randomId } from './random-id.ts';
+import { accountStorage } from '../auth/session.ts';
 
 // The existing draft is the one editable working copy. Historical manifests
 // are immutable run records, never editor restore sources.
-export function findEditorDraft(path: string | null, id: string | null) {
-  return readDrafts().find(draft => path ? draft.filePath === path : draft.id === id);
+export function findEditorDraft(path: string | null, id: string | null,storage=accountStorage()) {
+  return readDrafts(storage).find(draft => path ? draft.filePath === path : draft.id === id);
 }
 
 export function openFileDraft(path: string, source: string, stored?: Draft): Draft {
@@ -15,11 +16,11 @@ export function openFileDraft(path: string, source: string, stored?: Draft): Dra
   return {...(stored || newDraft()), name:displayName(path), folder:parentDirectory(path), source, filePath:path, workingCopy:false};
 }
 
-export function openResolvedFileDraft(requestedPath: string, response: {path:string;strategy_id:string;source:string}, stored?: Draft) {
+export function openResolvedFileDraft(requestedPath: string, response: {path:string;strategy_id:string;source:string}, stored?: Draft,storage=accountStorage()) {
   if(!isStrategyFilePath(requestedPath))throw new Error('策略文件路径无效。');
   const canonical=fileIdentity(response).path;
   if(stored?.filePath&&stored.filePath!==requestedPath&&stored.filePath!==canonical)throw new Error('草稿与此次读取的策略文件不一致，原内容已保留。');
-  const existing=findEditorDraft(canonical,null);
+  const existing=findEditorDraft(canonical,null,storage);
   if(canonical===requestedPath||!stored||stored.filePath===canonical){
     return {draft:openFileDraft(canonical,response.source,existing||stored),backup:null};
   }
@@ -31,7 +32,7 @@ export function openResolvedFileDraft(requestedPath: string, response: {path:str
     name:stored.name===displayName(requestedPath)?displayName(canonical):stored.name};
   if(!existing)delete candidate.aliasSourcePath;
   const draft=openFileDraft(canonical,response.source,candidate);
-  saveDraftUpdates(existing?[backup]:[backup,draft]);
+  saveDraftUpdates(existing?[backup]:[backup,draft],storage);
   return {draft,backup};
 }
 
@@ -39,17 +40,17 @@ export function editedDraft(draft: Draft, patch: Partial<Draft>): Draft {
   return {...draft, ...patch, workingCopy:true, updated:new Date().toISOString()};
 }
 
-export function retainEditorDraft(draft: Draft) {
+export function retainEditorDraft(draft: Draft,storage=accountStorage()) {
   // Incomplete dates, empty amounts and in-progress source must survive too.
   // Validation belongs to Save/Run, not to retaining the working copy.
-  saveDraft(draft);
+  saveDraft(draft,storage);
 }
 
 export function savedEditorDraft(draft: Draft): Draft {
   return {...draft, workingCopy:false, updated:new Date().toISOString()};
 }
 
-export function commitEditorSave(previous: Draft, saved: Draft, originalFileSource: string | null) {
+export function commitEditorSave(previous: Draft, saved: Draft, originalFileSource: string | null,storage=accountStorage()) {
   const updates:Draft[]=[];
   if(previous.filePath&&previous.filePath!==saved.filePath&&originalFileSource!==null){
     // Save As creates a different file. The original file must not reopen with
@@ -57,5 +58,5 @@ export function commitEditorSave(previous: Draft, saved: Draft, originalFileSour
     updates.push(savedEditorDraft({...previous,name:displayName(previous.filePath),source:originalFileSource}));
   }
   updates.push(saved);
-  saveDraftUpdates(updates);
+  saveDraftUpdates(updates,storage);
 }

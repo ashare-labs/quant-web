@@ -1,4 +1,5 @@
 import type { components } from '../generated/api';
+import { accountMode, accountSession } from '../auth/session.ts';
 export type PythonJob = components['schemas']['PythonJobView'];
 export type PythonResult = components['schemas']['PythonResult'];
 export type JobLogs = components['schemas']['JobLogs'];
@@ -16,19 +17,26 @@ export class ApiError extends Error {
   }
 }
 export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT'): Promise<T> {
+  const authority=accountSession.requireCurrent();
+  const current=()=>{if(accountMode&&accountSession.snapshot().epoch!==authority.epoch)throw new ApiError('账号会话已变化，旧请求的响应已丢弃。','SESSION_CHANGED',body!==undefined);};
   let response: Response;
-  try { response = await fetch((paper ? '/paper-api/api/v1/paper' : '/api/v1') + path, {
-    method: method || (body === undefined ? 'GET' : 'POST'), signal, cache: 'no-store',
-    headers: { Accept: 'application/json', ...(body === undefined ? {} : {'Content-Type': 'application/json'}) },
+  const prefix=accountMode?'/api/v1/client'+(paper?'/paper':''):(paper?'/paper-api/api/v1/paper':'/api/v1');
+  try { response = await fetch(prefix + path, {
+    method: method || (body === undefined ? 'GET' : 'POST'), signal, cache: 'no-store',credentials:'same-origin',
+    headers: { Accept: 'application/json', ...(accountMode?accountSession.headers():{}), ...(body === undefined ? {} : {'Content-Type': 'application/json'}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   }); } catch (error) {
     if (signal?.aborted) throw error;
+    if(accountMode)accountSession.unavailable(authority.epoch);
     throw new ApiError(body === undefined ? '无法连接服务，请检查服务状态后重试。' : '未能确认提交结果，请检查连接后重试。', 'NETWORK_ERROR', body !== undefined);
   }
+  current();
+  if(accountMode&&response.status===401){accountSession.rejectUnauthorized(authority.epoch);throw new ApiError('会话已过期或被撤销，请重新登录。','AUTHENTICATION_REQUIRED',false,response);}
   let raw: string;
   try { raw = await response.text(); } catch {
     throw new ApiError(`读取服务响应时连接中断（HTTP ${response.status}）。` + (body === undefined ? '请恢复连接后重试。' : '提交结果尚未确认，请在连接恢复后重试。'), 'RESPONSE_INTERRUPTED', body !== undefined, response);
   }
+  current();
   let value: unknown;
   try { value = JSON.parse(raw); } catch {
     const kind = !raw.trim() ? '空响应' : /text\/html/i.test(response.headers.get('content-type') || '') || /^\s*</.test(raw) ? 'HTML 页面' : '非 JSON 响应';
@@ -40,6 +48,8 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal,
   }
   if (!response.ok) {
     const e = object(object(value).error);
+    if(accountMode&&response.status===503&&e.code==='IDENTITY_UNAVAILABLE')accountSession.unavailable(authority.epoch);
+    if(accountMode&&response.status===409&&e.code==='SESSION_CHANGED'){await accountSession.synchronize();throw new ApiError('账号已切换，请在当前账号中重新确认操作。','SESSION_CHANGED',false,response);}
     const validation = rows(object(value).detail).slice(0, 3).map(item => `${Array.isArray(item.loc) ? item.loc.filter(part => part !== 'body').join('.') : '请求'}：${String(item.msg || '无效值')}`).join('；');
     throw new ApiError(String(e.message || (validation ? `请求校验未通过：${validation}` : `请求失败（HTTP ${response.status}）。`)), String(e.code || response.status), body !== undefined && (response.status >= 500 || e.code === 'DATABASE_OPERATION_REFUSED') && object(e.details).save_state !== 'not_saved', response);
   }

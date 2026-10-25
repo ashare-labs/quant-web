@@ -8,3 +8,5 @@
 .filterrow>.selection-label{width:auto;color:white;background:var(--accent);padding:10px;font-size:14px}.factor-detail{scroll-margin-top:16px}
 
 .run-settings{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--surface);padding:20px;font-size:13px;min-height:84px}
+
+.account-gate{max-width:440px;margin:56px auto}.account-gate form,.account-gate label{display:grid;gap:12px}.account-gate form{gap:22px}.account-controls{display:flex;align-items:center;gap:12px;margin-left:auto;font-size:12px}.account-controls>span{max-width:240px;overflow-wrap:anywhere}.account-controls [role=alert]{max-width:300px;color:#9f2a2a}

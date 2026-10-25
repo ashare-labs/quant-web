@@ -1,3 +1,4 @@
+import { accountStorage } from '../auth/session.ts';
 import type { Factor, Source, Submission } from './api';
 import { validDate } from '../shared/dates.ts';
 
@@ -6,7 +7,7 @@ export const draftKey = 'qw-factor-draft-v2';
 export const pendingKey = 'qw-factor-pending-v2';
 export const emptyDraft: Draft = { source: '', securities: '', history: '', start: '', end: '', parameters: {}, rank: 'strict', evaluate: false, labelEnd:'', horizons:'1, 5, 10', quantiles:'5', lag:'1', direction:'1', minAssets:'5', costs:'0, 5, 10, 20', rolling:'20' };
 export function readDraft(): Draft {
-  try { const value = JSON.parse(localStorage.getItem(draftKey) || 'null');
+  try { const value = JSON.parse(accountStorage().getItem(draftKey) || 'null');
     if (value && ['source','securities','history','start','end'].every(k => typeof value[k] === 'string') && value.parameters && typeof value.parameters === 'object') return { ...emptyDraft, ...value };
   } catch { /* Keep an unreadable draft untouched. */ }
   return emptyDraft;

@@ -1,3 +1,5 @@
+import { navigate } from '../shared/navigation';
+import { accountMode, accountSession, accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { randomId } from '../shared/random-id';
 import { download, errorText, object } from '../shared/api';
@@ -23,6 +25,8 @@ export function EditorPage(){
   return <SingleFileEditor frozenManifest={manifest.data??undefined} historyError={manifest.error}/>;
 }
 function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<string,unknown>;historyError:string}) {
+  const [storage]=useState(accountStorage),[epoch]=useState(()=>accountSession.snapshot().epoch);
+  const assertAccount=()=>{if(accountMode)accountSession.assertCurrent(epoch);};
   const [params] = useState(() => new URLSearchParams(location.search));
   const draftId = params.get('draft'), jobId = params.get('job'), path = params.get('file');
   const readOnly = !!jobId, file = useRef<HTMLInputElement>(null);
@@ -45,14 +49,15 @@ function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<
     async function open(){
       try {
         let stored:Draft|undefined, localError='';
-        try { stored=findEditorDraft(path,draftId); }
+        try { stored=findEditorDraft(path,draftId,storage); }
         catch(e){if(!path)throw e;localError=errorText(e);}
         const remotePath=path||stored?.filePath;
         if(stored?.workingCopy){showDraft(stored);setSaved('浏览器编辑已保留 · 正在核对文件');}
         if(remotePath){
           const source=await readStrategyFile(remotePath,controller.signal);
           if(controller.signal.aborted)return;
-          const resolved=localError?{draft:openFileDraft(source.path,source.source),backup:null}:openResolvedFileDraft(remotePath,source,stored);
+          assertAccount();
+          const resolved=localError?{draft:openFileDraft(source.path,source.source),backup:null}:openResolvedFileDraft(remotePath,source,stored,storage);
           const next=resolved.draft;setAliasBackup(resolved.backup);
           showDraft({...next,...(localError?{capital:''}:{})});fileSource.current=source.source;
           setLoadedPath(source.path);history.replaceState(null,'',fileHref(source.path));
@@ -79,11 +84,12 @@ function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<
   },[]);
   function retain(next:Draft){
     try{
-      retainEditorDraft(next);setUnretained(false);setRetentionError('');
+      assertAccount();retainEditorDraft(next,storage);setUnretained(false);setRetentionError('');
       if(!next.filePath)history.replaceState(null,'','strategy-editor.html?draft='+encodeURIComponent(next.id));
     }catch(e){setUnretained(true);setRetentionError('浏览器未能保留当前编辑：'+errorText(e));throw e;}
   }
   function edit(patch:Partial<Draft>){
+    assertAccount();
     const next=editedDraft(draftRef.current,patch);showDraft(next);setSaved('未保存');setError('');
     try{retain(next);setSaved('未保存 · 浏览器已保留');}catch{/* Keep current input and the leave-page guard. */}
   }
@@ -95,13 +101,15 @@ function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<
       validateDraftConfig(draft);target=loadedPath&&draft.name===displayName(loadedPath)?loadedPath:childPath(draft.folder,draft.name,true);
       setSaving(true);setError('');setSaved('保存中…');
       if(!loadedPath&&draftId&&draft.folder)await createDirectory(draft.folder);
+      assertAccount();
       const persisted=await saveStrategyFile(target,draft.source,target===loadedPath);
+      assertAccount();
       const canonical=persisted.path;
       const next=savedEditorDraft({...draft,id:loadedPath&&canonical!==loadedPath?randomId():draft.id,name:displayName(canonical),folder:parentDirectory(canonical),filePath:canonical,capital:unformatCapital(draft.capital),frequency:resolveFrequency(draft.frequency)});
       setLoadedPath(canonical);showDraft(next);
       history.replaceState(null,'',fileHref(canonical));
       try{
-        commitEditorSave(draft,next,fileSource.current);
+        commitEditorSave(draft,next,fileSource.current,storage);
         setSaved('已保存');setUnretained(false);setRetentionError('');
       }catch(e){setSaved('源码已保存，配置未保存');setRetentionError('源码已写入服务，但浏览器配置保存失败：'+errorText(e));setUnretained(true);}
       fileSource.current=draft.source;
@@ -118,8 +126,9 @@ function SingleFileEditor({frozenManifest,historyError}:{frozenManifest?:Record<
       retain(draftRef.current);
       if([startInput.current,endInput.current].some(input=>input?.validity.badInput))throw new Error('请选择有效的开始和结束日期。');
       const job=await submitCurrent({...draftRef.current,frequency},catalogue.data);
+      assertAccount();
       leaving.current=true;
-      location.assign('backtest-results.html?job='+encodeURIComponent(job.job_id)+(!draftRef.current.filePath?'&draft='+encodeURIComponent(draft.id):''));
+      navigate('backtest-results.html?job='+encodeURIComponent(job.job_id)+(!draftRef.current.filePath?'&draft='+encodeURIComponent(draft.id):''));
     }catch(e){
       setError(errorText(e));
     }finally{runGuard.current=false;setSubmitting(false);}

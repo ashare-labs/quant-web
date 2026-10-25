@@ -1,3 +1,4 @@
+import { accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { randomId } from '../shared/random-id';
 import { active, api, ApiError, csv, download, errorText, num, type JobLogs } from '../shared/api';
@@ -7,10 +8,11 @@ import { compatible, containsRequest, draftKey, emptyDraft, pendingKey, readDraf
 import { FactorForm } from '../factors/FactorForm';
 import { FactorReport } from '../factors/FactorReport';
 export function FactorsPage() {
+  const [storage]=useState(accountStorage);
   const initial=new URLSearchParams(location.search),[selectedId,setSelectedId]=useState(initial.get('factor')||''),[jobId,setJobId]=useState(initial.get('job')||'');
   const [search,setSearch]=useState(''),[library,setLibrary]=useState(''),[categories,setCategories]=useState<string[]>([]),[sort,setSort]=useState<'name'|'warmup'>('name'),[reverse,setReverse]=useState(false),[page,setPage]=useState(0);
   const [draft,setDraft]=useState(readDraft),[error,setError]=useState(''),[busy,setBusy]=useState(false),[showForm,setShowForm]=useState(false);
-  const [pending,setPending]=useState<Submission|null>(()=>{try{const p=JSON.parse(localStorage.getItem(pendingKey)||'null');return p&&typeof p.idempotency_key==='string'&&typeof p.factor_id==='string'?p:null;}catch{return null;}});
+  const [pending,setPending]=useState<Submission|null>(()=>{try{const p=JSON.parse(storage.getItem(pendingKey)||'null');return p&&typeof p.idempotency_key==='string'&&typeof p.factor_id==='string'?p:null;}catch{return null;}});
   const guard=useRef(false);
   const catalogue=useResource<Catalogue>('/factors/catalogue'),sources=useResource<{items:Source[];environment_id:string}>('/factors/sources'),jobs=useResource<{items:Job[]}>('/factors/jobs',7000);
   const validJob=/^m2job-[a-f0-9]{32}$/.test(jobId),job=useResource<Job>(validJob?'/factors/jobs/'+jobId:null,3000);
@@ -20,7 +22,7 @@ export function FactorsPage() {
   const pages=Math.max(1,Math.ceil(filtered.length/25)),current=Math.min(page,pages-1),environmentReady=!!catalogue.data&&catalogue.data.environment_id===sources.data?.environment_id;
   const scrolledJob=useRef('');
   useEffect(()=>{if(jobId&&catalogue.data&&jobs.data&&scrolledJob.current!==jobId){const panel=document.getElementById('factor-run');panel?.scrollIntoView({block:'start'});panel?.focus({preventScroll:true});scrolledJob.current=jobId;}},[jobId,catalogue.data,jobs.data]);
-  function edit(patch:Partial<Draft>){const next={...draft,...patch};setDraft(next);try{localStorage.setItem(draftKey,JSON.stringify(next));}catch{setError('本地存储不可用，配置尚未保存。');}}
+  function edit(patch:Partial<Draft>){const next={...draft,...patch};setDraft(next);try{storage.setItem(draftKey,JSON.stringify(next));}catch{setError('本地存储不可用，配置尚未保存。');}}
   function select(f:Factor){setSelectedId(f.id);setShowForm(true);setError('');edit({parameters:{}});}
   function showJob(j:Job){setJobId(j.job_id);setSelectedId(j.request.factor_id);history.replaceState(null,'',`factors.html?factor=${encodeURIComponent(j.request.factor_id)}&job=${j.job_id}`);}
   async function run(retry=false){
@@ -31,11 +33,11 @@ export function FactorsPage() {
       if(!selected)throw new Error('请选择可用的因子。');
       if(!retry&&!sources.data?.items.some(s=>s.id===draft.source&&compatible(s,selected)))throw new Error('所选来源不能计算此因子。');
       const request=retry&&pending?pending:submission(draft,selected,catalogue.data.environment_id,randomId());
-      localStorage.setItem(pendingKey,JSON.stringify(request));setPending(request);
+      storage.setItem(pendingKey,JSON.stringify(request));setPending(request);
       const accepted=await api<Job>('/factors/jobs',request);
       if(accepted.contract_version!=='factor-jobs.v1'||!/^m2job-[a-f0-9]{32}$/.test(accepted.job_id)||!containsRequest(accepted.request,request))throw new Error('返回任务与原请求不一致。原请求已保留，请先核对服务状态。');
-      localStorage.removeItem(pendingKey);setPending(null);setShowForm(false);showJob(accepted);jobs.refresh();
-    }catch(e){if(e instanceof ApiError&&!e.uncertain){localStorage.removeItem(pendingKey);setPending(null);}setError(errorText(e));}finally{guard.current=false;setBusy(false);}
+      storage.removeItem(pendingKey);setPending(null);setShowForm(false);showJob(accepted);jobs.refresh();
+    }catch(e){if(e instanceof ApiError&&!e.uncertain){storage.removeItem(pendingKey);setPending(null);}setError(errorText(e));}finally{guard.current=false;setBusy(false);}
   }
   async function cancel(){if(!job.data||!active(job.data)||guard.current)return;guard.current=true;setBusy(true);try{await api('/factors/jobs/'+jobId+'/cancel',{});job.refresh();jobs.refresh();}catch(e){setError(errorText(e));}finally{guard.current=false;setBusy(false);}}
   const changeSort=(value:'name'|'warmup')=>{if(sort===value)setReverse(!reverse);else{setSort(value);setReverse(false);}setPage(0);};

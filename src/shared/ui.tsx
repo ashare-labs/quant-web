@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, errorText, statusLabels, shownStatus, object } from './api';
+import { accountMode, accountSession } from '../auth/session';
 export function useResource<T>(path: string | null, poll = 0, paper = false,
   options: {retainOnError?: boolean; stopWhen?: (value:T)=>boolean} = {}) {
   const [data, setData] = useState<T | null>(null), [error, setError] = useState(''), [loading, setLoading] = useState(false), [version, setVersion] = useState(0);
-  const previousPath=useRef<string|null>(null),retain=!!options.retainOnError,stopWhen=options.stopWhen;
+  const previousPath=useRef<string|null>(null),retain=accountMode||!!options.retainOnError,stopWhen=options.stopWhen;
+  useEffect(()=>{
+    if(!accountMode)return;
+    let previous=accountSession.snapshot().status;
+    return accountSession.subscribe(()=>{
+      const current=accountSession.snapshot().status;
+      if(previous==='offline'&&current==='ready')setVersion(value=>value+1);
+      previous=current;
+    });
+  },[]);
   useEffect(() => {
     const controller = new AbortController(); let timer: ReturnType<typeof setTimeout>;
     if(!retain||previousPath.current!==path)setData(null);

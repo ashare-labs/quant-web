@@ -11,10 +11,14 @@ import {readProject} from '../src/strategies/project-api.ts';
 const modules = {};
 for (const [name, path] of Object.entries({
   '../shared/api': 'shared/api', '../shared/drafts': 'shared/drafts', '../shared/dates': 'shared/dates',
+  '../shared/navigation': 'shared/navigation',
+  '../auth/session': 'auth/session',
   '../shared/strategy-files': 'shared/strategy-files', '../shared/strategy-path': 'shared/strategy-path',
   '../backtests/history-model': 'backtests/history-model', '../backtests/submission': 'backtests/submission',
   './project-api': 'strategies/project-api', './project-model': 'strategies/project-model', './project-state': 'strategies/project-state',
 })) modules[name] = await import(new URL('../src/' + path + '.ts', import.meta.url));
+const authDefaults={...modules['../auth/session']};
+modules['../auth/session']={...authDefaults};
 const stub = name => ({[name]: Object.defineProperty(() => null, 'name', {value: name})});
 Object.assign(modules, {'../shared/CapitalInput': stub('CapitalInput'), './CodeEditor': stub('CodeEditor'), './ProjectFiles': stub('ProjectFiles')});
 const catalogue = {environment_id: 'c'.repeat(64), external_securities_required: false, universe: 'strategy_subscription'};
@@ -47,6 +51,7 @@ const original = new Map(['window', 'history', 'location', 'localStorage', 'fetc
 const mounted = new Set();
 function unmount(r) {for (const cleanup of r.cleanup) cleanup?.(); mounted.delete(r);}
 afterEach(() => {
+  Object.assign(modules['../auth/session'],authDefaults);
   for (const r of mounted) unmount(r);
   for (const [key, descriptor] of original) {if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key];}
 });
@@ -140,6 +145,17 @@ test('component saves every edited file and entry, independent of incomplete run
   assert.equal(writes(s)[0].body.entrypoint, edited.entrypoint);
   assert.deepEqual((await readProject(id)).files, edited.files);
   assert.equal(readProjectDraft(id).workingCopy, false); assert.equal(s.beforeUnload(), false);
+});
+
+test('a delayed file import cannot retain old account source after an account switch', async()=>{
+  const s=setup();let epoch=1,finish;
+  Object.assign(modules['../auth/session'],{accountMode:true,accountSession:{snapshot:()=>({epoch}),assertCurrent:expected=>{if(epoch!==expected)throw new Error('account switched');}}});
+  const r=mount();await settle(r);const before=new Map(s.records);
+  const input=node(r,n=>n.type==='input'&&n.props.type==='file');
+  const importing=input.props.onChange({target:{files:[{text:()=>new Promise(resolve=>{finish=resolve;})}],value:'synthetic.py'}});
+  epoch=2;finish('PRIVATE PREVIOUS ACCOUNT SOURCE');await importing;await settle(r);
+  assert.deepEqual(s.records,before);assert.equal(writes(s).length,0);
+  assert.ok(!JSON.stringify([...s.records]).includes('PRIVATE PREVIOUS ACCOUNT SOURCE'));
 });
 
 for (const outcome of ['success', 'lost']) test(`unresolved source conflict survives ${outcome} move and refresh until explicit acceptance`, async () => {

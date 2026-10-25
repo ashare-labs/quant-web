@@ -1,3 +1,5 @@
+import { navigate } from '../shared/navigation';
+import { accountMode, accountSession, accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { ApiError, download, errorText, object } from '../shared/api';
 import { CapitalInput } from '../shared/CapitalInput';
@@ -16,6 +18,8 @@ import { editProjectDraft, openProjectDraft, readProjectDraft, relocatedProjectD
 
 type FileAction={kind:'create'|'rename'|'delete'|'move';path:string};
 export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manifest?:Record<string,unknown>;jobId?:string}){
+  const [storage]=useState(accountStorage),[epoch]=useState(()=>accountSession.snapshot().epoch);
+  const assertAccount=()=>{if(accountMode)accountSession.assertCurrent(epoch);};
   const readOnly=!!jobId;
   const [draft,setDraft]=useState<ProjectDraft|null>(null),draftRef=useRef<ProjectDraft|null>(null),remoteRef=useRef<StrategyProject|null>(null);
   const [loading,setLoading]=useState(!readOnly),[loadFailed,setLoadFailed]=useState(false),[reload,setReload]=useState(0),[error,setError]=useState(''),[busy,setBusy]=useState('');
@@ -27,10 +31,10 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
   const locked=readOnly||loading||loadFailed||!!busy||!draft;
   function show(next:ProjectDraft){draftRef.current=next;setDraft(next);}
   function retain(next:ProjectDraft,sourceSaved=false){
-    try{retainProjectDraft(next);setUnretained(false);setRetentionError('');return true;}
+    try{assertAccount();retainProjectDraft(next,storage);setUnretained(false);setRetentionError('');return true;}
     catch(e){setUnretained(true);setRetentionError((sourceSaved?'项目源码已保存到服务；浏览器未能保留回测参数和编辑状态：':'浏览器未能保留完整项目编辑：')+errorText(e));return false;}
   }
-  function edit(patch:Partial<ProjectDraft>){if(!draftRef.current||locked)return;const next=editProjectDraft(draftRef.current,patch);show(next);setError('');retain(next);}
+  function edit(patch:Partial<ProjectDraft>){assertAccount();if(!draftRef.current||locked)return;const next=editProjectDraft(draftRef.current,patch);show(next);setError('');retain(next);}
   useEffect(()=>{
     if(readOnly){
       try{const request=object(manifest?.request),source=frozenSource(request);if(!source.projectId)throw new Error('历史项目源码无法读取。');
@@ -40,9 +44,10 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
     const controller=new AbortController();setLoading(true);setLoadFailed(false);setError('');
     async function load(){try{
       // A service outage must not hide a complete working copy already kept in this browser.
-      if(isProjectId(identity))try{const local=readProjectDraft(identity);if(local)show(local);}catch(e){setRetentionError(errorText(e));}
+      if(isProjectId(identity))try{const local=readProjectDraft(identity,storage);if(local)show(local);}catch(e){setRetentionError(errorText(e));}
       const remote=await readProject(identity!,controller.signal);if(controller.signal.aborted)return;remoteRef.current=remote;
-      let stored:ProjectDraft|undefined,localError='';try{stored=readProjectDraft(remote.strategy_id);}catch(e){localError=errorText(e);}
+      assertAccount();
+      let stored:ProjectDraft|undefined,localError='';try{stored=readProjectDraft(remote.strategy_id,storage);}catch(e){localError=errorText(e);}
       const opened=openProjectDraft(remote,stored);show(opened.draft);setConflict(opened.conflict);setRetentionError(localError);
       history.replaceState(null,'',projectHref(remote.strategy_id));
     }catch(e){if(!controller.signal.aborted){setError(errorText(e));setLoadFailed(true);}}finally{if(!controller.signal.aborted)setLoading(false);}}
@@ -64,7 +69,7 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
       }else if(action.kind==='delete')edit({...deleteProjectFile(current,action.path),active:current.active===action.path?current.entrypoint:current.active});
       else{
         retain(current);operation.current=true;setBusy('move');
-        const moved=await moveProject(remoteRef.current!,name.trim());remoteRef.current=moved;
+        const moved=await moveProject(remoteRef.current!,name.trim());assertAccount();remoteRef.current=moved;
         const relocated=relocatedProjectDraft(current,moved);show(relocated.draft);if(relocated.conflict)setConflict(true);retain(relocated.draft);history.replaceState(null,'',projectHref(current.strategy_id));
       }
       setAction(null);
@@ -78,7 +83,7 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
     if(locked||conflict||operation.current||!draftRef.current)return;operation.current=true;setBusy('save');setError('');
     try{const current=draftRef.current;retain(current);checkSourceBudget(current.files,catalogue.data);
       // Browser retention is best effort; an explicit disk save must still run.
-      const saved=await saveProject(current);remoteRef.current=saved;const next=savedProjectDraft(current,saved);show(next);setConflict(false);retain(next,true);
+      const saved=await saveProject(current);assertAccount();remoteRef.current=saved;const next=savedProjectDraft(current,saved);show(next);setConflict(false);retain(next,true);
     }catch(e){
       if(e instanceof ProjectWriteError&&e.current&&draftRef.current){remoteRef.current=e.current;const next={...draftRef.current,path:e.current.path,revision:e.current.revision,workingCopy:true};show(next);retain(next);}
       if(e instanceof ApiError&&e.code==='STRATEGY_PROJECT_REVISION_CONFLICT')setConflict(true);setError(errorText(e));
@@ -87,7 +92,7 @@ export function ProjectEditor({identity,manifest,jobId}:{identity?:string;manife
   async function run(){
     if(locked||operation.current||!draftRef.current)return;operation.current=true;setBusy('run');setError('');
     try{if(!retain(draftRef.current))return;if([startInput.current,endInput.current].some(input=>input?.validity.badInput))throw new Error('请选择有效的开始和结束日期。');
-      const job=await submitProjectCurrent(draftRef.current,catalogue.data);leaving.current=true;location.assign('backtest-results.html?job='+encodeURIComponent(job.job_id));
+      const job=await submitProjectCurrent(draftRef.current,catalogue.data);assertAccount();leaving.current=true;navigate('backtest-results.html?job='+encodeURIComponent(job.job_id));
     }catch(e){setError(errorText(e));}finally{operation.current=false;setBusy('');}
   }
   async function inspectRemote(){if(!draft||operation.current)return;operation.current=true;setBusy('review');try{setReview(await readProject(draft.strategy_id));}catch(e){setError(errorText(e));}finally{operation.current=false;setBusy('');}}

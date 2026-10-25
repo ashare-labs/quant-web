@@ -1,3 +1,4 @@
+import { accountStorage } from '../auth/session.ts';
 import type { components } from '../generated/api';
 import { api, ApiError, object, type PythonJob } from '../shared/api.ts';
 import { pythonBacktestConfig, type Draft } from '../shared/drafts.ts';
@@ -57,8 +58,8 @@ function signature(request: Submission): string {
   // Compare all current fields; cached content is never used to build a request.
   return JSON.stringify(Object.entries(request).filter(([key]) => key !== 'idempotency_key').sort(([a],[b])=>a.localeCompare(b)).map(([key,value])=>[key,canonicalValue(value)]));
 }
-function stored(key: string): Record<string, unknown> {
-  try { return object(JSON.parse(localStorage.getItem(key) || 'null')); }
+function stored(key: string, storage:ReturnType<typeof accountStorage>): Record<string, unknown> {
+  try { return object(JSON.parse(storage.getItem(key) || 'null')); }
   catch { return {}; } // An obsolete/corrupt token must not lock the editor.
 }
 export async function submitCurrent(draft: EditorRequest, catalogue: unknown): Promise<PythonJob> {
@@ -68,19 +69,20 @@ export async function submitProjectCurrent(draft:ProjectDraft,catalogue:unknown)
   return submitAttempt(draft.strategy_id,projectSubmission(draft,catalogue,randomId()));
 }
 async function submitAttempt(identity:string,request:Submission):Promise<PythonJob>{
+  const storage=accountStorage();
   const current=signature(request);
-  const key = attemptPrefix + identity, attempt = stored(key), legacy = stored(legacyKey);
+  const key = attemptPrefix + identity, attempt = stored(key,storage), legacy = stored(legacyKey,storage);
   if (attempt.signature === current && typeof attempt.key === 'string') request.idempotency_key = attempt.key;
   // One-way compatibility for an unacknowledged pre-upgrade POST. Only its key
   // can be reused, and only when the CURRENT editor constructs the same body.
   else if (typeof legacy.idempotency_key === 'string' && signature(legacy as Submission) === current) request.idempotency_key = legacy.idempotency_key;
-  localStorage.setItem(key, JSON.stringify({signature: current, key: request.idempotency_key}));
-  try { localStorage.removeItem(legacyKey); } catch { /* No UI depends on this obsolete entry. */ }
+  storage.setItem(key, JSON.stringify({signature: current, key: request.idempotency_key}));
+  try { storage.removeItem(legacyKey); } catch { /* No UI depends on this obsolete entry. */ }
   function forget() {
     // Do not erase a newer, different attempt made in another editor/tab.
-    if (stored(key).key === request.idempotency_key) {
-      try { localStorage.removeItem(key); }
-      catch { try { localStorage.setItem(key, 'null'); } catch { /* Storage is unavailable. */ } }
+    if (stored(key,storage).key === request.idempotency_key) {
+      try { storage.removeItem(key); }
+      catch { try { storage.setItem(key, 'null'); } catch { /* Storage is unavailable. */ } }
     }
   }
   try {

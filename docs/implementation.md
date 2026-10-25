@@ -1,5 +1,7 @@
 # 页面与接口
 
+账号候选另见[账号模式接线](accounts.md)：显式 `QUANT_SERVICE_URL` 构建通过 quant-service 的 `/api/v1/client` 访问归属资源；Cookie 会话、跨账号草稿隔离及同文档导航已接线。该模式的正式入口、真实迁移及数值引擎联验尚未完成。下文既有直接 AQ／paper 接线与历史验收属于原单所有者配置，不能据此宣称账号模式已经部署。新增 workspace 契约已同步 `contracts/api.openapi.json`／生成类型，身份契约独立保存在 `contracts/accounts.openapi.json`。
+
 | 顺序 | 页面 | 入口 | 已实现能力 |
 | --- | --- | --- | --- |
 | 1 | 入口总览 | index.html | 三个模块导航、服务连接状态 |
