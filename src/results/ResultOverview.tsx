@@ -31,7 +31,7 @@ export function ResultOverview({result,analysis,loading,error,benchmark}:{result
         {worst&&<>；{worst.recovery_date?`恢复于 ${worst.recovery_date}`:'截至期末尚未恢复'}</>}</p>
       <p className="note result-policy">日终评价 · {analysis.sample_count} 个交易日 · 年化因子 {String(analysis.policy.annualization)} ·
         无风险年利率 {pct(analysis.policy.risk_free_annual)}{analysis.policy.risk_free_source==='assumed_zero'?'（零利率假设）':''}
-        {analysis.benchmark?.status==='ok'?` · ${String(analysis.benchmark.name||analysis.benchmark.security)}（${analysis.benchmark.return_type==='total_return'?'全收益':'价格指数'}）`:' · 基准未就绪'}
+        {analysis.benchmark?.status==='ok'?` · ${String(analysis.benchmark.name||analysis.benchmark.security)}（${analysis.benchmark.return_type==='total_return'?'全收益':'价格收益'}）`:' · 基准未就绪'}
         {object(analysis.quality.corporate_account_model).tax==='gross_cash_no_tax'?' · 分红按税前模型':''} · 相对净值超额</p>
     </>:<>
       <p className="note" role="status">{loading?'正在读取派生分析…':error?'派生分析暂不可用，当前显示冻结结果。':'此记录尚未提供派生分析。'} <span title={error}>缺少的指标保留为空。</span></p>
