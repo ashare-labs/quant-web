@@ -1,7 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { csv, download, object, pct, rows, type Row } from '../shared/api';
 import { DataTable } from '../shared/DataTable';
-import { finite, metricCsv, metricDefinition, metricDefinitions, metricText, money, reasonText, resultMetrics, type Analysis, type BenchmarkOption } from './model';
+import {
+  finite, metricCsv, metricDefinition, metricDefinitions, metricText,
+  money, reasonText, resultMetrics, type Analysis, type BenchmarkOption,
+} from './model';
 const ResultChart = lazy(() => import('./ResultChart'));
 const LegacyChart = lazy(() => import('../shared/LineChart'));
 export function ResultOverview({ result, analysis, loading, error, benchmark }: {

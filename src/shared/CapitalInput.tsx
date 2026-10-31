@@ -16,7 +16,15 @@ export function CapitalInput({ value, readOnly, onChange }: {
       ref.current?.setSelectionRange(range.start, range.end);
     selection.current = null;
   });
-  return <input ref={ref} type="text" inputMode="decimal" aria-label="初始资金" value={formatCapital(value)} readOnly={readOnly} placeholder="人民币" onChange={event => {
+  return <input
+    ref={ref}
+    type="text"
+    inputMode="decimal"
+    aria-label="初始资金"
+    value={formatCapital(value)}
+    readOnly={readOnly}
+    placeholder="人民币"
+    onChange={event => {
     const input = event.currentTarget;
     const start = unformatCapital(input.value.slice(0, input.selectionStart
       ?? input.value.length)).length;

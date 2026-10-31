@@ -10,7 +10,10 @@ export const strategyEditorHref = (id: string) => isProjectId(id)
 export function projectFilePath(path: string): string {
   if (!isStrategyFilePath(path))
     throw new Error('请输入项目内的 Python 文件路径，例如 helpers.py 或 signals/momentum.py。');
-  const keywords = new Set('False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'.split(' '));
+  const keywords = new Set((
+    'False None True and as assert async await break class continue def del elif else except '
+    + 'finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'
+  ).split(' '));
   const parts = path.slice(0, -3).split('/');
   if (parts.some(part => !/^[_\p{ID_Start}][_\p{ID_Continue}]*$/u.test(part)
     || part.normalize('NFKC') !== part
@@ -78,7 +81,10 @@ export function projectResponse(value: unknown): StrategyProject {
 export const sameFiles = (left: Record<string, string>, right: Record<string, string>) => Object.keys(left).length === Object.keys(right).length
   && Object.entries(left).every(([path, source]) => Object.hasOwn(right, path)
     && right[path] === source);
-export const sameProjectSource = (left: Pick<ProjectSource, 'entrypoint' | 'files'>, right: Pick<ProjectSource, 'entrypoint' | 'files'>) => left.entrypoint === right.entrypoint
+export const sameProjectSource = (
+  left: Pick<ProjectSource, 'entrypoint' | 'files'>,
+  right: Pick<ProjectSource, 'entrypoint' | 'files'>,
+) => left.entrypoint === right.entrypoint
   && sameFiles(left.files, right.files);
 export function renameProjectFile(source: Pick<ProjectSource, 'entrypoint' | 'files'>, from: string, to: string) {
   projectFilePath(to);

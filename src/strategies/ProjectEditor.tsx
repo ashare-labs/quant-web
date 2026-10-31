@@ -13,8 +13,14 @@ import { checkSourceBudget, environment, submitProjectCurrent } from '../backtes
 import { CodeEditor } from './CodeEditor';
 import { ProjectFiles } from './ProjectFiles';
 import { moveProject, ProjectWriteError, readProject, saveProject } from './project-api';
-import { deleteProjectFile, frozenSource, projectDescriptor, projectFilePath, projectHref, renameProjectFile, sameProjectSource, sourceChanges, sourceFiles, type StrategyProject } from './project-model';
-import { editProjectDraft, openProjectDraft, readProjectDraft, relocatedProjectDraft, retainProjectDraft, savedProjectDraft, type ProjectDraft } from './project-state';
+import {
+  deleteProjectFile, frozenSource, projectDescriptor, projectFilePath, projectHref,
+  renameProjectFile, sameProjectSource, sourceChanges, sourceFiles, type StrategyProject,
+} from './project-model';
+import {
+  editProjectDraft, openProjectDraft, readProjectDraft, relocatedProjectDraft,
+  retainProjectDraft, savedProjectDraft, type ProjectDraft,
+} from './project-state';
 type FileAction = {
   kind: 'create' | 'rename' | 'delete' | 'move';
   path: string;
@@ -444,7 +450,20 @@ export function ProjectEditor({ identity, manifest, jobId }: {
           }} />
         </div>
         {draft ? <div className="project-code-body">
-          <ProjectFiles files={draft.files} entrypoint={draft.entrypoint} active={active} onSelect={select} onCreate={() => openAction('create')} onRename={path => openAction('rename', path)} onDelete={path => openAction('delete', path)} onEntry={path => edit({ entrypoint: path })} readOnly={locked} projectName={projectName} collapsed={collapsed} onToggle={() => setCollapsed(value => !value)} />
+          <ProjectFiles
+            files={draft.files}
+            entrypoint={draft.entrypoint}
+            active={active}
+            onSelect={select}
+            onCreate={() => openAction('create')}
+            onRename={path => openAction('rename', path)}
+            onDelete={path => openAction('delete', path)}
+            onEntry={path => edit({ entrypoint: path })}
+            readOnly={locked}
+            projectName={projectName}
+            collapsed={collapsed}
+            onToggle={() => setCollapsed(value => !value)}
+          />
           <div className="project-code-main">
             <div className="project-file-tab">
               <span>
@@ -498,7 +517,10 @@ export function ProjectEditor({ identity, manifest, jobId }: {
               ? catalogue.refresh
               : undefined} />
         {conflict
-          && <div className="notice" role="status">服务中的项目已变化，当前全部编辑仍保留。保存前请核对版本。<button disabled={locked} onClick={() => void inspectRemote()}>核对服务版本</button></div>}
+          && <div className="notice" role="status">
+            服务中的项目已变化，当前全部编辑仍保留。保存前请核对版本。
+            <button disabled={locked} onClick={() => void inspectRemote()}>核对服务版本</button>
+          </div>}
         <div className="metrics">
           {[
             '策略收益',

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { dateTime, errorText } from '../shared/api';
 import { editorHref, readDrafts, readFolders, type Draft } from '../shared/drafts';
-import { childPath, createDirectory, directoryQuery, displayName, fileHref, folderHref, saveStrategyFile, strategyDirectory, type StrategyDirectory } from '../shared/strategy-files';
+import {
+  childPath, createDirectory, directoryQuery, displayName, fileHref,
+  folderHref, saveStrategyFile, strategyDirectory, type StrategyDirectory,
+} from '../shared/strategy-files';
 import { ErrorNotice, Modal, useResource } from '../shared/ui';
 import { backtestsHref } from '../backtests/history-model';
 import { createProject } from '../strategies/project-api';

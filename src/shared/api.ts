@@ -30,7 +30,14 @@ export class ApiError extends Error {
     this.requestId = response?.headers.get('x-quantweb-request-id') || undefined;
   }
 }
-export async function api<T>(path: string, body?: unknown, signal?: AbortSignal, paper = false, method?: 'PUT', onRead?: (progress: ReadProgress) => void): Promise<T> {
+export async function api<T>(
+  path: string,
+  body?: unknown,
+  signal?: AbortSignal,
+  paper = false,
+  method?: 'PUT',
+  onRead?: (progress: ReadProgress) => void,
+): Promise<T> {
   const authority = accountSession.requireCurrent();
   const current = () => {
     if (accountMode && accountSession.snapshot().epoch !== authority.epoch)

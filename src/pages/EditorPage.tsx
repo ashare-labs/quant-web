@@ -6,13 +6,19 @@ import { download, errorText, object } from '../shared/api';
 import { DEFAULT_FREQUENCY, editorHref, newDraft, resolveFrequency, validateDraftConfig, type Draft } from '../shared/drafts';
 import { todayInShanghai, validDate, validateDateRange } from '../shared/dates';
 import { unformatCapital } from '../shared/capital';
-import { childPath, createDirectory, displayName, fileHref, fileName, parentDirectory, readStrategyFile, saveStrategyFile, StrategySaveError } from '../shared/strategy-files';
+import {
+  childPath, createDirectory, displayName, fileHref, fileName,
+  parentDirectory, readStrategyFile, saveStrategyFile, StrategySaveError,
+} from '../shared/strategy-files';
 import { CapitalInput } from '../shared/CapitalInput';
 import { ErrorNotice, JsonDetails, useResource } from '../shared/ui';
 import { checkSourceBudget, environment, submitCurrent } from '../backtests/submission';
 import { backtestsHref } from '../backtests/history-model';
 import { requestStrategy } from '../backtests/history-api';
-import { commitEditorSave, editedDraft, findEditorDraft, openFileDraft, openResolvedFileDraft, retainEditorDraft, savedEditorDraft } from '../shared/editor-state';
+import {
+  commitEditorSave, editedDraft, findEditorDraft, openFileDraft,
+  openResolvedFileDraft, retainEditorDraft, savedEditorDraft,
+} from '../shared/editor-state';
 import { CodeEditor } from '../strategies/CodeEditor';
 import { ProjectEditor } from '../strategies/ProjectEditor';
 import { strategyEditorHref } from '../strategies/project-model';
@@ -333,7 +339,9 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     <div className="subnav">
       <div><a href="strategies.html" aria-label="返回策略列表">
         <i className="fa fa-angle-left" aria-hidden="true" />
-      </a> <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e => edit({ name: e.target.value })} /></div>
+      </a>
+      <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e => edit({ name: e.target.value })} />
+    </div>
       <nav>
         {readOnly
           && recordedStrategy
@@ -377,7 +385,18 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       </div>
       <div className="output">
         <div className="pane-tools config-tools">
-          <label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft.start} readOnly={locked} onChange={e => edit({ start: e.target.value })} /></label>
+          <label>
+            开始日期
+            <input
+              ref={startInput}
+              type="date"
+              aria-label="开始日期"
+              max={today}
+              value={draft.start}
+              readOnly={locked}
+              onChange={e => edit({ start: e.target.value })}
+            />
+          </label>
           <label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start)
             ? draft.start
             : undefined} max={today} value={draft.end} readOnly={locked} onChange={e => edit({ end: e.target.value })} /></label>
@@ -401,7 +420,10 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             ? catalogue.refresh
             : undefined} />
         {aliasBackup
-          && <div className="notice" role="status">已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。<a href={editorHref(aliasBackup.id)}>查看保留草稿</a></div>}
+          && <div className="notice" role="status">
+            已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。
+            <a href={editorHref(aliasBackup.id)}>查看保留草稿</a>
+          </div>}
         <div className="metrics">
           {[
             '策略收益',

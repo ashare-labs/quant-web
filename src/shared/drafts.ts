@@ -107,7 +107,10 @@ export function validateConfig(draft: StrategyConfig, now = new Date()) {
   resolveFrequency(draft.frequency);
   return parseCapital(draft.capital);
 }
-export function pythonBacktestConfig(draft: StrategyConfig, now = new Date()): Pick<components['schemas']['PythonCreate'], 'start_date' | 'end_date' | 'initial_cash' | 'frequency'> {
+export function pythonBacktestConfig(
+  draft: StrategyConfig,
+  now = new Date(),
+): Pick<components['schemas']['PythonCreate'], 'start_date' | 'end_date' | 'initial_cash' | 'frequency'> {
   return {
     start_date: draft.start,
     end_date: draft.end,

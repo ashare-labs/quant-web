@@ -3,7 +3,11 @@ import { pct } from '../shared/api';
 import { strategyEditorHref } from '../strategies/project-model';
 import { ErrorNotice } from '../shared/ui';
 import { BacktestComparison } from './BacktestComparison';
-import { createdTime, durationTitle, recordDuration, frequencyLabel, lastPage, optionalColumns, optionalValue, pageOf, pageSize, recordStatus, resultHref, returnClass, selectRecords, type BacktestRecord, type OptionalColumn, type StrategyBacktests, type StrategyIdentity } from './history-model';
+import {
+  createdTime, durationTitle, recordDuration, frequencyLabel, lastPage, optionalColumns,
+  optionalValue, pageOf, pageSize, recordStatus, resultHref, returnClass, selectRecords,
+  type BacktestRecord, type OptionalColumn, type StrategyBacktests, type StrategyIdentity,
+} from './history-model';
 export function BacktestList({ identity, data, loading, error, refresh, editor }: {
   identity: StrategyIdentity;
   data: StrategyBacktests | null;
@@ -149,7 +153,12 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
               const href = resultHref(record, strategy.id);
               return <tr key={record.id} aria-selected={selected.has(record.id)}>
                 <td className="row-check">
-                  <input type="checkbox" aria-label={'选择回测 ' + record.id} checked={selected.has(record.id)} onChange={e => toggle(record.id, e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    aria-label={'选择回测 ' + record.id}
+                    checked={selected.has(record.id)}
+                    onChange={e => toggle(record.id, e.target.checked)}
+                  />
                 </td>
                 <td>
                   {filtered.length - (currentPage - 1) * pageSize - index}

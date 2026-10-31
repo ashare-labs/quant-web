@@ -178,7 +178,15 @@ export function AccountControls() {
       focusMenu();
     }
   }}>
-    <button className="account-avatar" ref={trigger} type="button" aria-label="用户菜单" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} onPointerDown={event => {
+    <button
+      className="account-avatar"
+      ref={trigger}
+      type="button"
+      aria-label="用户菜单"
+      aria-haspopup="menu"
+      aria-expanded={open}
+      aria-controls={menuId}
+      onPointerDown={event => {
       pointerType.current = event.pointerType;
     }} onClick={event => {
       if (event.detail === 0)

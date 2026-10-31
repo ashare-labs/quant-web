@@ -39,7 +39,10 @@ function fileTree(paths: string[]) {
   return root;
 }
 const icon = (name: string) => <i className={`fa fa-${name}`} aria-hidden="true" />;
-export function ProjectFiles({ files, entrypoint, active, onSelect, onCreate, onRename, onDelete, onEntry, readOnly = false, projectName, collapsed, onToggle }: ProjectFilesProps) {
+export function ProjectFiles({
+  files, entrypoint, active, onSelect, onCreate, onRename, onDelete,
+  onEntry, readOnly = false, projectName, collapsed, onToggle,
+}: ProjectFilesProps) {
   const [closed, setClosed] = useState<Set<string>>(() => new Set());
   const tree = useMemo(() => fileTree(Object.keys(files).filter(path => path !== 'aquant.toml')), [files]);
   const selectedFile = active !== 'aquant.toml' && Object.hasOwn(files, active);
@@ -71,7 +74,14 @@ export function ProjectFiles({ files, entrypoint, active, onSelect, onCreate, on
           const expanded = !closed.has(node.path);
           return <li key={node.path}>
             {isDirectory ? <>
-              <button type="button" className="project-file-row project-directory-row" style={{ paddingLeft: 12 + depth * 14 }} onClick={() => toggleDirectory(node.path)} aria-expanded={expanded} title={node.path}>
+              <button
+                type="button"
+                className="project-file-row project-directory-row"
+                style={{ paddingLeft: 12 + depth * 14 }}
+                onClick={() => toggleDirectory(node.path)}
+                aria-expanded={expanded}
+                title={node.path}
+              >
                 {icon(expanded ? 'angle-down' : 'angle-right')}
                 {icon(expanded ? 'folder-open-o' : 'folder-o')}
                 <span className="project-file-name">{node.name}</span>

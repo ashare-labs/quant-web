@@ -404,7 +404,9 @@ export function FactorsPage() {
       {result.data
         && job.data
         && result.data.job_id === jobId
-        && containsRequest(result.data.request, job.data.request) ? <FactorReport result={result.data} /> : result.data ? <ErrorNotice message="结果与任务请求不一致，已停止显示。" /> : !job.error
+        && containsRequest(result.data.request, job.data.request)
+          ? <FactorReport result={result.data} />
+          : result.data ? <ErrorNotice message="结果与任务请求不一致，已停止显示。" /> : !job.error
           && <Empty>
             {job.loading
               || result.loading
