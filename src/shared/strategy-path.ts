@@ -8,6 +8,9 @@ export function isStrategyPath(value: unknown, allowRoot = false): value is stri
 export function isStrategyFilePath(value: unknown): value is string {
   return isStrategyPath(value) && value.endsWith('.py');
 }
-
-export function isProjectId(value: unknown): value is string {return typeof value === 'string' && /^aqproj-[a-f0-9]{32}$/.test(value);}
-export function isStrategyId(value: unknown): value is string {return isProjectId(value) || isStrategyFilePath(value);}
+export function isProjectId(value: unknown): value is string {
+  return typeof value === 'string' && /^aqproj-[a-f0-9]{32}$/.test(value);
+}
+export function isStrategyId(value: unknown): value is string {
+  return isProjectId(value) || isStrategyFilePath(value);
+}

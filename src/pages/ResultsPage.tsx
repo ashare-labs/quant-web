@@ -1,120 +1,221 @@
-import {useEffect,useRef,useState} from 'react';
-import {active,api,download,errorText,num,object,pct,rows,shownStatus,type HistoryJob,type JobLogs,type PythonJob,type Row} from '../shared/api';
-import {DataTable} from '../shared/DataTable';
-import {Empty,ErrorNotice,JsonDetails,Reason,Status,useResource} from '../shared/ui';
-import {backtestsHref} from '../backtests/history-model';
-import {requestStrategy} from '../backtests/history-api';
-import {strategyEditorHref} from '../strategies/project-model';
-import {editorHref} from '../shared/drafts';
-import {selectedAnalysis,analysisPath,holdingRows,money,reasonText,timeParts,tradeRows,type BenchmarkOption} from '../results/model';
-import {ResultOverview} from '../results/ResultOverview';
-import {RunProgress} from '../results/RunProgress';
-import {ReadStatus} from '../results/ReadStatus';
-import {stopJobPolling} from '../results/progress';
+import { useEffect, useRef, useState } from 'react';
+import { active, api, download, errorText, num, object, pct, rows, shownStatus, type HistoryJob, type JobLogs, type PythonJob, type Row } from '../shared/api';
+import { DataTable } from '../shared/DataTable';
+import { Empty, ErrorNotice, JsonDetails, Reason, Status, useResource } from '../shared/ui';
+import { backtestsHref } from '../backtests/history-model';
+import { requestStrategy } from '../backtests/history-api';
+import { strategyEditorHref } from '../strategies/project-model';
+import { editorHref } from '../shared/drafts';
+import { selectedAnalysis, analysisPath, holdingRows, money, reasonText, timeParts, tradeRows, type BenchmarkOption } from '../results/model';
+import { ResultOverview } from '../results/ResultOverview';
+import { RunProgress } from '../results/RunProgress';
+import { ReadStatus } from '../results/ReadStatus';
+import { stopJobPolling } from '../results/progress';
 import '../results/results.css';
-
-export function ResultsPage(){
-  const q=new URLSearchParams(location.search),id=q.get('job'),family=q.get('family')||'python',history=q.get('history')==='1';
-  const valid=id&&/^m2job-[a-f0-9]{32}$/.test(id),path=valid?(history?'/history/jobs/':family==='factors'?'/factors/jobs/':'/python/jobs/')+id:null;
-  const [tab,setTab]=useState('收益概述'),[error,setError]=useState(''),[busy,setBusy]=useState(false);
-  const [diagnostics,setDiagnostics]=useState(false),[strategyLogs,setStrategyLogs]=useState(false),[fallback,setFallback]=useState(false);
-  const [benchmark,setBenchmark]=useState('frozen'),[benchmarkOptions,setBenchmarkOptions]=useState<BenchmarkOption[]>([{value:'frozen',label:'原始基准'},{value:'none',label:'无基准'}]);
-  const job=useResource<PythonJob|HistoryJob>(path,5000,false,{retainOnError:true,stopWhen:stopJobPolling,timeoutMs:60000,trackRead:true});
-  const j=job.data?.job_id===id?job.data:null;
-  const log=useResource<JobLogs>(path&&tab==='运行日志'?path+'/logs':null,j&&active(j)?5000:0,false,{timeoutMs:60000,trackRead:true});
-  const needsDetails=tab==='交易详情'||tab==='每日持仓与收益'||diagnostics||(tab==='运行日志'&&strategyLogs)||(tab==='收益概述'&&fallback);
-  const result=useResource<Row>(path&&j?.result&&family!=='factors'&&needsDetails?path+'/result':null,0,false,{timeoutMs:60000,trackRead:true});
-  const r=result.data?.job_id===id?result.data:null,native=object(r?.native);
-  const sourceSha=object(j?.result).snapshot_sha256;
-  const expectedHash=typeof sourceSha==='string'?sourceSha:undefined;
-  const inline=selectedAnalysis(r?.analysis,id||'',expectedHash,benchmark);
+export function ResultsPage() {
+  const q = new URLSearchParams(location.search);
+  const id = q.get('job');
+  const family = q.get('family') || 'python';
+  const history = q.get('history') === '1';
+  const valid = id && /^m2job-[a-f0-9]{32}$/.test(id);
+  const path = valid ? (history ? '/history/jobs/' : family === 'factors' ? '/factors/jobs/' : '/python/jobs/') + id : null;
+  const [tab, setTab] = useState('收益概述');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [diagnostics, setDiagnostics] = useState(false);
+  const [strategyLogs, setStrategyLogs] = useState(false);
+  const [fallback, setFallback] = useState(false);
+  const [benchmark, setBenchmark] = useState('frozen');
+  const [benchmarkOptions, setBenchmarkOptions] = useState<BenchmarkOption[]>([{ value: 'frozen', label: '原始基准' }, { value: 'none', label: '无基准' }]);
+  const job = useResource<PythonJob|HistoryJob>(path,5000, false, {
+    retainOnError: true,
+    stopWhen: stopJobPolling,
+    timeoutMs: 60000,
+    trackRead: true
+  });
+  const j = job.data?.job_id === id ? job.data : null;
+  const log = useResource<JobLogs>(path && tab === '运行日志' ? path + '/logs' : null, j && active(j) ? 5000 : 0, false, { timeoutMs: 60000, trackRead: true });
+  const needsDetails = tab === '交易详情' || tab === '每日持仓与收益' || diagnostics || (tab === '运行日志' && strategyLogs) || (tab === '收益概述' && fallback);
+  const result = useResource<Row>(path && j?.result && family !== 'factors' && needsDetails ? path + '/result' : null, 0, false, { timeoutMs: 60000, trackRead: true });
+  const r = result.data?.job_id === id ? result.data : null, native = object(r?.native);
+  const sourceSha = object(j?.result).snapshot_sha256;
+  const expectedHash = typeof sourceSha === 'string' ? sourceSha : undefined;
+  const inline = selectedAnalysis(r?.analysis, id || '', expectedHash, benchmark);
   // The published-result reference already binds the analysis to its frozen hash.
   // Do not transfer the complete account/order/log payload before requesting it.
-  const analysisReference=j?.result&&expectedHash&&(tab!=='运行日志'||diagnostics)?{job_id:id}:null;
-  const derived=useResource<Row>(analysisPath(path,analysisReference,inline,family,benchmark),0,false,{timeoutMs:60000,trackRead:true});
-  const analysis=inline??selectedAnalysis(derived.data,id||'',expectedHash,benchmark);
-  const requestedBenchmark=useRef(benchmark),changing=requestedBenchmark.current!==benchmark;
-  useEffect(()=>{requestedBenchmark.current=benchmark;},[benchmark]);
-  const analysisError=j?.result&&!expectedHash?'冻结结果缺少来源摘要，未请求未绑定来源的分析。':derived.data&&!analysis&&!changing?'派生分析与本次结果的身份、口径或格式不一致。':derived.error;
-  useEffect(()=>{if(analysis?.comparison)setBenchmarkOptions(analysis.comparison.options);},[analysis]);
-  const request=object(j?.request),frequency=request.frequency==='1d'?'日频':request.frequency==='1m'?'分钟':String(request.frequency||'—');
-  const name=String(j?.request.name||r?.name||'回测结果');
-  const strategyId=requestStrategy(request),listHref=strategyId?backtestsHref({strategy:strategyId}):id?backtestsHref({job:id}):null;
-  const editHref=strategyId?strategyEditorHref(strategyId):q.get('draft')?editorHref(q.get('draft')!):null;
-  const refresh=()=>{job.refresh();result.refresh();log.refresh();derived.refresh();};
-  const dailyReturns=new Map(analysis?.series.map(point=>[point.date,point])??[]);
-  async function cancel(){
-    if(!path||!j||history||!active(j))return;
-    setBusy(true);try{await api(path+'/cancel',{});job.refresh();setError('');}catch(e){setError(errorText(e));}finally{setBusy(false);}
+  const analysisReference = j?.result && expectedHash && (tab !== '运行日志' || diagnostics) ? { job_id: id } : null;
+  const derived = useResource<Row>(analysisPath(path, analysisReference, inline, family, benchmark), 0, false, { timeoutMs: 60000, trackRead: true });
+  const analysis = inline ?? selectedAnalysis(derived.data, id || '', expectedHash, benchmark);
+  const requestedBenchmark = useRef(benchmark);
+  const changing = requestedBenchmark.current !== benchmark;
+  useEffect(() => { requestedBenchmark.current = benchmark; }, [benchmark]);
+  const analysisError = j?.result && !expectedHash ? '冻结结果缺少来源摘要，未请求未绑定来源的分析。' : derived.data && !analysis && !changing ? '派生分析与本次结果的身份、口径或格式不一致。' : derived.error;
+  useEffect(() => {
+    if (analysis?.comparison)
+      setBenchmarkOptions(analysis.comparison.options);
+  }, [analysis]);
+  const request = object(j?.request);
+  const frequency = request.frequency === '1d' ? '日频' : request.frequency === '1m' ? '分钟' : String(request.frequency || '—');
+  const name = String(j?.request.name || r?.name || '回测结果');
+  const strategyId = requestStrategy(request);
+  const listHref = strategyId ? backtestsHref({ strategy: strategyId }) : id ? backtestsHref({ job: id }) : null;
+  const editHref = strategyId ? strategyEditorHref(strategyId) : q.get('draft') ? editorHref(q.get('draft')!) : null;
+  const refresh = () => {
+    job.refresh();
+    result.refresh();
+    log.refresh();
+    derived.refresh();
+  };
+  const dailyReturns = new Map(analysis?.series.map(point => [point.date, point]) ?? []);
+  async function cancel() {
+    if (!path || !j || history || !active(j))
+      return;
+    setBusy(true);
+    try {
+      await api(path + '/cancel', {});
+      job.refresh();
+      setError('');
+    }
+    catch (e) {
+      setError(errorText(e));
+    }
+    finally {
+      setBusy(false);
+    }
   }
   return <>
-    <div className="subnav"><div><a href={listHref||'strategies.html'}><i className="fa fa-angle-left" aria-hidden="true"/> {listHref?'返回回测列表':'策略列表'}</a> / {name}</div>
-      <nav>{editHref&&<a href={editHref}>编辑策略</a>}{id&&<a href={'strategy-editor.html?job='+encodeURIComponent(id)}>查看源码</a>}{listHref&&<a href={listHref}>回测列表</a>}</nav></div>
-    {j&&<div className="run-settings"><span>设置：{String(request.start_date||'—')} 至 {String(request.end_date||'—')}</span>
-      <span>初始资金 ¥ {num(request.initial_cash)}</span><span>{frequency}</span><Status job={j}/></div>}
+    <div className="subnav">
+      <div><a href={listHref || 'strategies.html'}><i className="fa fa-angle-left" aria-hidden="true" /> {listHref ? '返回回测列表' : '策略列表'}</a> / {name}</div>
+      <nav>
+        {editHref && <a href={editHref}>编辑策略</a>}
+        {id && <a href={'strategy-editor.html?job=' + encodeURIComponent(id)}>查看源码</a>}
+        {listHref && <a href={listHref}>回测列表</a>}
+      </nav>
+    </div>
+    {j && <div className="run-settings">
+      <span>设置：{String(request.start_date || '—')} 至 {String(request.end_date || '—')}</span>
+      <span>初始资金 ¥ {num(request.initial_cash)}</span>
+      <span>
+        {frequency}
+      </span>
+      <Status job={j} />
+    </div>}
     <div className="result result-analysis"><aside className="side" aria-label="结果视图">
-      {['收益概述','交易详情','每日持仓与收益'].map(view=><button key={view} className={tab===view?'active':''} aria-pressed={tab===view} onClick={()=>setTab(view)}>{view}</button>)}
-      <button className={'result-side-secondary '+(tab==='运行日志'?'active':'')} aria-pressed={tab==='运行日志'} onClick={()=>setTab('运行日志')}>运行日志</button>
+      {['收益概述', '交易详情', '每日持仓与收益'].map(view => <button key={view} className={tab === view ? 'active' : ''} aria-pressed={tab === view} onClick={() => setTab(view)}>
+        {view}
+      </button>)}
+      <button className={'result-side-secondary ' + (tab === '运行日志' ? 'active' : '')} aria-pressed={tab === '运行日志'} onClick={() => setTab('运行日志')}>运行日志</button>
     </aside><section className="result-content">
-      <div className="titlebar"><h1>{tab}</h1><div className="inline-actions"><button onClick={refresh} disabled={!path}>刷新</button>
-        {!history&&j&&active(j)&&<button disabled={busy||j.status==='cancelling'} onClick={cancel}>取消运行</button>}</div></div>
-      {!valid&&<Empty>{id?'任务编号无效。':'暂无选中的回测任务。'}<p><a href="strategies.html">前往策略列表</a></p></Empty>}
-      <ErrorNotice message={error||job.error} retry={job.refresh}/>
-      {job.loading&&<ReadStatus label="运行状态" progress={job.readProgress} cancel={job.cancel}/>}
-      {j&&<>
-        {['retired','runtime_unavailable'].includes(shownStatus(j))&&<Reason value={j.execution_reason}/>}<Reason value={j.error}/>
-        {history&&<p className="note">只读历史 · 读取时核对冻结文件完整性。派生分析不修改原成交和权益。</p>}
-        {!history&&j.can_resume===false&&['failed','cancelled'].includes(j.status)&&<p className="notice">此 Python 任务不支持断点恢复。可读取已有日志；不能恢复已结束的内存状态。</p>}
-        {!j.result&&family==='python'&&<RunProgress job={j} disconnected={!!job.error}/>}
-        {!j.result&&family!=='python'&&!job.error&&<Empty>{active(j)?'任务正在处理。结果会在运行完成后显示。':'此任务尚无已发布结果。'}</Empty>}
-        {j.result&&family==='factors'?<div className="notice">这是一条因子研究记录。<a href={'factors.html?factor='+encodeURIComponent(String(object(j.request).factor_id||''))+'&job='+encodeURIComponent(id!)}>查看因子值与评价</a></div>:j.result&&<>
-          {derived.loading&&<ReadStatus label="收益分析" progress={derived.readProgress} cancel={derived.cancel}/>}
-          <ErrorNotice message={analysisError} retry={derived.refresh}/>
-          {needsDetails&&<><ErrorNotice message={result.error} retry={result.refresh}/>
-            {result.loading&&<ReadStatus label="冻结明细" progress={result.readProgress} cancel={result.cancel}/>}
-            {result.data&&!r&&<ErrorNotice message="返回的结果与所选任务不一致，已停止显示。"/>}</>}
-          {tab==='收益概述'&&<>
-            <ResultOverview result={r||{name}} analysis={analysis} loading={derived.loading||changing} error={analysisError}
-              benchmark={{selection:benchmark,options:benchmarkOptions,onSelect:setBenchmark}}/>
-            {analysisError&&!r&&!fallback&&<button onClick={()=>setFallback(true)}>读取原始冻结汇总</button>}
+        <div className="titlebar">
+          <h1>
+            {tab}
+          </h1>
+          <div className="inline-actions">
+            <button onClick={refresh} disabled={!path}>刷新</button>
+            {!history && j && active(j) && <button disabled={busy || j.status === 'cancelling'} onClick={cancel}>取消运行</button>}
+          </div>
+        </div>
+        {!valid && <Empty>
+          {id ? '任务编号无效。' : '暂无选中的回测任务。'}
+          <p>
+            <a href="strategies.html">前往策略列表</a>
+          </p>
+        </Empty>}
+        <ErrorNotice message={error || job.error} retry={job.refresh} />
+        {job.loading && <ReadStatus label="运行状态" progress={job.readProgress} cancel={job.cancel} />}
+        {j && <>
+          {['retired', 'runtime_unavailable'].includes(shownStatus(j)) && <Reason value={j.execution_reason} />}<Reason value={j.error} />
+          {history && <p className="note">只读历史 · 读取时核对冻结文件完整性。派生分析不修改原成交和权益。</p>}
+          {!history && j.can_resume === false && ['failed', 'cancelled'].includes(j.status) && <p className="notice">此 Python 任务不支持断点恢复。可读取已有日志；不能恢复已结束的内存状态。</p>}
+          {!j.result && family === 'python' && <RunProgress job={j} disconnected={!!job.error} />}
+          {!j.result && family !== 'python' && !job.error && <Empty>
+            {active(j) ? '任务正在处理。结果会在运行完成后显示。' : '此任务尚无已发布结果。'}
+          </Empty>}
+          {j.result && family === 'factors' ? <div className="notice">这是一条因子研究记录。<a href={'factors.html?factor=' + encodeURIComponent(String(object(j.request).factor_id || '')) + '&job=' + encodeURIComponent(id!)}>查看因子值与评价</a></div> : j.result && <>
+            {derived.loading && <ReadStatus label="收益分析" progress={derived.readProgress} cancel={derived.cancel} />}
+            <ErrorNotice message={analysisError} retry={derived.refresh} />
+            {needsDetails && <><ErrorNotice message={result.error} retry={result.refresh} />
+              {result.loading && <ReadStatus label="冻结明细" progress={result.readProgress} cancel={result.cancel} />}
+              {result.data && !r && <ErrorNotice message="返回的结果与所选任务不一致，已停止显示。" />}</>}
+            {tab === '收益概述' && <>
+              <ResultOverview result={r || { name }} analysis={analysis} loading={derived.loading || changing} error={analysisError} benchmark={{
+                selection: benchmark,
+                options: benchmarkOptions,
+                onSelect: setBenchmark
+              }} />
+              {analysisError && !r && !fallback && <button onClick={() => setFallback(true)}>读取原始冻结汇总</button>}
+            </>}
+            {tab === '交易详情' && r && <>
+              <DataTable name="交易明细" data={tradeRows(native, analysis)} columns={[
+                { key: 'date', label: '日期' }, { key: 'order_time', label: '委托时间' }, { key: 'security', label: '标的' },
+                { key: 'side', label: '交易类型' }, { key: 'order_type', label: '下单类型' }, { key: 'quantity', label: '成交数量' },
+                { key: 'price', label: '成交价' }, { key: 'notional', label: '成交额' }, { key: 'pnl', label: '平仓盈亏' }, { key: 'fees', label: '手续费' },
+              ]} />
+              <p className="note result-attribution-note">平仓盈亏按移动平均成本分摊成交费用，现金分红另列；买入成交不记平仓盈亏。
+                {analysis?.trading.status === 'unavailable' && <> {reasonText(analysis.trading.reason)}，盈亏保留为空。</>}</p>
+            </>}
+            {tab === '每日持仓与收益' && r && <>
+              <h2 className="result-subheading">每日账户</h2><DataTable name="每日账户" data={rows(native.accounts)} columns={[
+                { key: 'at', label: '日期', value: r => timeParts(r.at)[0] },
+                { key: 'total_value', label: '账户权益', value: r => money(r.total_value) },
+                {
+                  key: 'available_cash',
+                  label: '可用现金',
+                  value: r => money(r.available_cash)
+                },
+                {
+                  key: 'positions_value',
+                  label: '持仓市值',
+                  value: r => money(r.positions_value)
+                },
+                {
+                  key: 'return',
+                  label: '每日收益',
+                  value: r => pct(dailyReturns.get(timeParts(r.at)[0])?.return)
+                },
+                {
+                  key: 'pnl',
+                  label: '每日盈亏',
+                  value: r => money(dailyReturns.get(timeParts(r.at)[0])?.pnl)
+                },
+              ]} />
+              <h2 className="result-subheading">每日持仓</h2><DataTable name="每日持仓与收益" data={holdingRows(native, analysis)} columns={[
+                { key: 'date', label: '日期' }, { key: 'security', label: '标的' }, { key: 'quantity', label: '数量' },
+                { key: 'closeable', label: '可卖数量' }, { key: 'price', label: '收盘价 / 结算价' },
+                { key: 'value', label: '市值 / 价值' }, { key: 'pnl', label: '未实现盈亏' }, { key: 'weight', label: '仓位' },
+              ]} /><p className="note">未实现盈亏使用包含买入费用的移动成本；分红不重复计入持仓价差。现金行不记证券浮盈。</p>
+            </>}
           </>}
-          {tab==='交易详情'&&r&&<>
-            <DataTable name="交易明细" data={tradeRows(native,analysis)} columns={[
-              {key:'date',label:'日期'},{key:'order_time',label:'委托时间'},{key:'security',label:'标的'},
-              {key:'side',label:'交易类型'},{key:'order_type',label:'下单类型'},{key:'quantity',label:'成交数量'},
-              {key:'price',label:'成交价'},{key:'notional',label:'成交额'},{key:'pnl',label:'平仓盈亏'},{key:'fees',label:'手续费'},
-            ]}/>
-            <p className="note result-attribution-note">平仓盈亏按移动平均成本分摊成交费用，现金分红另列；买入成交不记平仓盈亏。
-              {analysis?.trading.status==='unavailable'&&<> {reasonText(analysis.trading.reason)}，盈亏保留为空。</>}</p>
-          </>}
-          {tab==='每日持仓与收益'&&r&&<>
-            <h2 className="result-subheading">每日账户</h2><DataTable name="每日账户" data={rows(native.accounts)} columns={[
-              {key:'at',label:'日期',value:r=>timeParts(r.at)[0]},
-              {key:'total_value',label:'账户权益',value:r=>money(r.total_value)},
-              {key:'available_cash',label:'可用现金',value:r=>money(r.available_cash)},
-              {key:'positions_value',label:'持仓市值',value:r=>money(r.positions_value)},
-              {key:'return',label:'每日收益',value:r=>pct(dailyReturns.get(timeParts(r.at)[0])?.return)},
-              {key:'pnl',label:'每日盈亏',value:r=>money(dailyReturns.get(timeParts(r.at)[0])?.pnl)},
-            ]}/>
-            <h2 className="result-subheading">每日持仓</h2><DataTable name="每日持仓与收益" data={holdingRows(native,analysis)} columns={[
-              {key:'date',label:'日期'},{key:'security',label:'标的'},{key:'quantity',label:'数量'},
-              {key:'closeable',label:'可卖数量'},{key:'price',label:'收盘价 / 结算价'},
-              {key:'value',label:'市值 / 价值'},{key:'pnl',label:'未实现盈亏'},{key:'weight',label:'仓位'},
-            ]}/><p className="note">未实现盈亏使用包含买入费用的移动成本；分红不重复计入持仓价差。现金行不记证券浮盈。</p>
-          </>}
+          {tab === '运行日志' && <><ErrorNotice message={log.error} retry={log.refresh} />
+            {log.loading && <ReadStatus label="任务日志" progress={log.readProgress} cancel={log.cancel} />}
+            {log.data && <DataTable name="任务日志" data={rows(log.data.items)} exportable={false} columns={[{ key: 'at', label: '时间' }, { key: 'event', label: '事件' }, { key: 'details', label: '详情' }]} />}
+            {j.result && <details className="diagnostics" onToggle={e => setStrategyLogs(e.currentTarget.open)}>
+              <summary>策略日志</summary>
+              {strategyLogs && r && <pre>
+                {JSON.stringify(r.logs, null, 2)}
+              </pre>}
+            </details>}</>}
+          {j.result && family !== 'factors' && <details className="diagnostics" onToggle={e => setDiagnostics(e.currentTarget.open)}>
+            <summary>数据来源与诊断</summary>
+            {diagnostics && r && <>
+              <p className="note">诊断 JSON 保留服务原始结果，可能包含源码、内部标识和重复字段。</p>
+              <button onClick={() => download(name + '-诊断.json', JSON.stringify(r, null, 2), 'application/json')}>导出诊断 JSON</button>
+              <JsonDetails title="数据与模型" value={{ release: r.release, preparation: r.preparation }} />
+              {analysis && <JsonDetails title="指标口径与来源" value={{
+                schema: analysis.schema_version,
+                version: analysis.calculation_version,
+                analysis_id: analysis.analysis_id,
+                source_sha256: analysis.source_sha256,
+                benchmark: analysis.benchmark,
+                comparison: analysis.comparison,
+                engine: analysis.engine,
+                policy: analysis.policy,
+                quality: analysis.quality
+              }} />}
+              {analysisError && <p className="note">分析读取：{analysisError}</p>}
+            </>}
+          </details>}
         </>}
-        {tab==='运行日志'&&<><ErrorNotice message={log.error} retry={log.refresh}/>
-          {log.loading&&<ReadStatus label="任务日志" progress={log.readProgress} cancel={log.cancel}/>}
-          {log.data&&<DataTable name="任务日志" data={rows(log.data.items)} exportable={false}
-            columns={[{key:'at',label:'时间'},{key:'event',label:'事件'},{key:'details',label:'详情'}]}/>}
-          {j.result&&<details className="diagnostics" onToggle={e=>setStrategyLogs(e.currentTarget.open)}><summary>策略日志</summary>{strategyLogs&&r&&<pre>{JSON.stringify(r.logs,null,2)}</pre>}</details>}</>}
-        {j.result&&family!=='factors'&&<details className="diagnostics" onToggle={e=>setDiagnostics(e.currentTarget.open)}><summary>数据来源与诊断</summary>{diagnostics&&r&&<><p className="note">诊断 JSON 保留服务原始结果，可能包含源码、内部标识和重复字段。</p>
-          <button onClick={()=>download(name+'-诊断.json',JSON.stringify(r,null,2),'application/json')}>导出诊断 JSON</button>
-          <JsonDetails title="数据与模型" value={{release:r.release,preparation:r.preparation}}/>
-          {analysis&&<JsonDetails title="指标口径与来源" value={{schema:analysis.schema_version,version:analysis.calculation_version,analysis_id:analysis.analysis_id,source_sha256:analysis.source_sha256,benchmark:analysis.benchmark,comparison:analysis.comparison,engine:analysis.engine,policy:analysis.policy,quality:analysis.quality}}/>}
-          {analysisError&&<p className="note">分析读取：{analysisError}</p>}
-        </>}</details>}
-      </>}
-    </section></div>
+      </section></div>
   </>;
 }

@@ -24,9 +24,9 @@ AQ_API_URL=http://127.0.0.1:18846 PAPER_API_URL=http://127.0.0.1:18847 npm run d
 
 | 用途 | 正式（ashare-local） | 本仓候选默认 |
 | --- | --- | --- |
-| API（AQ） | 18839 | 18846（`AQ_API_URL`） |
-| Web | 41839 | 41846（仅本机） |
-| Paper | 常为 18818 | 18847（`PAPER_API_URL`） |
+| API（AQ） | 18839 | 18846（`AQ_API_URL` 或 `ASHARE_API_URL`） |
+| Web | 41839 | 41846（`FRONTEND_PORT`，仅本机） |
+| Paper | 常为 18818 | 18847（`PAPER_API_URL` 或 `ASHARE_PAPER_URL`） |
 
 ## 继续读
 

@@ -5,9 +5,7 @@ import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-toml';
 import 'ace-builds/src-noconflict/theme-monokai';
 import './editor.css';
-
 import type { CodeEditorProps } from './CodeEditor';
-
 /** One session per file keeps cursor, scroll and undo history when switching files. */
 export function AceCodeEditor({ value, onChange, readOnly = false, path = 'strategy.py' }: CodeEditorProps) {
   const container = useRef<HTMLDivElement>(null);
@@ -16,9 +14,9 @@ export function AceCodeEditor({ value, onChange, readOnly = false, path = 'strat
   const current = useRef({ value, onChange, readOnly, path });
   const syncing = useRef(false);
   current.current = { value, onChange, readOnly, path };
-
   useEffect(() => {
-    if (!container.current) return;
+    if (!container.current)
+      return;
     const instance = ace.edit(container.current);
     editor.current = instance;
     instance.setTheme('ace/theme/monokai');
@@ -52,16 +50,17 @@ export function AceCodeEditor({ value, onChange, readOnly = false, path = 'strat
       const activeSession = instance.getSession();
       instance.destroy();
       for (const session of sessions.current.values()) {
-        if (session !== activeSession) session.destroy();
+        if (session !== activeSession)
+          session.destroy();
       }
       sessions.current.clear();
       editor.current = null;
     };
   }, []);
-
   useEffect(() => {
     const instance = editor.current;
-    if (!instance) return;
+    if (!instance)
+      return;
     syncing.current = true;
     try {
       let session = sessions.current.get(path);
@@ -75,14 +74,16 @@ export function AceCodeEditor({ value, onChange, readOnly = false, path = 'strat
           wrap: false,
         });
         sessions.current.set(path, session);
-      } else if (session.getValue() !== value) {
+      }
+      else if (session.getValue() !== value) {
         // External replacement (for example loading another revision) is deliberate.
         session.setValue(value);
       }
       if (instance.getSession() !== session) {
         const previous = instance.getSession();
         instance.setSession(session);
-        if (![...sessions.current.values()].includes(previous)) previous.destroy();
+        if (![...sessions.current.values()].includes(previous))
+          previous.destroy();
       }
       instance.setReadOnly(readOnly);
       instance.setOption('textInputAriaLabel', `${path} ${readOnly ? '只读代码' : '代码编辑器'}`);
@@ -91,10 +92,10 @@ export function AceCodeEditor({ value, onChange, readOnly = false, path = 'strat
       input.setAttribute('aria-readonly', String(readOnly));
       input.setAttribute('spellcheck', 'false');
       instance.resize();
-    } finally {
+    }
+    finally {
       syncing.current = false;
     }
   }, [path, readOnly, value]);
-
   return <div ref={container} className="code-editor python-code-editor" role="group" aria-label={`${path} 编辑区`} />;
 }
