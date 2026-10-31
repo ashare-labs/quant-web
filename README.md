@@ -20,7 +20,7 @@ AQ_API_URL=http://127.0.0.1:18846 PAPER_API_URL=http://127.0.0.1:18847 npm run d
 
 ## 端口
 
-正在使用的正式入口以本机 **ashare-local** 仓库的 `ASHARE.md` 为准。下表只列这一处对照：左侧是 ashare-local 在本机的正式端口，右侧是本仓文档和开发命令里的候选默认。
+正在使用的正式入口以本机工作区的 `ASHARE.md` 与 `ashare-local/README.md` 为准。下表只列这一处对照：左侧是 `ashare-local` 在本机的正式端口，右侧是本仓文档和开发命令里的候选默认。
 
 | 用途 | 正式（ashare-local） | 本仓候选默认 |
 | --- | --- | --- |
