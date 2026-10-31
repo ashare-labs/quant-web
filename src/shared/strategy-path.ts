@@ -3,7 +3,10 @@ export function isStrategyPath(value: unknown, allowRoot = false): value is stri
   return typeof value === 'string' && (allowRoot && value === '' || !!value
     && new TextEncoder().encode(value).length <= 1024
     && !/[\\:\u0000-\u001f\u007f]/.test(value)
-    && value.split('/').every(part => !!part && part !== '.' && part !== '..' && new TextEncoder().encode(part).length <= 255));
+    && value.split('/').every(part => !!part
+      && part !== '.'
+      && part !== '..'
+      && new TextEncoder().encode(part).length <= 255));
 }
 export function isStrategyFilePath(value: unknown): value is string {
   return isStrategyPath(value) && value.endsWith('.py');

@@ -3,7 +3,11 @@ const shanghaiDate = new Intl.DateTimeFormat('en-CA', {
 });
 export function todayInShanghai(now = new Date()): string {
   const parts = shanghaiDate.formatToParts(now);
-  return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type)!.value).join('-');
+  return [
+    'year',
+    'month',
+    'day'
+  ].map(type => parts.find(part => part.type === type)!.value).join('-');
 }
 export const validDate = (day: string) => /^\d{4}-\d{2}-\d{2}$/.test(day) && day > '0000-12-31'
   && Number.isFinite(Date.parse(day)) && new Date(day).toISOString().slice(0, 10) === day;

@@ -9,7 +9,8 @@ export function FactorReport({ result }: {
   result: Result;
 }) {
   const [tab, setTab] = useState('因子值');
-  let report: Evaluation | null = null, error = '';
+  let report: Evaluation | null = null;
+  let error = '';
   if (result.evaluation)
     try {
       report = evaluation(result.evaluation);
@@ -37,7 +38,13 @@ export function FactorReport({ result }: {
         </strong>
       </div>
     </div>
-    {tab === '因子值' ? <DataTable name="因子值" data={result.rows} columns={[{ key: 'date', label: '日期' }, { key: 'security', label: '证券' }, {
+    {tab === '因子值' ? <DataTable name="因子值" data={result.rows} columns={[{
+      key: 'date',
+      label: '日期'
+    }, {
+      key: 'security',
+      label: '证券'
+    }, {
       key: 'value',
       label: '数值',
       value: r => r.value ?? r.value_text
@@ -45,7 +52,10 @@ export function FactorReport({ result }: {
       <ErrorNotice message={error} />
       {report ? <EvaluationView report={report} /> : !error && <Empty>此运行未请求单因子评价。</Empty>}
     </>}
-    <JsonDetails title="本次数据来源与冻结配置" value={{ request: result.request, provenance: result.provenance }} />
+    <JsonDetails title="本次数据来源与冻结配置" value={{
+      request: result.request,
+      provenance: result.provenance
+    }} />
     <details className="diagnostics">
       <summary>诊断导出</summary>
       <p className="note">完整诊断保留服务原始字段。普通结果请使用上方 CSV。</p>
@@ -91,13 +101,98 @@ function EvaluationView({ report: r }: {
     <Tabs values={['IC / RankIC', '分层收益', '换手率', '成本敏感性']} selected={tab} onChange={setTab} />
     {tab === 'IC / RankIC' && <>
       <Suspense fallback={<Empty>正在绘制评价曲线…</Empty>}>
-        <LineChart title="IC / RankIC 时间序列" labels={ic.map(p => p.date)} series={[{ name: 'IC', values: ic.map(p => p.value) }, { name: 'RankIC', values: ic.map(p => rank.find(v => v.date === p.date)?.value ?? null) }]} />
+        <LineChart title="IC / RankIC 时间序列" labels={ic.map(p => p.date)} series={[
+          {
+            name: 'IC',
+            values: ic.map(p => p.value)
+          },
+          {
+            name: 'RankIC',
+            values: ic.map(p => rank.find(v => v.date === p.date)?.value
+              ?? null)
+          }
+        ]} />
       </Suspense>
-      <button onClick={() => download('IC.csv', csv([['日期', '观察期', 'IC', 'RankIC'], ...ic.map(p => [p.date, p.horizon, p.value, rank.find(v => v.date === p.date)?.value])]), 'text/csv;charset=utf-8')}>导出 IC CSV</button>
+      <button onClick={() => download('IC.csv', csv([
+        [
+          '日期',
+          '观察期',
+          'IC',
+          'RankIC'
+        ],
+        ...ic.map(p => [
+          p.date,
+          p.horizon,
+          p.value,
+          rank.find(v => v.date === p.date)?.value
+        ])
+      ]), 'text/csv;charset=utf-8')}>导出 IC CSV</button>
     </>}
-    {tab === '分层收益' && <DataTable name="分层收益" data={r.quantile_returns.filter(p => p.horizon === horizon)} columns={[{ key: 'date', label: '日期' }, { key: 'quantile', label: '分位组' }, { key: 'mean_return', label: '独立收益（小数）' }, { key: 'n', label: '有效股票' }, { key: 'selected_n', label: '所选股票' }]} />}
-    {tab === '换手率' && <DataTable name="换手率" data={r.turnover} columns={[{ key: 'date', label: '日期' }, { key: 'quantile', label: '分位组' }, { key: 'value', label: '成员换手（小数）' }, { key: 'n', label: '成员数' }]} />}
-    {tab === '成本敏感性' && <DataTable name="成本敏感性" data={r.cost_sensitivity.filter(p => p.horizon === horizon)} columns={[{ key: 'cost_bps', label: '单边成本（bp）' }, { key: 'top_mean', label: '高组收益' }, { key: 'bottom_mean', label: '低组收益' }, { key: 'spread_mean', label: '高低组差' }, { key: 'n', label: '有效观测' }]} />}
+    {tab === '分层收益'
+      && <DataTable name="分层收益" data={r.quantile_returns.filter(p => p.horizon === horizon)} columns={[
+        {
+          key: 'date',
+          label: '日期'
+        },
+        {
+          key: 'quantile',
+          label: '分位组'
+        },
+        {
+          key: 'mean_return',
+          label: '独立收益（小数）'
+        },
+        {
+          key: 'n',
+          label: '有效股票'
+        },
+        {
+          key: 'selected_n',
+          label: '所选股票'
+        }
+      ]} />}
+    {tab === '换手率'
+      && <DataTable name="换手率" data={r.turnover} columns={[
+        {
+          key: 'date',
+          label: '日期'
+        },
+        {
+          key: 'quantile',
+          label: '分位组'
+        },
+        {
+          key: 'value',
+          label: '成员换手（小数）'
+        },
+        {
+          key: 'n',
+          label: '成员数'
+        }
+      ]} />}
+    {tab === '成本敏感性'
+      && <DataTable name="成本敏感性" data={r.cost_sensitivity.filter(p => p.horizon === horizon)} columns={[
+        {
+          key: 'cost_bps',
+          label: '单边成本（bp）'
+        },
+        {
+          key: 'top_mean',
+          label: '高组收益'
+        },
+        {
+          key: 'bottom_mean',
+          label: '低组收益'
+        },
+        {
+          key: 'spread_mean',
+          label: '高低组差'
+        },
+        {
+          key: 'n',
+          label: '有效观测'
+        }
+      ]} />}
     <p className="note">{r.config.price_basis} · 固定股票范围的统计评价，不模拟实际成交；独立持有期收益不累计为策略净值。</p>
     <JsonDetails title="覆盖、排除原因与评价说明" value={{
       coverage: r.coverage,

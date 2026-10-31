@@ -7,7 +7,8 @@ export function observeApi(req: IncomingMessage, res: ServerResponse, next: () =
   const path = req.url?.split('?', 1)[0] || '';
   if (!path.startsWith('/api/') && !path.startsWith('/paper-api/'))
     return next();
-  const requestId = randomUUID(), started = Date.now();
+  const requestId = randomUUID();
+  const started = Date.now();
   res.setHeader('X-QuantWeb-Request-Id', requestId);
   res.once('finish', () => console.info(JSON.stringify({
     event: 'api-response', request_id: requestId,
@@ -20,7 +21,10 @@ export const configureApiProxy: NonNullable<ProxyOptions['configure']> = proxy =
   proxy.on('error', (_error, _request, response) => {
     if (!('writeHead' in response) || response.headersSent || response.writableEnded)
       return;
-    response.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    response.writeHead(502, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store'
+    });
     response.end(JSON.stringify({
       api_version: 'v1', error: {
         code: 'UPSTREAM_UNAVAILABLE',

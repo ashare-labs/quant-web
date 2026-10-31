@@ -83,14 +83,21 @@ export interface Analysis {
 }
 export const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const nullable = (v: unknown) => v === null || finite(v);
-const validDate = (value: unknown): value is string => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
-  && Number.isFinite(Date.parse(value + 'T00:00:00Z')) && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
+const validDate = (value: unknown): value is string => typeof value === 'string'
+  && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && Number.isFinite(Date.parse(value + 'T00:00:00Z'))
+  && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
 export function acceptedAnalysis(raw: unknown, jobId: string, sourceSha?: string): Analysis | null {
   const a = object(raw);
   const metrics = object(a.metrics);
   const policy = object(a.policy);
   const points = rows(a.series);
-  if (a.schema_version !== 'aq.analysis.v1' || !['returns-v1', 'returns-v2'].includes(String(a.calculation_version)) || a.job_id !== jobId
+  if (a.schema_version !== 'aq.analysis.v1'
+    || ![
+      'returns-v1',
+      'returns-v2'
+    ].includes(String(a.calculation_version))
+    || a.job_id !== jobId
     || typeof a.source_sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(a.source_sha256)
     || (sourceSha !== undefined && a.source_sha256 !== sourceSha) || !finite(a.initial_equity)
     || a.initial_equity <= 0 || !finite(policy.annualization) || !nullable(policy.risk_free_annual)
@@ -100,7 +107,10 @@ export function acceptedAnalysis(raw: unknown, jobId: string, sourceSha?: string
     return null;
   for (const [key, , , unit] of metricDefinitions) {
     const m = object(metrics[key]);
-    if (!nullable(m.value) || m.unit !== unit || !['ok', 'unavailable'].includes(String(m.status))
+    if (!nullable(m.value) || m.unit !== unit || ![
+      'ok',
+      'unavailable'
+    ].includes(String(m.status))
       || (m.status === 'ok' ? !finite(m.value) : m.value !== null) || !finite(m.sample_count)
       || (m.status === 'unavailable' && typeof m.reason !== 'string'))
       return null;
@@ -119,16 +129,26 @@ export function acceptedAnalysis(raw: unknown, jobId: string, sourceSha?: string
       return null;
   if (a.calculation_version === 'returns-v2' && (policy.excess_return !== 'relative_nav_return'
     || typeof a.analysis_id !== 'string' || !/^[a-f0-9]{64}$/.test(a.analysis_id)
-    || !Array.isArray(a.excess_drawdowns) || points.some(p => !nullable(p.relative_nav) || !nullable(p.return_difference))))
+    || !Array.isArray(a.excess_drawdowns)
+    || points.some(p => !nullable(p.relative_nav)
+      || !nullable(p.return_difference))))
     return null;
   return a as unknown as Analysis;
 }
 export function selectedAnalysis(raw: unknown, jobId: string, sourceSha: string | undefined, selection = 'frozen') {
   if (typeof sourceSha !== 'string' || !/^[a-f0-9]{64}$/.test(sourceSha))
     return null;
-  const a = acceptedAnalysis(raw, jobId, sourceSha), c = object(a?.comparison);
-  return a?.calculation_version === 'returns-v2' && c.selection === selection && ['frozen', 'derived'].includes(String(c.source))
-    && Array.isArray(c.options) && c.options.every(v => typeof object(v).value === 'string' && typeof object(v).label === 'string') ? a : null;
+  const a = acceptedAnalysis(raw, jobId, sourceSha);
+  const c = object(a?.comparison);
+  return a?.calculation_version === 'returns-v2'
+    && c.selection === selection
+    && [
+      'frozen',
+      'derived'
+    ].includes(String(c.source))
+    && Array.isArray(c.options)
+    && c.options.every(v => typeof object(v).value === 'string'
+      && typeof object(v).label === 'string') ? a : null;
 }
 export function metricDefinition(key: MetricKey, analysis: Analysis | null) {
   if (key === 'excess_return' && analysis?.calculation_version === 'returns-v1')
@@ -156,29 +176,79 @@ export const reasons: Record<string, string> = {
   corporate_tax_model_unsupported: '分红税模型待支持', corporate_payment_outside_result: '缺分红结算日',
   zero_equity_base: '前日权益为零', non_finite_result: '结果不可定义', not_a_closing_fill: '非平仓成交',
 };
-export const reasonText = (reason: unknown) => typeof reason === 'string' ? (reasons[reason] || '数据不足') : '';
-export const metricText = (m: Pick<Metric, 'value' | 'unit'>) => m.unit === 'percent' ? pct(m.value) : num(m.value, m.unit === 'count' ? 0 : 3);
-export const money = (v: unknown) => finite(v) ? v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
-const priceText = (v: unknown) => finite(v) ? v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '—';
+export const reasonText = (reason: unknown) => typeof reason === 'string'
+  ? (reasons[reason]
+    || '数据不足')
+  : '';
+export const metricText = (m: Pick<Metric, 'value' | 'unit'>) => m.unit === 'percent'
+  ? pct(m.value)
+  : num(m.value, m.unit === 'count'
+    ? 0
+    : 3);
+export const money = (v: unknown) => finite(v)
+  ? v.toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+  : '—';
+const priceText = (v: unknown) => finite(v)
+  ? v.toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  })
+  : '—';
 export function resultMetrics(summary: Row, analysis: Analysis | null): Record<MetricKey, Metric> {
-  return Object.fromEntries(metricDefinitions.map(([key, , , unit]) => [key, analysis?.metrics[key] ?? {
-    value: ['net_return', 'max_drawdown'].includes(key) && finite(summary[key]) ? summary[key] : null, unit,
-    status: ['net_return', 'max_drawdown'].includes(key) && finite(summary[key]) ? 'ok' : 'unavailable',
-    reason: ['net_return', 'max_drawdown'].includes(key) && finite(summary[key]) ? null : 'missing_analysis', sample_count: 0,
+  return Object.fromEntries(metricDefinitions.map(([key, , , unit]) => [key, analysis?.metrics[key]
+    ?? {
+    value: [
+      'net_return',
+      'max_drawdown'
+    ].includes(key)
+      && finite(summary[key])
+      ? summary[key]
+      : null, unit,
+    status: [
+      'net_return',
+      'max_drawdown'
+    ].includes(key)
+      && finite(summary[key])
+      ? 'ok'
+      : 'unavailable',
+    reason: [
+      'net_return',
+      'max_drawdown'
+    ].includes(key)
+      && finite(summary[key])
+      ? null
+      : 'missing_analysis', sample_count: 0,
   }])) as Record<MetricKey, Metric>;
 }
 export function metricCsv(summary: Row, analysis: Analysis | null): unknown[][] {
   const metrics = resultMetrics(summary, analysis);
-  return [['指标', '数值', '单位', '状态', '原因', '样本数', '计算版本', '基准选择', '分析标识'], ...metricDefinitions.map(([key, label]) => {
+  return [[
+    '指标',
+    '数值',
+    '单位',
+    '状态',
+    '原因',
+    '样本数',
+    '计算版本',
+    '基准选择',
+    '分析标识'
+  ], ...metricDefinitions.map(([key, label]) => {
     const m = metrics[key];
     return [label, m.value, m.unit, m.status, reasonText(m.reason), m.sample_count,
-      analysis?.calculation_version ?? '', analysis?.comparison?.selection ?? 'frozen', analysis?.analysis_id ?? ''];
+      analysis?.calculation_version
+      ?? '', analysis?.comparison?.selection
+      ?? 'frozen', analysis?.analysis_id
+      ?? ''];
   })];
 }
 export function rangeStart(points: Point[], months: number): number {
   if (!points.length)
     return 0;
-  const last = new Date(points.at(-1)!.date + 'T00:00:00Z'), day = last.getUTCDate();
+  const last = new Date(points.at(-1)!.date + 'T00:00:00Z');
+  const day = last.getUTCDate();
   last.setUTCDate(1);
   last.setUTCMonth(last.getUTCMonth() - months);
   const days = new Date(Date.UTC(last.getUTCFullYear(), last.getUTCMonth() + 1, 0)).getUTCDate();
@@ -190,13 +260,25 @@ export function rangeStart(points: Point[], months: number): number {
 export function dateRangeIndex(points: Point[], day: string, end: boolean): number | null {
   if (!validDate(day) || !points.length)
     return null;
-  const i = end ? points.map(p => p.date <= day).lastIndexOf(true) : points.findIndex(p => p.date >= day);
+  const i = end
+    ? points.map(p => p.date <= day).lastIndexOf(true)
+    : points.findIndex(p => p.date >= day);
   if (i < 0)
     return null;
   return !end && i === 0 ? 0 : i + 1;
 }
 export function analysisPath(path: string | null, result: Row | null, inline: Analysis | null, family: string, selection?: string) {
-  return path && result && !inline && family !== 'factors' ? path + (selection === undefined ? '/analysis' : '/result/analysis?' + new URLSearchParams({ analysis_version: 'returns-v2', benchmark: selection })) : null;
+  return path
+    && result
+    && !inline
+    && family !== 'factors'
+    ? path + (selection === undefined
+      ? '/analysis'
+      : '/result/analysis?' + new URLSearchParams({
+        analysis_version: 'returns-v2',
+        benchmark: selection
+      }))
+    : null;
 }
 export function timeParts(value: unknown): [
   string,
@@ -227,10 +309,13 @@ export function tradeRows(native: Row, analysis: Analysis | null): Row[] {
     const order = orders.get(String(trade.order_id)) ?? {};
     const [date, time] = timeParts(trade.at);
     const qty = trade.amount ?? trade.quantity;
-    const cost = finite(trade.commission) && finite(trade.tax) ? trade.commission + trade.tax : null;
+    const cost = finite(trade.commission) && finite(trade.tax)
+      ? trade.commission + trade.tax
+      : null;
     const kind = order.order_type ?? order.type;
     return {
-      date, time, order_time: timeParts(order.add_time)[1], security: trade.security ?? trade.order_book_id,
+      date, time, order_time: timeParts(order.add_time)[1], security: trade.security
+        ?? trade.order_book_id,
       side: trade.side === 'BUY' ? '买' : trade.side === 'SELL' ? '卖' : '—',
       order_type: kind === 'MARKET' ? '市价单' : kind === 'LIMIT' ? '限价单' : '—',
       quantity: finite(qty) ? num(qty, 0) : '—', price: priceText(trade.price),
@@ -240,19 +325,28 @@ export function tradeRows(native: Row, analysis: Analysis | null): Row[] {
   });
 }
 export function holdingRows(native: Row, analysis: Analysis | null): Row[] {
-  const pnl = new Map(rows(analysis?.trading.positions).map(r => [String(r.date) + '/' + String(r.security), r]));
+  const pnl = new Map(rows(analysis?.trading.positions).map(r => [
+    String(r.date) + '/' + String(r.security),
+    r
+  ]));
   return rows(native.accounts).flatMap(account => {
     const date = timeParts(account.at)[0];
     const stock = Object.entries(object(account.positions)).map(([security, raw]) => {
-      const p = object(raw), derived = pnl.get(date + '/' + security) ?? {};
+      const p = object(raw);
+      const derived = pnl.get(date + '/' + security) ?? {};
       return {
         date, security, quantity: num(p.total_amount, 0), closeable: num(p.closeable_amount, 0),
         price: priceText(p.price), value: money(p.value), pnl: money(derived.unrealized_pnl), weight: pct(derived.weight)
       };
     });
-    const fullCash = finite(account.available_cash) && finite(account.locked_cash) ? account.available_cash + account.locked_cash : null;
+    const fullCash = finite(account.available_cash)
+      && finite(account.locked_cash)
+      ? account.available_cash + account.locked_cash
+      : null;
     return [...stock, {
-      date, security: fullCash !== null ? '现金（含冻结）' : '可用现金', quantity: '—', closeable: '—', price: '—',
+      date, security: fullCash !== null
+        ? '现金（含冻结）'
+        : '可用现金', quantity: '—', closeable: '—', price: '—',
       value: money(fullCash ?? account.available_cash), pnl: '—', weight: '—'
     }];
   });

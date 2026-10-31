@@ -31,7 +31,12 @@ export function BacktestsPage() {
           return;
         setData(value);
         setError('');
-        if (value.records.some(record => record.executionState === 'current_runtime' && ['queued', 'running', 'cancelling'].includes(record.status)))
+        if (value.records.some(record => record.executionState === 'current_runtime'
+          && [
+            'queued',
+            'running',
+            'cancelling'
+          ].includes(record.status)))
           timer = setTimeout(read, 5000);
       }
       catch (e) {

@@ -35,13 +35,21 @@ function sessionValue(value: unknown): Session {
   const data = value as Session;
   if (!data || !/^[a-f0-9]{32}$/.test(data.deployment_id) || !/^[a-f0-9-]{36}$/.test(data.user?.id)
     || typeof data.user.email !== 'string' || typeof data.user.display_name !== 'string'
-    || typeof data.session?.id !== 'string' || !Number.isFinite(Date.parse(data.session.idle_expires_at))
-    || !Number.isFinite(Date.parse(data.session.absolute_expires_at)) || typeof data.capabilities?.execute_python !== 'boolean') {
+    || typeof data.session?.id !== 'string'
+    || !Number.isFinite(Date.parse(data.session.idle_expires_at))
+    || !Number.isFinite(Date.parse(data.session.absolute_expires_at))
+    || typeof data.capabilities?.execute_python !== 'boolean') {
     throw new SessionError('服务未返回有效的账号会话，请检查连接。');
   }
   return data;
 }
-const identity = (value: Session | null) => value ? [value.deployment_id, value.user.id, value.session.id].join(':') : '';
+const identity = (value: Session | null) => value
+  ? [
+    value.deployment_id,
+    value.user.id,
+    value.session.id
+  ].join(':')
+  : '';
 export class SessionManager {
   enabled: boolean;
   private fetcher: typeof fetch;
@@ -85,7 +93,12 @@ export class SessionManager {
       this.update({ status: 'offline', error: '连接暂不可用，已保留当前页面。恢复后会重新验证会话。' });
   }
   headers(): Record<string, string> {
-    return { 'X-Requested-With': 'quant-web', ...(this.state.session ? { 'X-Quant-User': this.state.session.user.id } : {}) };
+    return {
+      'X-Requested-With': 'quant-web',
+      ...(this.state.session
+        ? { 'X-Quant-User': this.state.session.user.id }
+        : {})
+    };
   }
   requireCurrent() {
     if (this.enabled && !this.state.session)
@@ -104,8 +117,12 @@ export class SessionManager {
     const generation = this.generation;
     const operation = (async () => {
       try {
-        const response = await this.fetcher('/api/v1/auth/session' + (renew ? '/renew' : ''), {
-          method: renew ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', headers: this.headers(),
+        const response = await this.fetcher('/api/v1/auth/session' + (renew
+          ? '/renew'
+          : ''), {
+          method: renew
+            ? 'POST'
+            : 'GET', credentials: 'same-origin', cache: 'no-store', headers: this.headers(),
         });
         if (generation !== this.generation)
           return this.state;
@@ -124,7 +141,9 @@ export class SessionManager {
           status: 'ready',
           session,
           error: '',
-          epoch: this.state.epoch + (identity(session) !== identity(this.state.session) ? 1 : 0)
+          epoch: this.state.epoch + (identity(session) !== identity(this.state.session)
+            ? 1
+            : 0)
         });
       }
       catch (error) {
@@ -160,12 +179,21 @@ export class SessionManager {
       if (generation !== this.generation)
         return;
       if (!response.ok)
-        throw new SessionError(response.status === 401 ? '邮箱或密码不正确。' : response.status === 429 ? '尝试次数较多，请稍后重试。' : '登录暂时不可用，请稍后重试。', response.status);
+        throw new SessionError(response.status === 401
+          ? '邮箱或密码不正确。'
+          : response.status === 429
+            ? '尝试次数较多，请稍后重试。'
+            : '登录暂时不可用，请稍后重试。', response.status);
       await this.refresh();
     }
     catch (error) {
       if (generation === this.generation)
-        this.update({ status: 'anonymous', error: error instanceof Error ? error.message : '登录失败。' });
+        this.update({
+          status: 'anonymous',
+          error: error instanceof Error
+            ? error.message
+            : '登录失败。'
+        });
       throw error;
     }
   }

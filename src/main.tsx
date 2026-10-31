@@ -56,7 +56,12 @@ function App() {
       return;
     const pop = () => setAddress(location.pathname + location.search);
     const click = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+      if (event.defaultPrevented
+        || event.button !== 0
+        || event.ctrlKey
+        || event.metaKey
+        || event.shiftKey
+        || event.altKey)
         return;
       const link = event.target instanceof Element ? event.target.closest('a') : null;
       if (!link || link.download || link.target && link.target !== '_self')
@@ -84,9 +89,32 @@ function App() {
       </a>
       <div className="header-actions">
         <nav aria-label="主导航">
-          {[['strategies.html', '策略回测'], ['simulations.html', '模拟交易'], ['factors.html', '因子看板']].map(([href, label]) => {
-            const current = route === href || (href === 'strategies.html' && ['strategy-editor.html', 'backtest-results.html', 'backtests.html'].includes(route));
-            return <a key={href} href={href} className={current ? 'active' : ''} aria-current={current ? 'page' : undefined}>
+          {[
+            [
+              'strategies.html',
+              '策略回测'
+            ],
+            [
+              'simulations.html',
+              '模拟交易'
+            ],
+            [
+              'factors.html',
+              '因子看板'
+            ]
+          ].map(([href, label]) => {
+            const current = route === href
+              || (href === 'strategies.html'
+                && [
+                  'strategy-editor.html',
+                  'backtest-results.html',
+                  'backtests.html'
+                ].includes(route));
+            return <a key={href} href={href} className={current
+              ? 'active'
+              : ''} aria-current={current
+                ? 'page'
+                : undefined}>
               {label}
             </a>;
           })}

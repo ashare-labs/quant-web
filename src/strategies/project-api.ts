@@ -14,13 +14,17 @@ function response(value: unknown, uncertain = false) {
     return projectResponse(value);
   }
   catch (error) {
-    throw new ApiError(error instanceof Error ? error.message : '项目响应无效。', 'INVALID_RESPONSE', uncertain);
+    throw new ApiError(error instanceof Error
+      ? error.message
+      : '项目响应无效。', 'INVALID_RESPONSE', uncertain);
   }
 }
 export async function readProject(identity: string, signal?: AbortSignal): Promise<StrategyProject> {
   if (!isProjectId(identity) && !isStrategyPath(identity))
     throw new Error('策略项目路径无效。');
-  const query = new URLSearchParams(isProjectId(identity) ? { strategy_id: identity } : { path: identity });
+  const query = new URLSearchParams(isProjectId(identity)
+    ? { strategy_id: identity }
+    : { path: identity });
   const project = response(await api('/python/projects?' + query, undefined, signal));
   if (isProjectId(identity) && project.strategy_id !== identity)
     throw new ApiError('返回项目与所选策略不一致。', 'INVALID_RESPONSE', false);
@@ -55,7 +59,9 @@ export async function saveProject(project: StrategyProject): Promise<StrategyPro
       }
       catch { /* Keep the complete working copy when readback also fails. */ }
       const matching = current && sameProjectSource(current, project) ? current : undefined;
-      throw new ProjectWriteError('保存结果尚未确认。' + (matching ? '服务已读回相同项目源码，但持久化尚未确认。' : '') + '全部编辑已保留，请重试或重新读取核对。', matching);
+      throw new ProjectWriteError('保存结果尚未确认。' + (matching
+        ? '服务已读回相同项目源码，但持久化尚未确认。'
+        : '') + '全部编辑已保留，请重试或重新读取核对。', matching);
     }
     throw error;
   }
@@ -82,7 +88,9 @@ export async function moveProject(project: StrategyProject, destination: string)
         current = await readProject(project.strategy_id);
       }
       catch { /* Identity readback is the only safe way to locate an uncertain move. */ }
-      throw new ProjectWriteError('移动结果尚未确认。' + (current ? '已重新定位到 ' + current.path + '；' : '') + '编辑仍保留，请核对后再继续。', current);
+      throw new ProjectWriteError('移动结果尚未确认。' + (current
+        ? '已重新定位到 ' + current.path + '；'
+        : '') + '编辑仍保留，请核对后再继续。', current);
     }
     throw error;
   }

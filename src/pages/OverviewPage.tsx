@@ -25,7 +25,13 @@ export function OverviewPage() {
       </tr>
     </tbody></table></div>
     <p className="scope" role="status">
-      {service.loading ? '正在连接研究服务…' : service.error ? '研究服务暂未连接。本地策略编辑与保存仍可使用。' : service.data ? '研究服务已连接' : ''}
+      {service.loading
+        ? '正在连接研究服务…'
+        : service.error
+          ? '研究服务暂未连接。本地策略编辑与保存仍可使用。'
+          : service.data
+            ? '研究服务已连接'
+            : ''}
     </p>
   </main>;
 }

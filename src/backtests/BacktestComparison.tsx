@@ -35,12 +35,23 @@ export function BacktestComparison({ records, mode, close }: {
   ][] = [
       ['创建时间', r => createdTime(r.createdAt).join(' ')], ['时间范围', r => r.start + ' 至 ' + r.end],
       ['运行频率', r => frequencyLabel(r.frequency)], ['状态', r => recordStatus(r.status)],
-      ['初始资金', r => num(r.initialCash, 2)], ['期末权益', (_, i) => num(object(data?.[i].result?.summary).final_equity, 2)],
+      [
+        '初始资金',
+        r => num(r.initialCash, 2)
+      ], [
+        '期末权益',
+        (_, i) => num(object(data?.[i].result?.summary).final_equity, 2)
+      ],
     ];
   const metrics = data?.map(column => resultMetrics(object(column.result?.summary), column.analysis));
-  const sources = data && mode === 'source' ? data.map(column => frozenSource(column.result?.request)) : null;
+  const sources = data
+    && mode === 'source'
+    ? data.map(column => frozenSource(column.result?.request))
+    : null;
   const changes = sources ? sourceChanges(sources[0], sources[1]) : [];
-  const currentFile = changes.some(item => item.path === selectedFile) ? selectedFile : changes[0]?.path;
+  const currentFile = changes.some(item => item.path === selectedFile)
+    ? selectedFile
+    : changes[0]?.path;
   const changeLabels: Record<string, string> = {
     added: '新增',
     removed: '删除',
@@ -62,7 +73,8 @@ export function BacktestComparison({ records, mode, close }: {
                 return <th scope="col" key={record.id}>{index + 1}. {record.name}
                   {column.resultError ? <p className="note" role="status">结果不可读：{column.resultError}</p>
                     : !column.result ? <p className="note">尚无已发布结果</p>
-                      : column.analysisError && <p className="note" role="status">分析不可用：{column.analysisError} 保留已有冻结汇总。</p>}
+                      : column.analysisError
+                      && <p className="note" role="status">分析不可用：{column.analysisError} 保留已有冻结汇总。</p>}
                 </th>;
               })}
             </tr>

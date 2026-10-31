@@ -32,7 +32,12 @@ export default function LineChart({ labels, series, title }: {
         data: labels,
         boundaryGap: false,
         axisLine: { lineStyle: { color: '#c9ced5' } },
-        axisLabel: { color: '#67717f', formatter: (value: string) => /^\d{4}-\d{2}-\d{2}T/.test(value) ? value.slice(0, 10) : value }
+        axisLabel: {
+          color: '#67717f',
+          formatter: (value: string) => /^\d{4}-\d{2}-\d{2}T/.test(value)
+            ? value.slice(0, 10)
+            : value
+        }
       },
       yAxis: {
         type: 'value',

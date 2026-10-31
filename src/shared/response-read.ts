@@ -8,9 +8,19 @@ export async function readResponse(response: Response, signal: AbortSignal | und
   const length = Number(response.headers.get('content-length'));
   const encoding = response.headers.get('content-encoding');
   // Fetch exposes decoded bytes. An encoded Content-Length is not its denominator.
-  const totalBytes = (!encoding || encoding === 'identity') && Number.isSafeInteger(length) && length > 0 ? length : null;
-  let receivedBytes = 0, lastUpdate = 0;
-  const progress = (phase: ReadProgress['phase']) => report({ phase, receivedBytes, totalBytes });
+  const totalBytes = (!encoding
+    || encoding === 'identity')
+    && Number.isSafeInteger(length)
+    && length > 0
+    ? length
+    : null;
+  let receivedBytes = 0;
+  let lastUpdate = 0;
+  const progress = (phase: ReadProgress['phase']) => report({
+    phase,
+    receivedBytes,
+    totalBytes
+  });
   progress('receiving');
   const reader = response.body?.getReader();
   if (!reader) {
@@ -21,7 +31,8 @@ export async function readResponse(response: Response, signal: AbortSignal | und
   }
   const cancel = () => { void reader.cancel(signal?.reason).catch(() => { }); };
   signal?.addEventListener('abort', cancel, { once: true });
-  const decoder = new TextDecoder(), chunks: string[] = [];
+  const decoder = new TextDecoder();
+  const chunks: string[] = [];
   try {
     signal?.throwIfAborted();
     while (true) {

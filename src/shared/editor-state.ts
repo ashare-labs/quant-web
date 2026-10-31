@@ -34,7 +34,10 @@ export function openResolvedFileDraft(requestedPath: string, response: {
     throw new Error('草稿与此次读取的策略文件不一致，原内容已保留。');
   const existing = findEditorDraft(canonical, null, storage);
   if (canonical === requestedPath || !stored || stored.filePath === canonical) {
-    return { draft: openFileDraft(canonical, response.source, existing || stored), backup: null };
+    return {
+      draft: openFileDraft(canonical, response.source, existing || stored),
+      backup: null
+    };
   }
   // The response is evidence for exactly this requested path, not for other
   // case/Unicode variants. Keep the old record's content and provenance as an

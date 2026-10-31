@@ -19,7 +19,8 @@ export function useResource<T>(path: string | null, poll = 0, paper = false, opt
   const previousPath = useRef<string | null>(null);
   const retain = accountMode || !!options.retainOnError;
   const stopWhen = options.stopWhen;
-  const timeoutMs = options.timeoutMs ?? 0, trackRead = !!options.trackRead;
+  const timeoutMs = options.timeoutMs ?? 0;
+  const trackRead = !!options.trackRead;
   useEffect(() => {
     if (!accountMode)
       return;
@@ -32,7 +33,8 @@ export function useResource<T>(path: string | null, poll = 0, paper = false, opt
     });
   }, []);
   useEffect(() => {
-    let controller: AbortController | undefined, disposed = false;
+    let controller: AbortController | undefined;
+    let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let deadline: ReturnType<typeof setTimeout> | undefined;
     const stop = () => {
@@ -72,7 +74,11 @@ export function useResource<T>(path: string | null, poll = 0, paper = false, opt
       controller = new AbortController();
       const signal = controller.signal;
       if (trackRead)
-        setReadProgress({ phase: 'connecting', receivedBytes: 0, totalBytes: null });
+        setReadProgress({
+          phase: 'connecting',
+          receivedBytes: 0,
+          totalBytes: null
+        });
       if (timeoutMs > 0)
         deadline = setTimeout(() => cancel(`读取超过 ${timeoutMs / 1000} 秒，已取消本次读取。可以重试或返回回测列表。`), timeoutMs);
       let done = false;
@@ -143,7 +149,9 @@ export function Status({ job }: {
   };
 }) {
   const status = shownStatus(job);
-  return <span className={'status status-' + status}>{statusLabels[status] || status}</span>;
+  return <span className={'status status-' + status}>
+    {statusLabels[status] || status}
+  </span>;
 }
 export function Modal({ title, children, close, wide = false }: {
   title: string;
@@ -178,7 +186,9 @@ export function Tabs({ values, selected, onChange }: {
   onChange: (s: string) => void;
 }) {
   return <div className="tabs" role="group" aria-label="视图选择">
-    {values.map(value => <button key={value} className={value === selected ? 'active' : ''} aria-pressed={value === selected} onClick={() => onChange(value)}>
+    {values.map(value => <button key={value} className={value === selected
+      ? 'active'
+      : ''} aria-pressed={value === selected} onClick={() => onChange(value)}>
       {value}
     </button>)}
   </div>;

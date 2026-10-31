@@ -26,13 +26,34 @@ export interface Draft {
   workingCopy?: boolean;
   aliasSourcePath?: string;
 }
-const key = 'quantweb-strategy-drafts-v1', foldersKey = 'quantweb-folders-v1';
+const key = 'quantweb-strategy-drafts-v1';
+const foldersKey = 'quantweb-folders-v1';
 export function readDrafts(storage = accountStorage()): Draft[] {
   const raw = storage.getItem(key);
   if (!raw)
     return [];
   const value: unknown = JSON.parse(raw);
-  if (!Array.isArray(value) || !value.every(v => v && ['id', 'name', 'source', 'folder', 'start', 'end', 'capital', 'updated'].every(k => typeof v[k] === 'string') && (v.filePath === undefined || typeof v.filePath === 'string') && (v.frequency === undefined || v.frequency === '1m' || v.frequency === '1d') && (v.workingCopy === undefined || typeof v.workingCopy === 'boolean') && (v.aliasSourcePath === undefined || isStrategyFilePath(v.aliasSourcePath))))
+  if (!Array.isArray(value)
+    || !value.every(v => v
+      && [
+        'id',
+        'name',
+        'source',
+        'folder',
+        'start',
+        'end',
+        'capital',
+        'updated'
+      ].every(k => typeof v[k] === 'string')
+      && (v.filePath === undefined
+        || typeof v.filePath === 'string')
+      && (v.frequency === undefined
+        || v.frequency === '1m'
+        || v.frequency === '1d')
+      && (v.workingCopy === undefined
+        || typeof v.workingCopy === 'boolean')
+      && (v.aliasSourcePath === undefined
+        || isStrategyFilePath(v.aliasSourcePath))))
     throw new Error('本地草稿格式无法读取；原始内容已保留，请导出浏览器存储后检查。');
   return value as Draft[];
 }

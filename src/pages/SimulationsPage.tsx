@@ -7,9 +7,16 @@ export function SimulationsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const list = useResource<{
     sessions: Row[];
-  }>('/sessions', 0, true), cap = useResource<Row>('/capabilities', 0, true);
-  const view = useResource<Row>(selected ? '/sessions/' + encodeURIComponent(selected) + '/view' : null, 0, true);
-  const sessions = (list.data?.sessions || []).filter(s => tab === '全部' || (tab === '已暂停' ? Boolean(s.paused) : !s.paused));
+  }>('/sessions', 0, true);
+  const cap = useResource<Row>('/capabilities', 0, true);
+  const view = useResource<Row>(selected
+    ? '/sessions/' + encodeURIComponent(selected) + '/view'
+    : null, 0, true);
+  const sessions = (list.data?.sessions
+    || []).filter(s => tab === '全部'
+      || (tab === '已暂停'
+        ? Boolean(s.paused)
+        : !s.paused));
   return <main>
     <div className="titlebar">
       <h1>模拟策略列表</h1>
@@ -55,7 +62,11 @@ export function SimulationsPage() {
         </tbody>
       </table>
     </div>
-    {list.loading ? <Empty>正在读取模拟会话…</Empty> : !list.error && !sessions.length && <Empty>没有匹配的模拟会话。</Empty>}
+    {list.loading
+      ? <Empty>正在读取模拟会话…</Empty>
+      : !list.error
+      && !sessions.length
+      && <Empty>没有匹配的模拟会话。</Empty>}
     <div className="pagination">
       <span className="note">当前 {sessions.length} 项</span>
       <button onClick={list.refresh}>刷新</button>
@@ -64,7 +75,20 @@ export function SimulationsPage() {
       <ErrorNotice message={view.error} retry={view.refresh} />
       {view.loading ? <Empty>正在读取历史记录…</Empty> : view.data && <>
         <p>最后交易日：{String(view.data.last_day || '—')}</p>
-        <DataTable name="每日状态" data={rows(view.data.days)} columns={[{ key: 'day', label: '日期' }, { key: 'status', label: '状态' }, { key: 'error', label: '原因' }]} />
+        <DataTable name="每日状态" data={rows(view.data.days)} columns={[
+          {
+            key: 'day',
+            label: '日期'
+          },
+          {
+            key: 'status',
+            label: '状态'
+          },
+          {
+            key: 'error',
+            label: '原因'
+          }
+        ]} />
         <JsonDetails title="账户与历史报告" value={view.data} />
       </>}
     </Modal>}

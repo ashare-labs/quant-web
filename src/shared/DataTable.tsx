@@ -31,7 +31,14 @@ export function DataTable({ data, columns, name, exportable = true }: {
             {columns.map(c => {
               const v = cell(r, c);
               return <td key={c.key}>
-                {typeof v === 'number' ? num(v, 7) : v === undefined || v === null ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v)}
+                {typeof v === 'number'
+                  ? num(v, 7)
+                  : v === undefined
+                    || v === null
+                    ? '—'
+                    : typeof v === 'object'
+                      ? JSON.stringify(v)
+                      : String(v)}
               </td>;
             })}
           </tr>)}
@@ -43,7 +50,11 @@ export function DataTable({ data, columns, name, exportable = true }: {
       <button disabled={!current} onClick={() => setPage(current - 1)}>上一页</button>
       <span>{current + 1} / {pages} · {data.length} 条</span>
       <button disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>下一页</button>
-      {exportable && <button disabled={!data.length} onClick={() => download(name + '.csv', csv([columns.map(c => c.label), ...data.map(r => columns.map(c => cell(r, c)))]), 'text/csv;charset=utf-8')}>导出{name} CSV</button>}
+      {exportable
+        && <button disabled={!data.length} onClick={() => download(name + '.csv', csv([
+          columns.map(c => c.label),
+          ...data.map(r => columns.map(c => cell(r, c)))
+        ]), 'text/csv;charset=utf-8')}>导出{name} CSV</button>}
     </div>
   </>;
 }

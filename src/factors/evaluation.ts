@@ -89,37 +89,115 @@ export interface Evaluation {
   };
   warnings: string[];
 }
-const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+const object = (v: unknown): v is Record<string, unknown> => !!v
+  && typeof v === 'object'
+  && !Array.isArray(v);
 const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const nullable = (v: unknown) => v === null || num(v);
-const list = (v: unknown, check: (r: Record<string, unknown>) => boolean): boolean => Array.isArray(v) && v.every(r => object(r) && check(r));
-const moment = (v: unknown): boolean => object(v) && num(v.n) && ['mean', 'std', 'positive_fraction', 'mean_over_std'].every(k => nullable(v[k]));
+const list = (v: unknown, check: (r: Record<string, unknown>) => boolean): boolean => Array.isArray(v)
+  && v.every(r => object(r)
+    && check(r));
+const moment = (v: unknown): boolean => object(v)
+  && num(v.n)
+  && [
+    'mean',
+    'std',
+    'positive_fraction',
+    'mean_over_std'
+  ].every(k => nullable(v[k]));
 export function evaluation(value: unknown): Evaluation {
   const fail = () => { throw new Error('评价结果格式无法确认，请保留运行记录并检查后端版本。'); };
   if (!object(value) || value.schema !== 'ad.factor-evaluation.v1')
     return fail();
-  const c = value.config, coverage = value.coverage;
-  if (!object(c) || !Array.isArray(c.horizons) || !c.horizons.length || !c.horizons.every(num) || !['quantiles', 'lag', 'direction', 'min_assets', 'rolling_window'].every(k => num(c[k])) || typeof c.price_basis !== 'string' || typeof c.universe_label !== 'string')
+  const c = value.config;
+  const coverage = value.coverage;
+  if (!object(c)
+    || !Array.isArray(c.horizons)
+    || !c.horizons.length
+    || !c.horizons.every(num)
+    || ![
+      'quantiles',
+      'lag',
+      'direction',
+      'min_assets',
+      'rolling_window'
+    ].every(k => num(c[k]))
+    || typeof c.price_basis !== 'string'
+    || typeof c.universe_label !== 'string')
     return fail();
-  if (!object(value.engine) || typeof value.engine.library !== 'string' || typeof value.engine.version !== 'string' || !Array.isArray(value.warnings) || !value.warnings.every(s => typeof s === 'string'))
+  if (!object(value.engine)
+    || typeof value.engine.library !== 'string'
+    || typeof value.engine.version !== 'string'
+    || !Array.isArray(value.warnings)
+    || !value.warnings.every(s => typeof s === 'string'))
     return fail();
-  if (!object(coverage) || !['input_cells', 'finite_factor_cells', 'quantized_cells'].every(k => num(coverage[k])) || !list(coverage.by_horizon, r => num(r.horizon) && num(r.eligible) && num(r.paired) && object(r.excluded) && Object.values(r.excluded).every(num)) || !list(coverage.rejected_quantile_dates, r => typeof r.date === 'string' && typeof r.reason === 'string' && num(r.n)))
+  if (!object(coverage)
+    || ![
+      'input_cells',
+      'finite_factor_cells',
+      'quantized_cells'
+    ].every(k => num(coverage[k]))
+    || !list(coverage.by_horizon, r => num(r.horizon)
+      && num(r.eligible)
+      && num(r.paired)
+      && object(r.excluded)
+      && Object.values(r.excluded).every(num))
+    || !list(coverage.rejected_quantile_dates, r => typeof r.date === 'string'
+      && typeof r.reason === 'string'
+      && num(r.n)))
     return fail();
-  if (!list(value.summary, r => num(r.horizon) && moment(r.ic) && moment(r.rank_ic) && moment(r.spread) && list(r.quantile_means, q => num(q.quantile) && moment(q))))
+  if (!list(value.summary, r => num(r.horizon)
+    && moment(r.ic)
+    && moment(r.rank_ic)
+    && moment(r.spread)
+    && list(r.quantile_means, q => num(q.quantile)
+      && moment(q))))
     return fail();
-  if (!['ic', 'rank_ic', 'spread'].every(k => list(value[k], r => typeof r.date === 'string' && num(r.horizon) && nullable(r.value))))
+  if (![
+    'ic',
+    'rank_ic',
+    'spread'
+  ].every(k => list(value[k], r => typeof r.date === 'string'
+    && num(r.horizon)
+    && nullable(r.value))))
     return fail();
-  if (!list(value.quantile_returns, r => typeof r.date === 'string' && num(r.horizon) && num(r.quantile) && nullable(r.mean_return) && num(r.n) && num(r.selected_n)))
+  if (!list(value.quantile_returns, r => typeof r.date === 'string'
+    && num(r.horizon)
+    && num(r.quantile)
+    && nullable(r.mean_return)
+    && num(r.n)
+    && num(r.selected_n)))
     return fail();
-  if (!list(value.turnover, r => typeof r.date === 'string' && num(r.quantile) && nullable(r.value) && num(r.n)))
+  if (!list(value.turnover, r => typeof r.date === 'string'
+    && num(r.quantile)
+    && nullable(r.value)
+    && num(r.n)))
     return fail();
-  if (!list(value.stability, r => typeof r.kind === 'string' && typeof r.period === 'string' && num(r.horizon) && num(r.observations) && ['ic_mean', 'rank_ic_mean', 'spread_mean'].every(k => nullable(r[k]))))
+  if (!list(value.stability, r => typeof r.kind === 'string'
+    && typeof r.period === 'string'
+    && num(r.horizon)
+    && num(r.observations)
+    && [
+      'ic_mean',
+      'rank_ic_mean',
+      'spread_mean'
+    ].every(k => nullable(r[k]))))
     return fail();
-  if (!list(value.cost_sensitivity, r => num(r.horizon) && num(r.cost_bps) && num(r.n) && ['top_mean', 'bottom_mean', 'spread_mean'].every(k => nullable(r[k]))))
+  if (!list(value.cost_sensitivity, r => num(r.horizon)
+    && num(r.cost_bps)
+    && num(r.n)
+    && [
+      'top_mean',
+      'bottom_mean',
+      'spread_mean'
+    ].every(k => nullable(r[k]))))
     return fail();
   return value as unknown as Evaluation;
 }
-export const percent = (v: number | null | undefined) => typeof v === 'number' && Number.isFinite(v) ? (v * 100).toFixed(2) + '%' : '—';
+export const percent = (v: number | null | undefined) => typeof v === 'number'
+  && Number.isFinite(v)
+  ? (v * 100).toFixed(2) + '%'
+  : '—';
 export const excludedReason: Record<string, string> = {
   insufficient_label_buffer: '标签缓冲不足',
   missing_entry_price: '缺少入场收盘价',

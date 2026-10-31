@@ -19,7 +19,10 @@ const attemptPrefix = 'quantweb-python-idempotency-v1:';
 const legacyKey = 'quantweb-python-pending-v1';
 export function environment(catalogue: unknown): string {
   const value = object(catalogue);
-  if (value.external_securities_required !== false || value.universe !== 'strategy_subscription' || typeof value.environment_id !== 'string' || !/^[a-f0-9]{64}$/.test(value.environment_id)) {
+  if (value.external_securities_required !== false
+    || value.universe !== 'strategy_subscription'
+    || typeof value.environment_id !== 'string'
+    || !/^[a-f0-9]{64}$/.test(value.environment_id)) {
     throw new Error('当前服务尚未提供策略按需取数接口，请检查连接的研究服务。');
   }
   return value.environment_id;
@@ -48,7 +51,10 @@ export function canonicalValue(value: unknown): unknown {
   if (Array.isArray(value))
     return value.map(canonicalValue);
   if (value && typeof value === 'object')
-    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, canonicalValue(item)]));
+    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [
+      key,
+      canonicalValue(item)
+    ]));
   return value;
 }
 export function checkSourceBudget(files: Record<string, string>, catalogue: unknown) {
@@ -58,11 +64,14 @@ export function checkSourceBudget(files: Record<string, string>, catalogue: unkn
     const bytes = new TextEncoder().encode(source).length;
     total += bytes;
   }
-  if (typeof budget.artifact_bytes === 'number' && budget.artifact_bytes > 0 && total > budget.artifact_bytes)
+  if (typeof budget.artifact_bytes === 'number'
+    && budget.artifact_bytes > 0
+    && total > budget.artifact_bytes)
     throw new Error('项目源码超过当前服务资源预算（' + budget.artifact_bytes + ' 字节）。');
 }
 export function projectRunName(path: string): string {
-  const name = path.split('/').at(-1)!, characters = Array.from(name);
+  const name = path.split('/').at(-1)!;
+  const characters = Array.from(name);
   return characters.length > 80 ? characters.slice(0, 79).join('') + '…' : name;
 }
 export function projectSubmission(draft: ProjectDraft, catalogue: unknown, key: string): Submission {
@@ -84,7 +93,10 @@ export function projectSubmission(draft: ProjectDraft, catalogue: unknown, key: 
 }
 function signature(request: Submission): string {
   // Compare all current fields; cached content is never used to build a request.
-  return JSON.stringify(Object.entries(request).filter(([key]) => key !== 'idempotency_key').sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [key, canonicalValue(value)]));
+  return JSON.stringify(Object.entries(request).filter(([key]) => key !== 'idempotency_key').sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => [
+    key,
+    canonicalValue(value)
+  ]));
 }
 function stored(key: string, storage: ReturnType<typeof accountStorage>): Record<string, unknown> {
   try {
@@ -112,7 +124,10 @@ async function submitAttempt(identity: string, request: Submission): Promise<Pyt
   // can be reused, and only when the CURRENT editor constructs the same body.
   else if (typeof legacy.idempotency_key === 'string' && signature(legacy as Submission) === current)
     request.idempotency_key = legacy.idempotency_key;
-  storage.setItem(key, JSON.stringify({ signature: current, key: request.idempotency_key }));
+  storage.setItem(key, JSON.stringify({
+    signature: current,
+    key: request.idempotency_key
+  }));
   try {
     storage.removeItem(legacyKey);
   }
@@ -143,8 +158,11 @@ async function submitAttempt(identity: string, request: Submission): Promise<Pyt
   }
 }
 export function matchesRequest(job: unknown, request: Submission): boolean {
-  const value = object(job), accepted = object(value.request);
-  return value.contract_version === 'python-minute-jobs.v1' && typeof value.job_id === 'string' && /^m2job-[a-f0-9]{32}$/.test(value.job_id)
+  const value = object(job);
+  const accepted = object(value.request);
+  return value.contract_version === 'python-minute-jobs.v1'
+    && typeof value.job_id === 'string'
+    && /^m2job-[a-f0-9]{32}$/.test(value.job_id)
     && Object.entries(request).every(([key, item]) => JSON.stringify(canonicalValue(accepted[key])) === JSON.stringify(canonicalValue(item)));
 }
 export function matchesCanonicalRequest(job: unknown, request: Submission, manifest: unknown): boolean {
@@ -152,11 +170,19 @@ export function matchesCanonicalRequest(job: unknown, request: Submission, manif
   const accepted = object(value.request);
   const frozen = object(manifest);
   const session = object(frozen.session);
-  if (!isStrategyFilePath(request.strategy_id) || !isStrategyFilePath(accepted.strategy_id) || accepted.strategy_id === request.strategy_id
-    || frozen.schema_version !== 'python-demand-job.v2' || frozen.job_id !== value.job_id || session.submitted_strategy_id !== request.strategy_id)
+  if (!isStrategyFilePath(request.strategy_id)
+    || !isStrategyFilePath(accepted.strategy_id)
+    || accepted.strategy_id === request.strategy_id
+    || frozen.schema_version !== 'python-demand-job.v2'
+    || frozen.job_id !== value.job_id
+    || session.submitted_strategy_id !== request.strategy_id)
     return false;
   const canonical = { ...request, strategy_id: accepted.strategy_id };
-  return matchesRequest(job, canonical) && matchesRequest({ ...value, request: frozen.request }, canonical);
+  return matchesRequest(job, canonical)
+    && matchesRequest({
+      ...value,
+      request: frozen.request
+    }, canonical);
 }
 export async function submit(request: Submission): Promise<PythonJob> {
   const job = await api<PythonJob>('/python/jobs', request);
@@ -165,7 +191,12 @@ export async function submit(request: Submission): Promise<PythonJob> {
     // evidence, not today's file lookup: the file may since have disappeared.
     let verified = false;
     const canonical = object(object(job).request).strategy_id;
-    if (isStrategyFilePath(request.strategy_id) && isStrategyFilePath(canonical) && matchesRequest(job, { ...request, strategy_id: canonical })) {
+    if (isStrategyFilePath(request.strategy_id)
+      && isStrategyFilePath(canonical)
+      && matchesRequest(job, {
+        ...request,
+        strategy_id: canonical
+      })) {
       try {
         const manifest = await api('/history/jobs/' + encodeURIComponent(job.job_id) + '/manifest');
         verified = matchesCanonicalRequest(job, request, manifest);

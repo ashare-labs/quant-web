@@ -65,24 +65,29 @@ export function ProjectFiles({ files, entrypoint, active, onSelect, onCreate, on
   }
   function renderTree(nodes: Map<string, FileNode>, depth = 0) {
     return <ul className="project-files-list">
-      {[...nodes.values()].sort((a, b) => Number(Boolean(b.children)) - Number(Boolean(a.children)) || a.name.localeCompare(b.name)).map(node => {
-        const isDirectory = Boolean(node.children);
-        const expanded = !closed.has(node.path);
-        return <li key={node.path}>
-          {isDirectory ? <>
-            <button type="button" className="project-file-row project-directory-row" style={{ paddingLeft: 12 + depth * 14 }} onClick={() => toggleDirectory(node.path)} aria-expanded={expanded} title={node.path}>
-              {icon(expanded ? 'angle-down' : 'angle-right')}
-              {icon(expanded ? 'folder-open-o' : 'folder-o')}
+      {[...nodes.values()].sort((a, b) => Number(Boolean(b.children)) - Number(Boolean(a.children))
+        || a.name.localeCompare(b.name)).map(node => {
+          const isDirectory = Boolean(node.children);
+          const expanded = !closed.has(node.path);
+          return <li key={node.path}>
+            {isDirectory ? <>
+              <button type="button" className="project-file-row project-directory-row" style={{ paddingLeft: 12 + depth * 14 }} onClick={() => toggleDirectory(node.path)} aria-expanded={expanded} title={node.path}>
+                {icon(expanded ? 'angle-down' : 'angle-right')}
+                {icon(expanded ? 'folder-open-o' : 'folder-o')}
+                <span className="project-file-name">{node.name}</span>
+              </button>
+              {expanded && node.children && renderTree(node.children, depth + 1)}
+            </> : <button type="button" className={`project-file-row${active === node.path
+              ? ' is-active'
+              : ''}`} style={{ paddingLeft: 26 + depth * 14 }} onClick={() => onSelect(node.path)} aria-current={active === node.path
+                ? 'page'
+                : undefined} title={node.path}>
+              {icon('file-code-o')}
               <span className="project-file-name">{node.name}</span>
-            </button>
-            {expanded && node.children && renderTree(node.children, depth + 1)}
-          </> : <button type="button" className={`project-file-row${active === node.path ? ' is-active' : ''}`} style={{ paddingLeft: 26 + depth * 14 }} onClick={() => onSelect(node.path)} aria-current={active === node.path ? 'page' : undefined} title={node.path}>
-            {icon('file-code-o')}
-            <span className="project-file-name">{node.name}</span>
-            {entrypoint === node.path && <span className="project-entry-tag">入口</span>}
-          </button>}
-        </li>;
-      })}
+              {entrypoint === node.path && <span className="project-entry-tag">入口</span>}
+            </button>}
+          </li>;
+        })}
     </ul>;
   }
   return <nav className={`project-files${collapsed ? ' is-collapsed' : ''}`} aria-label="项目文件">
@@ -93,14 +98,22 @@ export function ProjectFiles({ files, entrypoint, active, onSelect, onCreate, on
           {projectName}
         </span>
       </span>}
-      <button type="button" className="project-tree-button" onClick={onToggle} aria-label={collapsed ? '展开文件树' : '收起文件树'} title={collapsed ? '展开文件树' : '收起文件树'} aria-expanded={!collapsed}>
+      <button type="button" className="project-tree-button" onClick={onToggle} aria-label={collapsed
+        ? '展开文件树'
+        : '收起文件树'} title={collapsed
+          ? '展开文件树'
+          : '收起文件树'} aria-expanded={!collapsed}>
         {icon(collapsed ? 'angle-double-right' : 'angle-double-left')}
       </button>
     </div>
     {!collapsed && <>
       <div className="project-files-scroll">
         {renderTree(tree)}
-        <button type="button" className={`project-file-row project-system-file${active === 'aquant.toml' ? ' is-active' : ''}`} onClick={() => onSelect('aquant.toml')} aria-current={active === 'aquant.toml' ? 'page' : undefined} title="系统生成的项目描述，只读">
+        <button type="button" className={`project-file-row project-system-file${active === 'aquant.toml'
+          ? ' is-active'
+          : ''}`} onClick={() => onSelect('aquant.toml')} aria-current={active === 'aquant.toml'
+            ? 'page'
+            : undefined} title="系统生成的项目描述，只读">
           {icon('lock')}
           <span className="project-file-name">aquant.toml</span>
           <span className="project-system-tag">只读</span>
@@ -113,10 +126,15 @@ export function ProjectFiles({ files, entrypoint, active, onSelect, onCreate, on
         <button type="button" className="project-tree-button" onClick={() => onRename(active)} disabled={!selectedFile} title="文件改名或移动" aria-label="文件改名或移动">
           {icon('pencil')}
         </button>
-        {onEntry && <button type="button" className="project-tree-button" onClick={() => onEntry(active)} disabled={!selectedFile || active === entrypoint} title="设为入口" aria-label="设为入口">
-          {icon('sign-in')}
-        </button>}
-        <button type="button" className="project-tree-button" onClick={() => onDelete(active)} disabled={!selectedFile || active === entrypoint} title={active === entrypoint ? '请先将其他文件设为入口' : '删除文件'} aria-label="删除文件">
+        {onEntry
+          && <button type="button" className="project-tree-button" onClick={() => onEntry(active)} disabled={!selectedFile
+            || active === entrypoint} title="设为入口" aria-label="设为入口">
+            {icon('sign-in')}
+          </button>}
+        <button type="button" className="project-tree-button" onClick={() => onDelete(active)} disabled={!selectedFile
+          || active === entrypoint} title={active === entrypoint
+            ? '请先将其他文件设为入口'
+            : '删除文件'} aria-label="删除文件">
           {icon('trash-o')}
         </button>
       </div>}

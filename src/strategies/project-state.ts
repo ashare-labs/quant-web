@@ -17,8 +17,17 @@ export function readProjectDraft(id: string, storage = accountStorage()): Projec
   const raw = storage.getItem(keyPrefix + id);
   if (!raw)
     return;
-  const data = object(JSON.parse(raw)), project = projectResponse(data);
-  if (project.strategy_id !== id || !['start', 'end', 'capital', 'active', 'updated'].every(key => typeof data[key] === 'string') || typeof data.workingCopy !== 'boolean')
+  const data = object(JSON.parse(raw));
+  const project = projectResponse(data);
+  if (project.strategy_id !== id
+    || ![
+      'start',
+      'end',
+      'capital',
+      'active',
+      'updated'
+    ].every(key => typeof data[key] === 'string')
+    || typeof data.workingCopy !== 'boolean')
     throw new Error('项目浏览器草稿无法读取，原内容已保留。');
   return {
     ...project,
@@ -69,8 +78,17 @@ export function editProjectDraft(draft: ProjectDraft, patch: Partial<ProjectDraf
   return next;
 }
 export function savedProjectDraft(draft: ProjectDraft, saved: StrategyProject): ProjectDraft {
-  const active = draft.active === 'aquant.toml' || Object.hasOwn(saved.files, draft.active) ? draft.active : saved.entrypoint;
-  return { ...draft, ...saved, active, workingCopy: false, updated: new Date().toISOString() };
+  const active = draft.active === 'aquant.toml'
+    || Object.hasOwn(saved.files, draft.active)
+    ? draft.active
+    : saved.entrypoint;
+  return {
+    ...draft,
+    ...saved,
+    active,
+    workingCopy: false,
+    updated: new Date().toISOString()
+  };
 }
 export function relocatedProjectDraft(draft: ProjectDraft, current: StrategyProject) {
   if (draft.strategy_id !== current.strategy_id)

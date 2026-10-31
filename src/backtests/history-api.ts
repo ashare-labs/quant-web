@@ -79,10 +79,17 @@ export async function resolveStrategy(params: URLSearchParams, signal?: AbortSig
   return strategyIdentity(identity);
 }
 export function normalizeBacktest(item: Item, strategyId: string): BacktestRecord {
-  if (!item || item.strategy_id !== strategyId || !jobPattern.test(item.job_id) || typeof item.name !== 'string'
+  if (!item
+    || item.strategy_id !== strategyId
+    || !jobPattern.test(item.job_id)
+    || typeof item.name !== 'string'
     || typeof item.created_at !== 'string' || !Number.isFinite(Date.parse(item.created_at))
-    || typeof item.start_date !== 'string' || typeof item.end_date !== 'string' || typeof item.frequency !== 'string'
-    || typeof item.stored_status !== 'string' || typeof item.execution_state !== 'string' || typeof item.result_available !== 'boolean') {
+    || typeof item.start_date !== 'string'
+    || typeof item.end_date !== 'string'
+    || typeof item.frequency !== 'string'
+    || typeof item.stored_status !== 'string'
+    || typeof item.execution_state !== 'string'
+    || typeof item.result_available !== 'boolean') {
     throw new ApiError('返回的回测记录与当前策略不一致或格式无效，已停止显示。', 'INVALID_STRATEGY_BACKTEST', false);
   }
   const error = object(item.error);
@@ -90,33 +97,67 @@ export function normalizeBacktest(item: Item, strategyId: string): BacktestRecor
   const analysisError = object(item.analysis_error);
   const snapshot = object(item.result).snapshot_sha256;
   const progress = object(item.progress);
-  const timestamp = (value: unknown) => typeof value === 'string' && Number.isFinite(Date.parse(value));
-  const durationSeconds = progress.job_id === item.job_id && timestamp(progress.started_at) && timestamp(progress.sampled_at)
-    && typeof progress.elapsed_seconds === 'number' && Number.isFinite(progress.elapsed_seconds) && progress.elapsed_seconds >= 0
+  const timestamp = (value: unknown) => typeof value === 'string'
+    && Number.isFinite(Date.parse(value));
+  const durationSeconds = progress.job_id === item.job_id
+    && timestamp(progress.started_at)
+    && timestamp(progress.sampled_at)
+    && typeof progress.elapsed_seconds === 'number'
+    && Number.isFinite(progress.elapsed_seconds)
+    && progress.elapsed_seconds >= 0
     ? progress.elapsed_seconds : null;
   const ended = ['succeeded', 'failed', 'cancelled'].includes(item.stored_status);
   const durationState: BacktestRecord['durationState'] = durationSeconds === null ? 'unknown'
     : ended && progress.terminal === true && timestamp(progress.finished_at) ? 'finished'
-      : item.execution_state === 'current_runtime' && ['running', 'cancelling'].includes(item.stored_status) && progress.terminal === false ? 'running' : 'observed';
+      : item.execution_state === 'current_runtime'
+        && [
+          'running',
+          'cancelling'
+        ].includes(item.stored_status)
+        && progress.terminal === false
+        ? 'running'
+        : 'observed';
   return {
     id: item.job_id, name: item.name, createdAt: item.created_at, start: item.start_date, end: item.end_date,
-    frequency: item.frequency, initialCash: typeof item.initial_cash === 'number' && Number.isFinite(item.initial_cash) ? item.initial_cash : null,
+    frequency: item.frequency, initialCash: typeof item.initial_cash === 'number'
+      && Number.isFinite(item.initial_cash)
+      ? item.initial_cash
+      : null,
     // Use the server's monotonic execution sample, never queue lifetime or a
     // browser timer. Missing legacy observations and Python versions stay unknown.
-    durationSeconds, durationState, pythonVersion: null, status: item.display_status || item.stored_status,
-    executionState: item.execution_state, error: typeof error.message === 'string' ? error.message : typeof resultError.message === 'string' ? resultError.message : null,
+    durationSeconds, durationState, pythonVersion: null, status: item.display_status
+      || item.stored_status,
+    executionState: item.execution_state, error: typeof error.message === 'string'
+      ? error.message
+      : typeof resultError.message === 'string'
+        ? resultError.message
+        : null,
     analysisError: typeof analysisError.message === 'string' ? analysisError.message : null,
-    hasResult: item.result_available, sourceSha256: typeof snapshot === 'string' && /^[a-f0-9]{64}$/.test(snapshot) ? snapshot : null,
+    hasResult: item.result_available, sourceSha256: typeof snapshot === 'string'
+      && /^[a-f0-9]{64}$/.test(snapshot)
+      ? snapshot
+      : null,
     summary: item.result_available ? object(item.summary) : {}
   };
 }
 export async function readStrategyBacktests(identity: StrategyIdentity, signal?: AbortSignal): Promise<StrategyBacktests> {
-  const records: BacktestRecord[] = [], ids = new Set<string>();
-  let total: number | undefined, unassociatedCount = 0;
+  const records: BacktestRecord[] = [];
+  const ids = new Set<string>();
+  let total: number | undefined;
+  let unassociatedCount = 0;
   for (let offset = 0; total === undefined || offset < total; offset += 100) {
     const response = await api<Response>(backtestQuery(identity.id, offset), undefined, signal);
-    if (!response || response.analysis_version !== 'returns-v2' || response.strategy_id !== identity.id || String(response.identity_model) !== (isProjectId(identity.id) ? 'stable_project_id' : 'saved_relative_path') || !Array.isArray(response.items)
-      || !Number.isSafeInteger(response.total) || response.total < 0 || response.offset !== offset || response.limit !== 100
+    if (!response
+      || response.analysis_version !== 'returns-v2'
+      || response.strategy_id !== identity.id
+      || String(response.identity_model) !== (isProjectId(identity.id)
+        ? 'stable_project_id'
+        : 'saved_relative_path')
+      || !Array.isArray(response.items)
+      || !Number.isSafeInteger(response.total)
+      || response.total < 0
+      || response.offset !== offset
+      || response.limit !== 100
       || !Number.isSafeInteger(response.unassigned_count) || response.unassigned_count < 0) {
       throw new ApiError('服务未返回所选策略的完整回测列表，请检查策略回测接口。', 'INVALID_STRATEGY_HISTORY', false);
     }

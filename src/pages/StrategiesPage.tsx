@@ -15,7 +15,8 @@ export function StrategiesPage() {
   const [pending, setPending] = useState(false);
   const requestedFolder = new URLSearchParams(location.search).get('folder') || '';
   const directory = useResource<StrategyDirectory>(directoryQuery(requestedFolder));
-  let currentDirectory: StrategyDirectory | null = null, directoryError = '';
+  let currentDirectory: StrategyDirectory | null = null;
+  let directoryError = '';
   try {
     if (directory.data)
       currentDirectory = strategyDirectory(directory.data);
@@ -24,7 +25,9 @@ export function StrategiesPage() {
     directoryError = errorText(e);
   }
   const folder = currentDirectory?.path ?? requestedFolder;
-  let drafts: Draft[] = [], folders: string[] = [], storageError = '';
+  let drafts: Draft[] = [];
+  let folders: string[] = [];
+  let storageError = '';
   try {
     drafts = readDrafts().filter(d => !d.filePath);
     folders = [...new Set([...readFolders(), ...drafts.map(d => d.folder).filter(Boolean)])];
@@ -33,12 +36,19 @@ export function StrategiesPage() {
     storageError = errorText(e);
   }
   const prefix = folder ? folder + '/' : '';
-  const oldDirectories = folders.filter(path => path.startsWith(prefix) && path !== folder).map(path => prefix + path.slice(prefix.length).split('/')[0]);
-  const directories = [...new Set([...(currentDirectory?.entries.filter(e => e.kind === 'directory').map(e => e.path) || []), ...oldDirectories])];
+  const oldDirectories = folders.filter(path => path.startsWith(prefix)
+    && path !== folder).map(path => prefix + path.slice(prefix.length).split('/')[0]);
+  const directories = [...new Set([
+    ...(currentDirectory?.entries.filter(e => e.kind === 'directory').map(e => e.path)
+      || []),
+    ...oldDirectories
+  ])];
   const query = search.toLowerCase();
   const matches = (name: string) => name.toLowerCase().includes(query);
   const files = currentDirectory?.entries.filter(e => e.kind === 'file' && matches(e.name)) || [];
-  const projects = currentDirectory?.entries.filter(e => e.kind === 'project' && matches(e.name)) || [];
+  const projects = currentDirectory?.entries.filter(e => e.kind === 'project'
+    && matches(e.name))
+    || [];
   const legacy = drafts.filter(d => d.folder === folder && matches(d.name));
   const visibleDirectories = directories.filter(path => matches(path.slice(prefix.length)));
   const count = projects.length + files.length + legacy.length + visibleDirectories.length;
@@ -94,7 +104,11 @@ export function StrategiesPage() {
     <p className="muted" aria-label="当前目录">
       {folder ? <><a href="strategies.html">全部文件</a> / {folder}</> : '全部文件'}
     </p>
-    <ErrorNotice message={[directory.error, directoryError, storageError].filter(Boolean).join(' ')} />
+    <ErrorNotice message={[
+      directory.error,
+      directoryError,
+      storageError
+    ].filter(Boolean).join(' ')} />
     <div className="tablewrap">
       <table>
         <thead>
@@ -160,7 +174,11 @@ export function StrategiesPage() {
           </tr>)}
           {!count && !directory.error && !directoryError && !storageError && <tr>
             <td colSpan={5} className="empty">
-              {directory.loading ? '正在读取文件…' : query ? '没有匹配的文件' : <>此目录还没有文件。点击“新建项目”或“新建单文件策略”开始研究。</>}
+              {directory.loading
+                ? '正在读取文件…'
+                : query
+                  ? '没有匹配的文件'
+                  : <>此目录还没有文件。点击“新建项目”或“新建单文件策略”开始研究。</>}
             </td>
           </tr>}
         </tbody>
@@ -182,7 +200,11 @@ export function StrategiesPage() {
           {modal === '新建文件夹' ? '分类文件夹名称' : '策略名称'}
           <input autoFocus required value={name} disabled={pending} onChange={e => setName(e.target.value)} />
         </label><p className="note">
-          {modal === '新建策略' ? '创建空白 Python 文件；同名文件不会覆盖。' : modal === '新建项目' ? '创建包含 main.py 入口的策略项目，可添加辅助模块和子目录。' : '在当前目录创建分类文件夹；分类文件夹内可放置策略和其他分类。'}
+          {modal === '新建策略'
+            ? '创建空白 Python 文件；同名文件不会覆盖。'
+            : modal === '新建项目'
+              ? '创建包含 main.py 入口的策略项目，可添加辅助模块和子目录。'
+              : '在当前目录创建分类文件夹；分类文件夹内可放置策略和其他分类。'}
         </p><ErrorNotice message={error} /><div className="actions">
           <button type="button" disabled={pending} onClick={() => setModal('')}>取消</button>
           <button className="primary" disabled={pending}>

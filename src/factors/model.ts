@@ -42,7 +42,16 @@ export const emptyDraft: Draft = {
 export function readDraft(): Draft {
   try {
     const value = JSON.parse(accountStorage().getItem(draftKey) || 'null');
-    if (value && ['source', 'securities', 'history', 'start', 'end'].every(k => typeof value[k] === 'string') && value.parameters && typeof value.parameters === 'object')
+    if (value
+      && [
+        'source',
+        'securities',
+        'history',
+        'start',
+        'end'
+      ].every(k => typeof value[k] === 'string')
+      && value.parameters
+      && typeof value.parameters === 'object')
       return { ...emptyDraft, ...value };
   }
   catch { /* Keep an unreadable draft untouched. */ }
@@ -51,21 +60,43 @@ export function readDraft(): Draft {
 export function compatible(source: Source, factor: Factor) {
   if (!source.ready)
     return false;
-  return ['alpha191', 'qlib_alpha158'].includes(factor.library) ? source.capabilities.includes(factor.library) : source.capabilities.includes(factor.entrypoint.endsWith('compute_panel') ? 'joinquant_panel' : 'joinquant_research');
+  return [
+    'alpha191',
+    'qlib_alpha158'
+  ].includes(factor.library)
+    ? source.capabilities.includes(factor.library)
+    : source.capabilities.includes(factor.entrypoint.endsWith('compute_panel')
+      ? 'joinquant_panel'
+      : 'joinquant_research');
 }
 export function submission(draft: Draft, factor: Factor, environment: string, key: string): Submission {
   const securities = draft.securities.split(/[,，\s]+/).filter(Boolean);
   if (!draft.source)
     throw new Error('请选择真实数据来源。');
-  if (!securities.length || new Set(securities).size !== securities.length || securities.some(s => !/^(?:[0-9]{6}\.X(?:SHG|SHE)|BJ\.[0-9]{6})$/.test(s)))
+  if (!securities.length
+    || new Set(securities).size !== securities.length
+    || securities.some(s => !/^(?:[0-9]{6}\.X(?:SHG|SHE)|BJ\.[0-9]{6})$/.test(s)))
     throw new Error('请至少选择 1 个不重复的证券，格式如 600000.XSHG。');
-  if (![draft.history, draft.start, draft.end].every(validDate) || draft.history > draft.start || draft.start > draft.end)
+  if (![
+    draft.history,
+    draft.start,
+    draft.end
+  ].every(validDate)
+    || draft.history > draft.start
+    || draft.start > draft.end)
     throw new Error('日期应满足：历史起点 ≤ 展示起点 ≤ 结束日期。');
   const parameters: Record<string, number> = {};
   for (const p of factor.parameters) {
     const text = draft.parameters[p.name];
     const v = Number(text);
-    if (!text?.trim() || !Number.isFinite(v) || (p.kind === 'integer' && !Number.isInteger(v)) || (p.minimum !== undefined && v < p.minimum) || (p.maximum !== undefined && v > p.maximum))
+    if (!text?.trim()
+      || !Number.isFinite(v)
+      || (p.kind === 'integer'
+        && !Number.isInteger(v))
+      || (p.minimum !== undefined
+        && v < p.minimum)
+      || (p.maximum !== undefined
+        && v > p.maximum))
       throw new Error(`请填写有效的${p.label}。`);
     parameters[p.name] = v;
   }
@@ -76,12 +107,22 @@ export function submission(draft: Draft, factor: Factor, environment: string, ke
     const integer = (text: string, min: number, max?: number) => {
       const v = Number(text);
       if (!text.trim() || !Number.isInteger(v) || v < min || (max !== undefined && v > max))
-        throw new Error(max === undefined ? `评价参数应是至少 ${min} 的整数。` : `评价参数应是 ${min}–${max} 的整数。`);
+        throw new Error(max === undefined
+          ? `评价参数应是至少 ${min} 的整数。`
+          : `评价参数应是 ${min}–${max} 的整数。`);
       return v;
     };
     const horizons = draft.horizons.split(/[,，\s]+/).filter(Boolean).map(v => integer(v, 1, 252));
     const costs = draft.costs.split(/[,，\s]+/).filter(Boolean).map(Number);
-    if (!horizons.length || horizons.length > 8 || new Set(horizons).size !== horizons.length || !costs.length || costs.length > 8 || new Set(costs).size !== costs.length || costs.some(v => !Number.isFinite(v) || v < 0 || v > 1000))
+    if (!horizons.length
+      || horizons.length > 8
+      || new Set(horizons).size !== horizons.length
+      || !costs.length
+      || costs.length > 8
+      || new Set(costs).size !== costs.length
+      || costs.some(v => !Number.isFinite(v)
+        || v < 0
+        || v > 1000))
       throw new Error('请填写 1–8 个不重复的收益观察期和成本情景。');
     evaluation = {
       horizons,
@@ -126,7 +167,10 @@ export const reasonText: Record<string, string> = {
   AMBIGUOUS_FORMULA: '原文公式有歧义',
   MISSING_DEPENDENCY: '缺少外部依赖'
 };
-export const number = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN', { maximumSignificantDigits: 7 }) : '—';
+export const number = (value: unknown) => typeof value === 'number'
+  && Number.isFinite(value)
+  ? value.toLocaleString('zh-CN', { maximumSignificantDigits: 7 })
+  : '—';
 export const factorHref = (id: string) => 'factors.html?factor=' + encodeURIComponent(id);
 export function containsRequest(actual: unknown, expected: unknown): boolean {
   if (expected === null || typeof expected !== 'object')
@@ -134,6 +178,8 @@ export function containsRequest(actual: unknown, expected: unknown): boolean {
   if (!actual || typeof actual !== 'object')
     return false;
   if (Array.isArray(expected))
-    return Array.isArray(actual) && actual.length === expected.length && expected.every((v, i) => containsRequest(actual[i], v));
+    return Array.isArray(actual)
+      && actual.length === expected.length
+      && expected.every((v, i) => containsRequest(actual[i], v));
   return Object.entries(expected).every(([key, v]) => containsRequest((actual as Record<string, unknown>)[key], v));
 }

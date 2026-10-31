@@ -60,7 +60,9 @@ export function duration(seconds: number | null) {
   if (seconds === null || !Number.isFinite(seconds) || seconds < 0)
     return '—';
   const rounded = Math.floor(seconds);
-  return (rounded >= 3600 ? Math.floor(rounded / 3600) + '时' : '') + String(Math.floor(rounded / 60) % 60).padStart(2, '0') + '分' + String(rounded % 60).padStart(2, '0') + '秒';
+  return (rounded >= 3600
+    ? Math.floor(rounded / 3600) + '时'
+    : '') + String(Math.floor(rounded / 60) % 60).padStart(2, '0') + '分' + String(rounded % 60).padStart(2, '0') + '秒';
 }
 export function recordDuration(record: Pick<BacktestRecord, 'durationSeconds' | 'durationState'>) {
   const text = duration(record.durationSeconds);
@@ -89,7 +91,11 @@ export function createdTime(value: string) {
   }).format(new Date(value)).split(' ');
   return [parts[0], parts[1] || ''];
 }
-export const frequencyLabel = (value: string) => value === '1d' ? '每天' : value === '1m' ? '分钟' : '—';
+export const frequencyLabel = (value: string) => value === '1d'
+  ? '每天'
+  : value === '1m'
+    ? '分钟'
+    : '—';
 export const recordStatus = (status: string) => ({
   succeeded: '完成',
   failed: '失败',
@@ -101,9 +107,30 @@ export const recordStatus = (status: string) => ({
   runtime_unavailable: '不可运行'
 }[status] || status);
 export const optionalColumns = [
-  { key: 'created', label: '创建时间' }, { key: 'capital', label: '初始资金' }, { key: 'sharpe', label: '夏普比率' },
-  { key: 'excess_return', label: '超额收益' }, { key: 'daily_excess_return', label: '日均超额收益' },
-  { key: 'excess_max_drawdown', label: '超额收益最大回撤' }, { key: 'excess_sharpe', label: '超额收益夏普比率' },
+  {
+    key: 'created',
+    label: '创建时间'
+  }, {
+    key: 'capital',
+    label: '初始资金'
+  }, {
+    key: 'sharpe',
+    label: '夏普比率'
+  },
+  {
+    key: 'excess_return',
+    label: '超额收益'
+  }, {
+    key: 'daily_excess_return',
+    label: '日均超额收益'
+  },
+  {
+    key: 'excess_max_drawdown',
+    label: '超额收益最大回撤'
+  }, {
+    key: 'excess_sharpe',
+    label: '超额收益夏普比率'
+  },
   { key: 'python', label: 'Python版本' },
 ] as const;
 export type OptionalColumn = typeof optionalColumns[number]['key'];
@@ -116,4 +143,10 @@ export function optionalValue(record: BacktestRecord, column: OptionalColumn) {
     return num(record.summary[column]);
   return pct(record.summary[column]);
 }
-export const returnClass = (value: unknown) => typeof value !== 'number' || !Number.isFinite(value) || value === 0 ? '' : value > 0 ? 'return-positive' : 'return-negative';
+export const returnClass = (value: unknown) => typeof value !== 'number'
+  || !Number.isFinite(value)
+  || value === 0
+  ? ''
+  : value > 0
+    ? 'return-positive'
+    : 'return-negative';

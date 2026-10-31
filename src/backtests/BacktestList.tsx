@@ -12,7 +12,8 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
   refresh: () => void;
   editor?: string;
 }) {
-  const [search, setSearch] = useState(''), [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [columns, setColumns] = useState<Set<OptionalColumn>>(() => new Set(['created']));
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [comparison, setComparison] = useState<{
@@ -26,7 +27,8 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
   const visible = pageOf(filtered, currentPage);
   const checked = visible.filter(record => selected.has(record.id)).length;
   const chosen = filtered.filter(record => selected.has(record.id));
-  const extraColumns = optionalColumns.filter(column => column.key !== 'created' && columns.has(column.key));
+  const extraColumns = optionalColumns.filter(column => column.key !== 'created'
+    && columns.has(column.key));
   const latest = selectRecords(data?.records || [], '')[0];
   const strategy = data?.strategy || identity;
   const editorLink = editor || (strategy.id ? strategyEditorHref(strategy.id) : null);
@@ -79,10 +81,19 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
     <main className="backtest-list" aria-label={strategy.name + '的回测列表'}>
       <div className="backtest-controls">
         <div className="backtest-actions">
-          <span className="backtest-count" role="status">共有{data ? data.records.length : '—'}个回测</span>
+          <span className="backtest-count" role="status">共有{data
+            ? data.records.length
+            : '—'}个回测</span>
           <div className="button-group">
-            <button disabled={chosen.length < 2 || chosen.length > 6} title="选择 2 至 6 个回测进行对比" onClick={() => setComparison({ records: chosen, mode: 'results' })}><i className="fa fa-exchange" aria-hidden="true" />回测对比</button>
-            <button disabled={chosen.length !== 2} title="选择两个回测，对比冻结源码" onClick={() => setComparison({ records: chosen, mode: 'source' })}><i className="fa fa-code" aria-hidden="true" />代码对比</button>
+            <button disabled={chosen.length < 2
+              || chosen.length > 6} title="选择 2 至 6 个回测进行对比" onClick={() => setComparison({
+                records: chosen,
+                mode: 'results'
+              })}><i className="fa fa-exchange" aria-hidden="true" />回测对比</button>
+            <button disabled={chosen.length !== 2} title="选择两个回测，对比冻结源码" onClick={() => setComparison({
+              records: chosen,
+              mode: 'source'
+            })}><i className="fa fa-code" aria-hidden="true" />代码对比</button>
             <span title="历史回测保留，暂不支持删除">
               <button disabled aria-label="删除（历史回测保留，暂不支持删除）"><i className="fa fa-trash-o" aria-hidden="true" />删除</button>
             </span>
@@ -106,15 +117,16 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
           <thead>
             <tr>
               <th scope="col" className="row-check">
-                <input ref={allCheckbox} type="checkbox" aria-label="选择本页全部回测" disabled={!visible.length} checked={!!visible.length && checked === visible.length} onChange={e => {
-                  const on = e.target.checked;
-                  setSelected(previous => {
-                    const next = new Set(previous);
-                    for (const record of visible)
-                      on ? next.add(record.id) : next.delete(record.id);
-                    return next;
-                  });
-                }} />
+                <input ref={allCheckbox} type="checkbox" aria-label="选择本页全部回测" disabled={!visible.length} checked={!!visible.length
+                  && checked === visible.length} onChange={e => {
+                    const on = e.target.checked;
+                    setSelected(previous => {
+                      const next = new Set(previous);
+                      for (const record of visible)
+                        on ? next.add(record.id) : next.delete(record.id);
+                      return next;
+                    });
+                  }} />
               </th>
               <th scope="col" className="row-number">#</th>
               <th scope="col" className="run-name">策略名称</th>
@@ -179,7 +191,8 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
                   <a className="run-status-link" href={href} title={record.error || undefined}>
                     {recordStatus(record.status)}
                   </a>
-                  {record.analysisError && <small className="run-analysis-error" title={record.analysisError}>分析不可用</small>}
+                  {record.analysisError
+                    && <small className="run-analysis-error" title={record.analysisError}>分析不可用</small>}
                 </td>
               </tr>;
             })}
@@ -198,19 +211,27 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
         <button disabled={currentPage <= 1} onClick={() => setPage(p => p - 1)} aria-label="上一页">
           <i className="fa fa-angle-left" aria-hidden="true" />
         </button>
-        {Array.from({ length: pages }, (_, i) => i + 1).filter(p => p === 1 || p === pages || Math.abs(p - currentPage) <= 2).map((p, i, list) => <span key={p}>
-          {i > 0 && p > list[i - 1] + 1 && <span aria-hidden="true">… </span>}
-          <button aria-label={'第 ' + p + ' 页'} aria-current={p === currentPage ? 'page' : undefined} onClick={() => setPage(p)}>
-            {p}
-          </button>
-        </span>)}
+        {Array.from({ length: pages }, (_, i) => i + 1).filter(p => p === 1
+          || p === pages
+          || Math.abs(p - currentPage) <= 2).map((p, i, list) => <span key={p}>
+            {i > 0 && p > list[i - 1] + 1 && <span aria-hidden="true">… </span>}
+            <button aria-label={'第 ' + p + ' 页'} aria-current={p === currentPage
+              ? 'page'
+              : undefined} onClick={() => setPage(p)}>
+              {p}
+            </button>
+          </span>)}
         <button disabled={currentPage >= pages} onClick={() => setPage(p => p + 1)} aria-label="下一页">
           <i className="fa fa-angle-right" aria-hidden="true" />
         </button>
-        <span className="page-summary">{search ? '匹配 ' : ''}{filtered.length} 条 · 每页 {pageSize} 条</span>
+        <span className="page-summary">{search
+          ? '匹配 '
+          : ''}{filtered.length} 条 · 每页 {pageSize} 条</span>
       </div>}
-      {!!data?.unassociatedCount && <p className="notice">另有 {data.unassociatedCount} 条历史回测尚未关联策略，不计入当前列表。</p>}
+      {!!data?.unassociatedCount
+        && <p className="notice">另有 {data.unassociatedCount} 条历史回测尚未关联策略，不计入当前列表。</p>}
     </main>
-    {comparison && <BacktestComparison records={comparison.records} mode={comparison.mode} close={() => setComparison(null)} />}
+    {comparison
+      && <BacktestComparison records={comparison.records} mode={comparison.mode} close={() => setComparison(null)} />}
   </>;
 }

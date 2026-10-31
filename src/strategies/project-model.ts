@@ -4,13 +4,18 @@ import type { components } from '../generated/api';
 export type ProjectSource = components['schemas']['PythonProject'];
 export type StrategyProject = components['schemas']['ProjectSource'];
 export const projectHref = (id: string) => 'strategy-editor.html?project=' + encodeURIComponent(id);
-export const strategyEditorHref = (id: string) => isProjectId(id) ? projectHref(id) : 'strategy-editor.html?file=' + encodeURIComponent(id);
+export const strategyEditorHref = (id: string) => isProjectId(id)
+  ? projectHref(id)
+  : 'strategy-editor.html?file=' + encodeURIComponent(id);
 export function projectFilePath(path: string): string {
   if (!isStrategyFilePath(path))
     throw new Error('请输入项目内的 Python 文件路径，例如 helpers.py 或 signals/momentum.py。');
   const keywords = new Set('False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'.split(' '));
   const parts = path.slice(0, -3).split('/');
-  if (parts.some(part => !/^[_\p{ID_Start}][_\p{ID_Continue}]*$/u.test(part) || part.normalize('NFKC') !== part || keywords.has(part) || part === '__pycache__'))
+  if (parts.some(part => !/^[_\p{ID_Start}][_\p{ID_Continue}]*$/u.test(part)
+    || part.normalize('NFKC') !== part
+    || keywords.has(part)
+    || part === '__pycache__'))
     throw new Error('Python 文件和子目录请使用有效模块名，例如 signals/momentum.py；不能使用空格、连字符或 Python 保留字。');
   return path;
 }
@@ -56,7 +61,10 @@ export function projectSource(value: unknown): ProjectSource {
 }
 export function projectResponse(value: unknown): StrategyProject {
   const data = object(value);
-  if (!isStrategyPath(data.path) || !isProjectId(data.strategy_id) || typeof data.revision !== 'string' || !/^[a-f0-9]{64}$/.test(data.revision))
+  if (!isStrategyPath(data.path)
+    || !isProjectId(data.strategy_id)
+    || typeof data.revision !== 'string'
+    || !/^[a-f0-9]{64}$/.test(data.revision))
     throw new Error('项目响应的路径、身份或版本无效。');
   const source = projectSource({ ...data, project_id: data.strategy_id });
   return {
@@ -67,8 +75,11 @@ export function projectResponse(value: unknown): StrategyProject {
     revision: data.revision
   };
 }
-export const sameFiles = (left: Record<string, string>, right: Record<string, string>) => Object.keys(left).length === Object.keys(right).length && Object.entries(left).every(([path, source]) => Object.hasOwn(right, path) && right[path] === source);
-export const sameProjectSource = (left: Pick<ProjectSource, 'entrypoint' | 'files'>, right: Pick<ProjectSource, 'entrypoint' | 'files'>) => left.entrypoint === right.entrypoint && sameFiles(left.files, right.files);
+export const sameFiles = (left: Record<string, string>, right: Record<string, string>) => Object.keys(left).length === Object.keys(right).length
+  && Object.entries(left).every(([path, source]) => Object.hasOwn(right, path)
+    && right[path] === source);
+export const sameProjectSource = (left: Pick<ProjectSource, 'entrypoint' | 'files'>, right: Pick<ProjectSource, 'entrypoint' | 'files'>) => left.entrypoint === right.entrypoint
+  && sameFiles(left.files, right.files);
 export function renameProjectFile(source: Pick<ProjectSource, 'entrypoint' | 'files'>, from: string, to: string) {
   projectFilePath(to);
   if (!Object.hasOwn(source.files, from))
@@ -83,7 +94,12 @@ export function renameProjectFile(source: Pick<ProjectSource, 'entrypoint' | 'fi
     configurable: true,
     writable: true
   });
-  return { entrypoint: source.entrypoint === from ? to : source.entrypoint, files: sourceFiles(files) };
+  return {
+    entrypoint: source.entrypoint === from
+      ? to
+      : source.entrypoint,
+    files: sourceFiles(files)
+  };
 }
 export function deleteProjectFile(source: Pick<ProjectSource, 'entrypoint' | 'files'>, path: string) {
   if (path === source.entrypoint)
@@ -112,8 +128,24 @@ export function frozenSource(request: unknown): FrozenSource {
   }
   if (typeof data.source !== 'string')
     throw new Error('此记录没有可读取的冻结源码。');
-  return { entrypoint: 'strategy.py', files: { 'strategy.py': data.source }, projectId: null };
+  return {
+    entrypoint: 'strategy.py',
+    files: { 'strategy.py': data.source },
+    projectId: null
+  };
 }
 export function sourceChanges(left: FrozenSource, right: FrozenSource) {
-  return [...new Set([...Object.keys(left.files), ...Object.keys(right.files)])].sort().map(path => ({ path, status: !Object.hasOwn(left.files, path) ? 'added' : !Object.hasOwn(right.files, path) ? 'removed' : left.files[path] === right.files[path] ? 'unchanged' : 'changed' }));
+  return [...new Set([
+    ...Object.keys(left.files),
+    ...Object.keys(right.files)
+  ])].sort().map(path => ({
+    path,
+    status: !Object.hasOwn(left.files, path)
+      ? 'added'
+      : !Object.hasOwn(right.files, path)
+        ? 'removed'
+        : left.files[path] === right.files[path]
+          ? 'unchanged'
+          : 'changed'
+  }));
 }

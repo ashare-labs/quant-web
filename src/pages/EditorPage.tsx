@@ -20,7 +20,9 @@ export function EditorPage() {
   const params = new URLSearchParams(location.search);
   const jobId = params.get('job');
   const project = params.get('project');
-  const manifest = useResource<Record<string, unknown>>(jobId ? '/history/jobs/' + encodeURIComponent(jobId) + '/manifest' : null);
+  const manifest = useResource<Record<string, unknown>>(jobId
+    ? '/history/jobs/' + encodeURIComponent(jobId) + '/manifest'
+    : null);
   if (project && !jobId)
     return <ProjectEditor identity={project} />;
   if (jobId && manifest.loading)
@@ -40,8 +42,11 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       accountSession.assertCurrent(epoch);
   };
   const [params] = useState(() => new URLSearchParams(location.search));
-  const draftId = params.get('draft'), jobId = params.get('job'), path = params.get('file');
-  const readOnly = !!jobId, file = useRef<HTMLInputElement>(null);
+  const draftId = params.get('draft');
+  const jobId = params.get('job');
+  const path = params.get('file');
+  const readOnly = !!jobId;
+  const file = useRef<HTMLInputElement>(null);
   const startInput = useRef<HTMLInputElement>(null);
   const endInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
@@ -54,11 +59,21 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   const [saving, setSaving] = useState(false);
   const [loadedPath, setLoadedPath] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const runGuard = useRef(false), leaving = useRef(false);
+  const runGuard = useRef(false);
+  const leaving = useRef(false);
   const locked = readOnly || loading || loadFailed || saving || submitting;
   const [today, setToday] = useState(() => todayInShanghai());
-  const [draft, setDraft] = useState<Draft>(() => ({ ...newDraft(), ...(readOnly ? { capital: '', frequency: undefined } : {}) }));
-  const draftRef = useRef(draft), fileSource = useRef<string | null>(null);
+  const [draft, setDraft] = useState<Draft>(() => ({
+    ...newDraft(),
+    ...(readOnly
+      ? {
+        capital: '',
+        frequency: undefined
+      }
+      : {})
+  }));
+  const draftRef = useRef(draft);
+  const fileSource = useRef<string | null>(null);
   function showDraft(next: Draft) {
     draftRef.current = next;
     setDraft(next);
@@ -71,7 +86,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     const controller = new AbortController();
     async function open() {
       try {
-        let stored: Draft | undefined, localError = '';
+        let stored: Draft | undefined;
+        let localError = '';
         try {
           stored = findEditorDraft(path, draftId, storage);
         }
@@ -90,7 +106,12 @@ function SingleFileEditor({ frozenManifest, historyError }: {
           if (controller.signal.aborted)
             return;
           assertAccount();
-          const resolved = localError ? { draft: openFileDraft(source.path, source.source), backup: null } : openResolvedFileDraft(remotePath, source, stored, storage);
+          const resolved = localError
+            ? {
+              draft: openFileDraft(source.path, source.source),
+              backup: null
+            }
+            : openResolvedFileDraft(remotePath, source, stored, storage);
           const next = resolved.draft;
           setAliasBackup(resolved.backup);
           showDraft({ ...next, ...(localError ? { capital: '' } : {}) });
@@ -130,8 +151,13 @@ function SingleFileEditor({ frozenManifest, historyError }: {
         source: typeof request.source === 'string' ? request.source : '',
         start: String(request.start_date || ''),
         end: String(request.end_date || ''),
-        capital: typeof request.initial_cash === 'number' ? String(request.initial_cash) : '',
-        frequency: request.frequency === '1m' || request.frequency === '1d' ? request.frequency : undefined
+        capital: typeof request.initial_cash === 'number'
+          ? String(request.initial_cash)
+          : '',
+        frequency: request.frequency === '1m'
+          || request.frequency === '1d'
+          ? request.frequency
+          : undefined
       }));
     }
   }, [manifest.data]);
@@ -149,7 +175,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     let timer: ReturnType<typeof setTimeout>;
     const refresh = () => {
       clearTimeout(timer);
-      const now = new Date(), day = todayInShanghai(now);
+      const now = new Date();
+      const day = todayInShanghai(now);
       setToday(day);
       timer = setTimeout(refresh, Date.parse(day + 'T00:00:00+08:00') + 86400000 - now.getTime());
     };
@@ -197,7 +224,10 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       if ([startInput.current, endInput.current].some(input => input?.validity.badInput))
         throw new Error('请选择有效的开始和结束日期。');
       validateDraftConfig(draft);
-      target = loadedPath && draft.name === displayName(loadedPath) ? loadedPath : childPath(draft.folder, draft.name, true);
+      target = loadedPath
+        && draft.name === displayName(loadedPath)
+        ? loadedPath
+        : childPath(draft.folder, draft.name, true);
       setSaving(true);
       setError('');
       setSaved('保存中…');
@@ -253,10 +283,15 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       retain(draftRef.current);
       if ([startInput.current, endInput.current].some(input => input?.validity.badInput))
         throw new Error('请选择有效的开始和结束日期。');
-      const job = await submitCurrent({ ...draftRef.current, frequency }, catalogue.data);
+      const job = await submitCurrent({
+        ...draftRef.current,
+        frequency
+      }, catalogue.data);
       assertAccount();
       leaving.current = true;
-      navigate('backtest-results.html?job=' + encodeURIComponent(job.job_id) + (!draftRef.current.filePath ? '&draft=' + encodeURIComponent(draft.id) : ''));
+      navigate('backtest-results.html?job=' + encodeURIComponent(job.job_id) + (!draftRef.current.filePath
+        ? '&draft=' + encodeURIComponent(draft.id)
+        : ''));
     }
     catch (e) {
       setError(errorText(e));
@@ -266,7 +301,9 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       setSubmitting(false);
     }
   }
-  let dateError = '', serviceError = '', serviceReady = false;
+  let dateError = '';
+  let serviceError = '';
+  let serviceReady = false;
   if (!readOnly)
     try {
       validateDateRange(draft, { today, allowIncomplete: true });
@@ -285,15 +322,26 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   const frequency = draft.frequency ?? (readOnly ? '' : DEFAULT_FREQUENCY);
   const recordedStrategy = requestStrategy(manifest.data?.request);
   const savedPath = loadedPath || draft.filePath;
-  const listHref = jobId ? backtestsHref({ job: jobId }) : savedPath ? backtestsHref({ strategy: savedPath }) : draftId ? backtestsHref({ draft: draftId }) : null;
+  const listHref = jobId
+    ? backtestsHref({ job: jobId })
+    : savedPath
+      ? backtestsHref({ strategy: savedPath })
+      : draftId
+        ? backtestsHref({ draft: draftId })
+        : null;
   return <>
     <div className="subnav">
       <div><a href="strategies.html" aria-label="返回策略列表">
         <i className="fa fa-angle-left" aria-hidden="true" />
       </a> <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e => edit({ name: e.target.value })} /></div>
       <nav>
-        {readOnly && recordedStrategy ? <a href={strategyEditorHref(recordedStrategy)}>编辑策略</a> : <span>编辑策略</span>}
-        {listHref ? <a href={listHref}>回测列表</a> : <span aria-disabled="true" title="保存策略后可查看回测列表">回测列表</span>}
+        {readOnly
+          && recordedStrategy
+          ? <a href={strategyEditorHref(recordedStrategy)}>编辑策略</a>
+          : <span>编辑策略</span>}
+        {listHref
+          ? <a href={listHref}>回测列表</a>
+          : <span aria-disabled="true" title="保存策略后可查看回测列表">回测列表</span>}
       </nav>
     </div>
     <section className="editor">
@@ -321,12 +369,18 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             e.target.value = '';
           }} />
         </div>
-        <CodeEditor key={loadedPath || draftId || jobId || 'single'} path={loadedPath || 'strategy.py'} value={draft.source} readOnly={locked} onChange={source => edit({ source })} />
+        <CodeEditor key={loadedPath
+          || draftId
+          || jobId
+          || 'single'} path={loadedPath
+            || 'strategy.py'} value={draft.source} readOnly={locked} onChange={source => edit({ source })} />
       </div>
       <div className="output">
         <div className="pane-tools config-tools">
           <label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft.start} readOnly={locked} onChange={e => edit({ start: e.target.value })} /></label>
-          <label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start) ? draft.start : undefined} max={today} value={draft.end} readOnly={locked} onChange={e => edit({ end: e.target.value })} /></label>
+          <label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start)
+            ? draft.start
+            : undefined} max={today} value={draft.end} readOnly={locked} onChange={e => edit({ end: e.target.value })} /></label>
           <label>初始资金<CapitalInput value={draft.capital} readOnly={locked} onChange={capital => edit({ capital })} /></label>
           <select aria-label="运行频率" value={frequency} disabled={locked} onChange={e => edit({ frequency: resolveFrequency(e.target.value) })}>
             {readOnly && !frequency && <option value="" disabled>未记录</option>}
@@ -338,10 +392,25 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             {submitting ? '正在提交…' : '开始回测'}
           </button>
         </div>
-        <ErrorNotice message={error || retentionError || dateError || manifest.error || catalogue.error || serviceError} retry={catalogue.error ? catalogue.refresh : undefined} />
-        {aliasBackup && <div className="notice" role="status">已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。<a href={editorHref(aliasBackup.id)}>查看保留草稿</a></div>}
+        <ErrorNotice message={error
+          || retentionError
+          || dateError
+          || manifest.error
+          || catalogue.error
+          || serviceError} retry={catalogue.error
+            ? catalogue.refresh
+            : undefined} />
+        {aliasBackup
+          && <div className="notice" role="status">已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。<a href={editorHref(aliasBackup.id)}>查看保留草稿</a></div>}
         <div className="metrics">
-          {['策略收益', '基准收益', 'Alpha', 'Beta', 'Sharpe', '最大回撤'].map(label => <div className="metric" key={label}>
+          {[
+            '策略收益',
+            '基准收益',
+            'Alpha',
+            'Beta',
+            'Sharpe',
+            '最大回撤'
+          ].map(label => <div className="metric" key={label}>
             <span>
               {label}
             </span>
@@ -360,7 +429,11 @@ function SingleFileEditor({ frozenManifest, historyError }: {
         </div>
         <div className="pane-tools">日志输出</div>
         <div className="log">
-          {readOnly ? '只读查看历史源码。' : submitting ? '正在提交当前源码…' : '点击“开始回测”将在本机执行当前 Python，使用已声明的回溯研究模型；源码和配置将冻结在回测记录中。'}
+          {readOnly
+            ? '只读查看历史源码。'
+            : submitting
+              ? '正在提交当前源码…'
+              : '点击“开始回测”将在本机执行当前 Python，使用已声明的回溯研究模型；源码和配置将冻结在回测记录中。'}
         </div>
       </div>
     </section>

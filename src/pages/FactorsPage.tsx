@@ -25,33 +25,55 @@ export function FactorsPage() {
   const [pending, setPending] = useState<Submission | null>(() => {
     try {
       const p = JSON.parse(storage.getItem(pendingKey) || 'null');
-      return p && typeof p.idempotency_key === 'string' && typeof p.factor_id === 'string' ? p : null;
+      return p
+        && typeof p.idempotency_key === 'string'
+        && typeof p.factor_id === 'string'
+        ? p
+        : null;
     }
     catch {
       return null;
     }
   });
   const guard = useRef(false);
-  const catalogue = useResource<Catalogue>('/factors/catalogue'), sources = useResource<{
+  const catalogue = useResource<Catalogue>('/factors/catalogue');
+  const sources = useResource<{
     items: Source[];
     environment_id: string;
-  }>('/factors/sources'), jobs = useResource<{
+  }>('/factors/sources');
+  const jobs = useResource<{
     items: Job[];
   }>('/factors/jobs', 7000);
   const validJob = /^m2job-[a-f0-9]{32}$/.test(jobId);
   const job = useResource<Job>(validJob ? '/factors/jobs/' + jobId : null, 3000);
-  const result = useResource<Result>(validJob && job.data?.result ? '/factors/jobs/' + jobId + '/result' : null);
+  const result = useResource<Result>(validJob
+    && job.data?.result
+    ? '/factors/jobs/' + jobId + '/result'
+    : null);
   const logs = useResource<JobLogs>(validJob ? '/factors/jobs/' + jobId + '/logs' : null, 7000);
   const items = catalogue.data?.items || [];
   const factor = items.find(f => f.id === selectedId);
   const allCategories = [...new Set(items.map(f => f.category))];
-  const filtered = items.filter(f => (!library || f.library === library) && (!categories.length || categories.includes(f.category)) && [f.name, f.id, f.description].some(v => v.toLowerCase().includes(search.toLowerCase()))).sort((a, b) => {
-    const n = sort === 'warmup' ? (a.warmup_rows ?? Infinity) - (b.warmup_rows ?? Infinity) : a.name.localeCompare(b.name);
-    return reverse ? -n : n;
-  });
+  const filtered = items.filter(f => (!library
+    || f.library === library)
+    && (!categories.length
+      || categories.includes(f.category))
+    && [
+      f.name,
+      f.id,
+      f.description
+    ].some(v => v.toLowerCase().includes(search.toLowerCase()))).sort((a, b) => {
+      const n = sort === 'warmup'
+        ? (a.warmup_rows
+          ?? Infinity) - (b.warmup_rows
+            ?? Infinity)
+        : a.name.localeCompare(b.name);
+      return reverse ? -n : n;
+    });
   const pages = Math.max(1, Math.ceil(filtered.length / 25));
   const current = Math.min(page, pages - 1);
-  const environmentReady = !!catalogue.data && catalogue.data.environment_id === sources.data?.environment_id;
+  const environmentReady = !!catalogue.data
+    && catalogue.data.environment_id === sources.data?.environment_id;
   const scrolledJob = useRef('');
   useEffect(() => {
     if (jobId && catalogue.data && jobs.data && scrolledJob.current !== jobId) {
@@ -91,16 +113,25 @@ export function FactorsPage() {
     try {
       if (!environmentReady || !catalogue.data)
         throw new Error('来源与因子目录尚未就绪，或读取期间环境发生变化。请刷新后重试。');
-      const selected = retry && pending ? items.find(f => f.id === pending.factor_id) : factor;
+      const selected = retry && pending
+        ? items.find(f => f.id === pending.factor_id)
+        : factor;
       if (!selected)
         throw new Error('请选择可用的因子。');
-      if (!retry && !sources.data?.items.some(s => s.id === draft.source && compatible(s, selected)))
+      if (!retry
+        && !sources.data?.items.some(s => s.id === draft.source
+          && compatible(s, selected)))
         throw new Error('所选来源不能计算此因子。');
-      const request = retry && pending ? pending : submission(draft, selected, catalogue.data.environment_id, randomId());
+      const request = retry
+        && pending
+        ? pending
+        : submission(draft, selected, catalogue.data.environment_id, randomId());
       storage.setItem(pendingKey, JSON.stringify(request));
       setPending(request);
       const accepted = await api<Job>('/factors/jobs', request);
-      if (accepted.contract_version !== 'factor-jobs.v1' || !/^m2job-[a-f0-9]{32}$/.test(accepted.job_id) || !containsRequest(accepted.request, request))
+      if (accepted.contract_version !== 'factor-jobs.v1'
+        || !/^m2job-[a-f0-9]{32}$/.test(accepted.job_id)
+        || !containsRequest(accepted.request, request))
         throw new Error('返回任务与原请求不一致。原请求已保留，请先核对服务状态。');
       storage.removeItem(pendingKey);
       setPending(null);
@@ -157,22 +188,47 @@ export function FactorsPage() {
     <div className="filterbox">
       <div className="categories">
         {allCategories.map(category => <label key={category}>
-          <input type="checkbox" checked={!categories.length || categories.includes(category)} onChange={e => {
-            const current = categories.length ? categories : allCategories;
-            const next = e.target.checked ? [...current, category] : current.filter(c => c !== category);
-            setCategories(next.length ? next : ['__none__']);
-            setPage(0);
-          }} />
+          <input type="checkbox" checked={!categories.length
+            || categories.includes(category)} onChange={e => {
+              const current = categories.length ? categories : allCategories;
+              const next = e.target.checked
+                ? [
+                  ...current,
+                  category
+                ]
+                : current.filter(c => c !== category);
+              setCategories(next.length ? next : ['__none__']);
+              setPage(0);
+            }} />
           {category}
         </label>)}
         {!allCategories.length && <span className="muted">等待因子目录</span>}
       </div>
       <div className="filterrow">
         <span>因子库</span>
-        {[['', '全部'], ['joinquant', '基础因子'], ['alpha191', 'Alpha191'], ['qlib_alpha158', 'Qlib Alpha158']].map(([value, label]) => <button key={value} className={library === value ? 'selected' : ''} aria-pressed={library === value} onClick={() => {
-          setLibrary(value);
-          setPage(0);
-        }}>
+        {[
+          [
+            '',
+            '全部'
+          ],
+          [
+            'joinquant',
+            '基础因子'
+          ],
+          [
+            'alpha191',
+            'Alpha191'
+          ],
+          [
+            'qlib_alpha158',
+            'Qlib Alpha158'
+          ]
+        ].map(([value, label]) => <button key={value} className={library === value
+          ? 'selected'
+          : ''} aria-pressed={library === value} onClick={() => {
+            setLibrary(value);
+            setPage(0);
+          }}>
           {label}
         </button>)}
       </div>
@@ -243,7 +299,11 @@ export function FactorsPage() {
               {f.category}
             </td>
             <td>
-              {f.library === 'qlib_alpha158' ? 'Qlib Alpha158' : f.library === 'alpha191' ? 'Alpha191' : '基础因子'}
+              {f.library === 'qlib_alpha158'
+                ? 'Qlib Alpha158'
+                : f.library === 'alpha191'
+                  ? 'Alpha191'
+                  : '基础因子'}
             </td>
             <td>
               {num(f.warmup_rows, 0)}
@@ -259,12 +319,31 @@ export function FactorsPage() {
         </tbody>
       </table>
     </div>
-    {catalogue.loading ? <Empty>正在读取因子目录…</Empty> : !catalogue.error && !filtered.length && <Empty>没有匹配的因子。</Empty>}
+    {catalogue.loading
+      ? <Empty>正在读取因子目录…</Empty>
+      : !catalogue.error
+      && !filtered.length
+      && <Empty>没有匹配的因子。</Empty>}
     <div className="pagination">
       <button disabled={!current} onClick={() => setPage(current - 1)}>上一页</button>
       <span>{current + 1} / {pages} · {filtered.length} 项</span>
       <button disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>下一页</button>
-      <button disabled={!filtered.length} onClick={() => download('因子目录.csv', csv([['因子ID', '名称', '定义', '分类', '输入'], ...filtered.map(f => [f.id, f.name, f.definition, f.category, f.inputs.join(',')])]), 'text/csv;charset=utf-8')}>导出当前目录</button>
+      <button disabled={!filtered.length} onClick={() => download('因子目录.csv', csv([
+        [
+          '因子ID',
+          '名称',
+          '定义',
+          '分类',
+          '输入'
+        ],
+        ...filtered.map(f => [
+          f.id,
+          f.name,
+          f.definition,
+          f.category,
+          f.inputs.join(',')
+        ])
+      ]), 'text/csv;charset=utf-8')}>导出当前目录</button>
     </div>
     <section className="factor-history">
       <h2>因子运行记录</h2>
@@ -310,7 +389,10 @@ export function FactorsPage() {
             job.refresh();
             result.refresh();
           }}>刷新</button>
-          {job.data && active(job.data) && <button disabled={busy || job.data.status === 'cancelling'} onClick={cancel}>取消计算</button>}
+          {job.data
+            && active(job.data)
+            && <button disabled={busy
+              || job.data.status === 'cancelling'} onClick={cancel}>取消计算</button>}
         </div>
       </div>
       <ErrorNotice message={!validJob ? '任务编号无效。' : job.error || result.error} retry={() => {
@@ -319,9 +401,19 @@ export function FactorsPage() {
       }} />
       <Reason value={job.data?.execution_reason} />
       <Reason value={job.data?.error} />
-      {result.data && job.data && result.data.job_id === jobId && containsRequest(result.data.request, job.data.request) ? <FactorReport result={result.data} /> : result.data ? <ErrorNotice message="结果与任务请求不一致，已停止显示。" /> : !job.error && <Empty>
-        {job.loading || result.loading ? '正在读取研究结果…' : job.data && active(job.data) ? '计算正在进行，完成后将显示真实结果。' : '此运行尚无已发布结果。'}
-      </Empty>}
+      {result.data
+        && job.data
+        && result.data.job_id === jobId
+        && containsRequest(result.data.request, job.data.request) ? <FactorReport result={result.data} /> : result.data ? <ErrorNotice message="结果与任务请求不一致，已停止显示。" /> : !job.error
+          && <Empty>
+            {job.loading
+              || result.loading
+              ? '正在读取研究结果…'
+              : job.data
+                && active(job.data)
+                ? '计算正在进行，完成后将显示真实结果。'
+                : '此运行尚无已发布结果。'}
+          </Empty>}
       <ErrorNotice message={logs.error} />
       {logs.data && <JsonDetails title="任务日志" value={logs.data.items} />}
     </section>}
@@ -337,7 +429,8 @@ export function FactorsPage() {
         e.preventDefault();
         void run();
       }}>
-        <FactorForm factor={factor} sources={sources.data?.items || []} draft={draft} edit={edit} evaluationAvailable={!!catalogue.data?.evaluation_available} />
+        <FactorForm factor={factor} sources={sources.data?.items
+          || []} draft={draft} edit={edit} evaluationAvailable={!!catalogue.data?.evaluation_available} />
         <ErrorNotice message={error} />
         <details>
           <summary>定义与限制</summary>
@@ -352,7 +445,10 @@ export function FactorsPage() {
         </details>
         <div className="actions">
           <button type="button" onClick={() => setShowForm(false)}>取消</button>
-          <button className="primary" disabled={busy || !!pending || !environmentReady || factor.availability !== 'IMPLEMENTED'}>
+          <button className="primary" disabled={busy
+            || !!pending
+            || !environmentReady
+            || factor.availability !== 'IMPLEMENTED'}>
             {busy ? '正在提交…' : draft.evaluate ? '计算并评价' : '计算因子'}
           </button>
         </div>

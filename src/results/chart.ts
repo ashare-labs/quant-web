@@ -27,8 +27,12 @@ export function curves(analysis: Analysis) {
     },
     ...(rows.some(r => r.benchmark_cumulative_return !== null) ? [
       {
-        key: 'benchmark' as const, name: String(analysis.benchmark?.name || analysis.benchmark?.security || '基准收益'),
-        values: rows.map(r => r.benchmark_cumulative_return), nav: rows.map(r => r.benchmark_cumulative_return === null ? null : 1 + r.benchmark_cumulative_return)
+        key: 'benchmark' as const, name: String(analysis.benchmark?.name
+          || analysis.benchmark?.security
+          || '基准收益'),
+        values: rows.map(r => r.benchmark_cumulative_return), nav: rows.map(r => r.benchmark_cumulative_return === null
+          ? null
+          : 1 + r.benchmark_cumulative_return)
       },
       ...(analysis.calculation_version === 'returns-v2' ? [
         {
@@ -41,7 +45,8 @@ export function curves(analysis: Analysis) {
     ] : []),
   ];
 }
-export const logarithmAvailable = (analysis: Analysis) => curves(analysis).every(line => line.nav.every(v => v === null || v > 0));
+export const logarithmAvailable = (analysis: Analysis) => curves(analysis).every(line => line.nav.every(v => v === null
+  || v > 0));
 export function performanceOption(analysis: Analysis, range: [
   number,
   number
@@ -55,24 +60,65 @@ export function performanceOption(analysis: Analysis, range: [
     id: line.key, name: line.name, type: 'line', showSymbol: false, connectNulls: false,
     // Explicit log coordinates avoid whole-decade bounds flattening small
     // returns. This is only a display transform; tooltips keep backend values.
-    data: [0, ...(log ? line.nav.map(v => v === null ? null : Math.log(v)) : line.values)], lineStyle: { width: line.key === 'strategy' ? 2 : 1.5, color: colors[line.key] }, itemStyle: { color: colors[line.key] },
+    data: [
+      0,
+      ...(log
+        ? line.nav.map(v => v === null
+          ? null
+          : Math.log(v))
+        : line.values)
+    ], lineStyle: {
+      width: line.key === 'strategy'
+        ? 2
+        : 1.5,
+      color: colors[line.key]
+    }, itemStyle: { color: colors[line.key] },
     ...(line.key === drawdown && episode ? {
       markArea: {
         silent: true, itemStyle: { color: 'rgba(92,112,135,0.10)' },
-        label: { show: true, position: 'insideTopLeft', color: '#667482', fontSize: 11 },
-        data: [[{ name: drawdown === 'excess' ? '超额最大回撤' : '策略最大回撤', xAxis: episode.peak_date ?? '期初' }, { xAxis: episode.trough_date }]]
+        label: {
+          show: true,
+          position: 'insideTopLeft',
+          color: '#667482',
+          fontSize: 11
+        },
+        data: [[
+          {
+            name: drawdown === 'excess'
+              ? '超额最大回撤'
+              : '策略最大回撤',
+            xAxis: episode.peak_date
+              ?? '期初'
+          },
+          { xAxis: episode.trough_date }
+        ]]
       }
     } : {}),
   }));
   series.push({
     name: '每日盈亏', type: 'bar', xAxisIndex: 1, yAxisIndex: 1, barMaxWidth: 12,
-    data: [null, ...rows.map(r => ({ value: r.pnl, itemStyle: { color: r.pnl >= 0 ? colors.buy : colors.sell } }))]
+    data: [
+      null,
+      ...rows.map(r => ({
+        value: r.pnl,
+        itemStyle: {
+          color: r.pnl >= 0
+            ? colors.buy
+            : colors.sell
+        }
+      }))
+    ]
   }, {
     name: '买入成交额', type: 'bar', xAxisIndex: 2, yAxisIndex: 2, barMaxWidth: 10,
     data: [null, ...rows.map(r => r.buy_value)], itemStyle: { color: colors.buy }
   }, {
     name: '卖出成交额', type: 'bar', xAxisIndex: 2, yAxisIndex: 2, barMaxWidth: 10,
-    data: [null, ...rows.map(r => r.sell_value === null ? null : -r.sell_value)], itemStyle: { color: colors.sell }
+    data: [
+      null,
+      ...rows.map(r => r.sell_value === null
+        ? null
+        : -r.sell_value)
+    ], itemStyle: { color: colors.sell }
   });
   const axes = [0, 1, 2].map(index => ({
     type: 'category', gridIndex: index, data: labels, boundaryGap: false,
@@ -106,12 +152,23 @@ export function performanceOption(analysis: Analysis, range: [
           return '';
         const percent = (n: number | null) => n === null ? '—' : (n * 100).toFixed(2) + '%';
         const profits = lines.filter(line => visible[line.key]).map(line => `${escaped(line.name)}　${percent(line.values[index - 1])}`);
-        return [escaped(row.date), ...profits, `当日盈亏　${money(row.pnl)} 元`, `买入成交额　${money(row.buy_value)} 元`, `卖出成交额　${money(row.sell_value)} 元`].join('<br/>');
+        return [
+          escaped(row.date),
+          ...profits,
+          `当日盈亏　${money(row.pnl)} 元`,
+          `买入成交额　${money(row.buy_value)} 元`,
+          `卖出成交额　${money(row.sell_value)} 元`
+        ].join('<br/>');
       }
     }, axisPointer: { link: [{ xAxisIndex: 'all' }] }, xAxis: axes,
     yAxis: [{
       type: 'value', gridIndex: 0, scale: log,
-      axisLabel: { formatter: (v: number) => ((log ? Math.expm1(v) : v) * 100).toFixed(1) + '%', color: '#667482' }, splitLine: { lineStyle: { color: '#edf0f3' } }
+      axisLabel: {
+        formatter: (v: number) => ((log
+          ? Math.expm1(v)
+          : v) * 100).toFixed(1) + '%',
+        color: '#667482'
+      }, splitLine: { lineStyle: { color: '#edf0f3' } }
     },
     {
       type: 'value',
@@ -119,7 +176,10 @@ export function performanceOption(analysis: Analysis, range: [
       name: '每日盈亏（元）',
       nameLocation: 'end',
       nameTextStyle: { align: 'left', color: '#667482' },
-      axisLabel: { formatter: (v: number) => v.toLocaleString(), color: '#667482' },
+      axisLabel: {
+        formatter: (v: number) => v.toLocaleString(),
+        color: '#667482'
+      },
       splitLine: { lineStyle: { color: '#edf0f3' } }
     },
     {
@@ -127,7 +187,10 @@ export function performanceOption(analysis: Analysis, range: [
       gridIndex: 2,
       name: '每日买卖（元）',
       nameTextStyle: { align: 'left', color: '#667482' },
-      axisLabel: { formatter: (v: number) => Math.abs(v).toLocaleString(), color: '#667482' },
+      axisLabel: {
+        formatter: (v: number) => Math.abs(v).toLocaleString(),
+        color: '#667482'
+      },
       splitLine: { lineStyle: { color: '#edf0f3' } }
     }],
     dataZoom: [{
@@ -160,5 +223,10 @@ export function zoomRange(option: unknown): [
       endValue?: unknown;
     }[];
   })?.dataZoom?.[0];
-  return finite(zoom?.startValue) && finite(zoom?.endValue) ? [zoom.startValue, zoom.endValue] : null;
+  return finite(zoom?.startValue) && finite(zoom?.endValue)
+    ? [
+      zoom.startValue,
+      zoom.endValue
+    ]
+    : null;
 }

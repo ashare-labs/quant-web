@@ -55,7 +55,8 @@ export function AccountGate({ children }: {
   if (state.status === 'anonymous')
     return <Login />;
   return <>
-    {state.status === 'offline' && <p className="notice" role="status">连接暂不可用，当前页面已保留。恢复后会重新验证会话。 <button onClick={() => void accountSession.refresh(true)}>重试连接</button></p>}
+    {state.status === 'offline'
+      && <p className="notice" role="status">连接暂不可用，当前页面已保留。恢复后会重新验证会话。 <button onClick={() => void accountSession.refresh(true)}>重试连接</button></p>}
     <div key={state.epoch}>
       {children}
     </div>
@@ -100,11 +101,13 @@ export function AccountControls() {
   const state = useAccountSession();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [open, setOpen] = useState(false), menuId = useId();
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const exit = useRef<HTMLButtonElement>(null);
-  const focusOnOpen = useRef(false), pointerType = useRef('mouse');
+  const focusOnOpen = useRef(false);
+  const pointerType = useRef('mouse');
   useEffect(() => {
     if (open && focusOnOpen.current) {
       exit.current?.focus();
@@ -157,7 +160,9 @@ export function AccountControls() {
     if (event.pointerType === 'mouse')
       setOpen(true);
   }} onPointerLeave={event => {
-    if (event.pointerType === 'mouse' && !busy && !root.current?.contains(document.activeElement))
+    if (event.pointerType === 'mouse'
+      && !busy
+      && !root.current?.contains(document.activeElement))
       setOpen(false);
   }} onBlur={event => {
     if (!busy && !event.currentTarget.contains(event.relatedTarget))
