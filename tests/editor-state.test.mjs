@@ -224,10 +224,221 @@ test('invalid retained metadata leaves old storage untouched; a draft for anothe
   assert.throws(() => openFileDraft('other.py', 'remote', base), /不一致/);
 });
 
-test('single-file import and save serialize via operation lock and package includes CHANGELOG.md', async () => {
+test('single-file import and save serialize via operation lock and unmounted import never overwrites reopened draft', async () => {
   const { readFileSync } = await import('node:fs');
+  const vm = await import('node:vm');
+  const ts = (await import('typescript')).default;
+  const state = await import('../src/shared/editor-state.ts');
+  const drafts = await import('../src/shared/drafts.ts');
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   const packScript = readFileSync(new URL('../scripts/package.mjs', import.meta.url), 'utf8');
   assert(pkg.files.includes('CHANGELOG.md'));
   assert(packScript.includes("'CHANGELOG.md'"));
+
+  const tsx = readFileSync(new URL('../src/pages/EditorPage.tsx', import.meta.url), 'utf8')
+    .replace(/import[\s\S]*?from\s+['"][^'"]+['"];\n/g, '')
+    .replace(/export function EditorPage/, 'function EditorPage');
+  const compiled = ts.transpileModule(tsx, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+      jsx: ts.JsxEmit.ReactJSX
+    }
+  }).outputText;
+
+  const store = storage();
+  const savedCalls = [];
+  function mountEditor(search = '?file=alpha.py') {
+    const states = [];
+    const refs = [];
+    const effects = [];
+    const cleanups = [];
+    let cursor = 0;
+    let refCursor = 0;
+    let effectCursor = 0;
+    let rendering = false;
+    let dirty = false;
+    let openNow = true;
+    let tree = null;
+    const h = (type, props) => ({ type, props: props || {} });
+    const sandbox = {
+      module: { exports: {} },
+      exports: {},
+      require: (id) => {
+        if (id === 'react/jsx-runtime')
+          return { jsx: h, jsxs: h, Fragment: Symbol.for('Fragment') };
+        throw new Error('Unexpected require: ' + id);
+      },
+      useState: (init) => {
+        const i = cursor++;
+        if (!(i in states))
+          states[i] = typeof init === 'function' ? init() : init;
+        return [
+          states[i],
+          (v) => {
+            if (!openNow)
+              throw new Error('setState after unmount');
+            states[i] = typeof v === 'function' ? v(states[i]) : v;
+            if (rendering)
+              dirty = true;
+            else
+              render();
+          }
+        ];
+      },
+      useRef: (init) => {
+        const i = refCursor++;
+        if (!(i in refs))
+          refs[i] = { current: init };
+        return refs[i];
+      },
+      useEffect: (fn, deps) => {
+        const i = effectCursor++;
+        const prev = effects[i];
+        const changed = !prev || !deps || deps.some((d, idx) => !Object.is(d, prev.deps[idx]));
+        effects[i] = { fn, deps, changed };
+      },
+      location: { search },
+      history: { replaceState() {} },
+      window: { addEventListener() {}, removeEventListener() {} },
+      document: { addEventListener() {}, removeEventListener() {} },
+      URLSearchParams,
+      AbortController,
+      Date,
+      setTimeout: () => 0,
+      clearTimeout: () => {},
+      encodeURIComponent,
+      randomId: () => 'id-1',
+      accountMode: true,
+      accountSession: { snapshot: () => ({ epoch: 1 }), assertCurrent() {} },
+      accountStorage: () => globalThis.localStorage,
+      useResource: () => ({ data: { source_budget: { max_files: 16, max_file_bytes: 65536, max_total_bytes: 262144 } }, error: '' }),
+      readStrategyFile: async (p) => ({ path: p, strategy_id: p, source: '# initial\n' }),
+      saveStrategyFile: async (target, source, overwrite) => {
+        savedCalls.push({ target, source, overwrite });
+        return { path: target, strategy_id: target };
+      },
+      createDirectory: async () => {},
+      StrategySaveError: class extends Error {},
+      checkSourceBudget: () => {},
+      submitCurrent: async () => ({ job_id: 'job-1' }),
+      environment: () => ({}),
+      requestStrategy: () => null,
+      validateDateRange: () => {},
+      validateDraftConfig: () => {},
+      DEFAULT_FREQUENCY: '1d',
+      resolveFrequency: (v) => v || '1d',
+      todayInShanghai: () => '2025-03-20',
+      validDate: () => true,
+      unformatCapital: (v) => v,
+      childPath: (_f, name) => name.endsWith('.py') ? name : `${name}.py`,
+      displayName: (p) => p.replace(/\.py$/, ''),
+      fileName: (p) => p,
+      parentDirectory: () => '',
+      backtestsHref: () => 'backtests.html',
+      editorHref: () => 'strategy-editor.html',
+      fileHref: (p) => `strategy-editor.html?file=${encodeURIComponent(p)}`,
+      strategyEditorHref: () => 'strategy-editor.html',
+      download: () => {},
+      errorText: (e) => String(e?.message || e),
+      navigate: () => {},
+      object: (v) => v || {},
+      CapitalInput: 'CapitalInput',
+      CodeEditor: 'CodeEditor',
+      ErrorNotice: 'ErrorNotice',
+      JsonDetails: 'JsonDetails',
+      ProjectEditor: 'ProjectEditor',
+      ...drafts,
+      ...state
+    };
+    vm.runInNewContext(`${compiled}\nmodule.exports = { SingleFileEditor };`, sandbox);
+    function render() {
+      rendering = true;
+      do {
+        dirty = false;
+        cursor = 0;
+        refCursor = 0;
+        effectCursor = 0;
+        tree = sandbox.module.exports.SingleFileEditor({ historyError: '' });
+        for (let i = 0; i < effects.length; i++)
+          if (effects[i]?.changed) {
+            effects[i].changed = false;
+            if (typeof cleanups[i] === 'function')
+              cleanups[i]();
+            cleanups[i] = effects[i].fn();
+          }
+      } while (dirty);
+      rendering = false;
+    }
+    function findAll(node, pred, out = []) {
+      if (!node || typeof node !== 'object')
+        return out;
+      if (Array.isArray(node)) {
+        node.forEach(item => findAll(item, pred, out));
+        return out;
+      }
+      if (pred(node))
+        out.push(node);
+      const children = node.props?.children;
+      if (Array.isArray(children))
+        children.forEach(item => findAll(item, pred, out));
+      else
+        findAll(children, pred, out);
+      return out;
+    }
+    render();
+    return {
+      get fileInput() {
+        return findAll(tree, n => n.type === 'input' && n.props?.type === 'file')[0];
+      },
+      get saveButton() {
+        return findAll(tree, n => n.type === 'button' && n.props?.children === '保存')[0];
+      },
+      get codeEditor() {
+        return findAll(tree, n => n.type === 'CodeEditor')[0];
+      },
+      unmount() {
+        openNow = false;
+        cleanups.forEach(fn => typeof fn === 'function' && fn());
+      }
+    };
+  }
+
+  const flush = async () => {
+    for (let i = 0; i < 6; i++)
+      await Promise.resolve();
+  };
+
+  const first = mountEditor('?file=alpha.py');
+  await flush();
+
+  let resolveImport;
+  const pendingImport = first.fileInput.props.onChange({
+    target: {
+      value: 'picked.py',
+      files: [{
+        text: () => new Promise(resolve => { resolveImport = resolve; })
+      }]
+    }
+  });
+  assert.equal(first.saveButton.props.disabled, true);
+  await first.saveButton.props.onClick();
+  assert.equal(savedCalls.length, 0);
+
+  first.unmount();
+  const second = mountEditor('?file=alpha.py');
+  await flush();
+  second.codeEditor.props.onChange('# newer reopened editor\n');
+  assert.equal(second.codeEditor.props.value, '# newer reopened editor\n');
+
+  resolveImport('# stale import after unmount\n');
+  await pendingImport;
+  await flush();
+  assert.equal(second.codeEditor.props.value, '# newer reopened editor\n');
+  assert.equal(state.findEditorDraft('alpha.py', null, globalThis.localStorage).source, '# newer reopened editor\n');
+  assert(store.get(key).includes('# newer reopened editor'));
+
+  await second.saveButton.props.onClick();
+  assert.equal(savedCalls.length, 1);
+  assert.equal(savedCalls[0].source, '# newer reopened editor\n');
 });

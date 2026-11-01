@@ -69,6 +69,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   const operation = useRef(false);
   const runGuard = useRef(false);
   const leaving = useRef(false);
+  const mounted = useRef(true);
   const locked = readOnly || loading || loadFailed || saving || submitting || importing;
   const [today, setToday] = useState(() => todayInShanghai());
   const [draft, setDraft] = useState<Draft>(() => ({
@@ -180,6 +181,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     return () => window.removeEventListener('beforeunload', prevent);
   }, [unretained]);
   useEffect(() => {
+    mounted.current = true;
     let timer: ReturnType<typeof setTimeout>;
     const refresh = () => {
       clearTimeout(timer);
@@ -192,6 +194,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     window.addEventListener('focus', refresh);
     document.addEventListener('visibilitychange', refresh);
     return () => {
+      mounted.current = false;
       clearTimeout(timer);
       window.removeEventListener('focus', refresh);
       document.removeEventListener('visibilitychange', refresh);
@@ -241,10 +244,15 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       setSaving(true);
       setError('');
       setSaved('保存中…');
-      if (!loadedPath && draftId && snapshot.folder)
+      if (!loadedPath && draftId && snapshot.folder) {
         await createDirectory(snapshot.folder);
+        if (!mounted.current)
+          return;
+      }
       assertAccount();
       const persisted = await saveStrategyFile(target, snapshot.source, target === loadedPath);
+      if (!mounted.current)
+        return;
       assertAccount();
       const canonical = persisted.path;
       const current = draftRef.current;
@@ -287,6 +295,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       fileSource.current = snapshot.source;
     }
     catch (e) {
+      if (!mounted.current)
+        return;
       if (e instanceof StrategySaveError && e.readbackMatches)
         setLoadedPath(e.readbackPath || target);
       setError(errorText(e));
@@ -294,7 +304,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     }
     finally {
       operation.current = false;
-      setSaving(false);
+      if (mounted.current)
+        setSaving(false);
     }
   }
   async function run() {
@@ -313,6 +324,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
         ...draftRef.current,
         frequency
       }, catalogue.data);
+      if (!mounted.current)
+        return;
       assertAccount();
       leaving.current = true;
       navigate('backtest-results.html?job=' + encodeURIComponent(job.job_id) + (!draftRef.current.filePath
@@ -320,12 +333,14 @@ function SingleFileEditor({ frozenManifest, historyError }: {
         : ''));
     }
     catch (e) {
-      setError(errorText(e));
+      if (mounted.current)
+        setError(errorText(e));
     }
     finally {
       operation.current = false;
       runGuard.current = false;
-      setSubmitting(false);
+      if (mounted.current)
+        setSubmitting(false);
     }
   }
   let dateError = '';
@@ -391,16 +406,21 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             setImporting(true);
             try {
               const source = await selected.text();
+              if (!mounted.current)
+                return;
+              assertAccount();
               checkSourceBudget({ 'strategy.py': source }, catalogue.data);
               edit({ source });
               setError('');
             }
             catch (err) {
-              setError(errorText(err));
+              if (mounted.current)
+                setError(errorText(err));
             }
             finally {
               operation.current = false;
-              setImporting(false);
+              if (mounted.current)
+                setImporting(false);
             }
           }} />
         </div>

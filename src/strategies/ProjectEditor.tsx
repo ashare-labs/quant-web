@@ -59,6 +59,7 @@ export function ProjectEditor({ identity, manifest, jobId }: {
   const importInput = useRef<HTMLInputElement>(null);
   const operation = useRef(false);
   const leaving = useRef(false);
+  const mounted = useRef(true);
   const catalogue = useResource<Record<string, unknown>>(readOnly ? null : '/python/catalogue');
   const locked = readOnly || loading || loadFailed || !!busy || !draft;
   function show(next: ProjectDraft) {
@@ -179,10 +180,12 @@ export function ProjectEditor({ identity, manifest, jobId }: {
     return () => window.removeEventListener('beforeunload', prevent);
   }, [unretained]);
   useEffect(() => {
+    mounted.current = true;
     const update = () => setToday(todayInShanghai());
     const timer = setInterval(update, 60000);
     window.addEventListener('focus', update);
     return () => {
+      mounted.current = false;
       clearInterval(timer);
       window.removeEventListener('focus', update);
     };
@@ -238,6 +241,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
         operation.current = true;
         setBusy('move');
         const moved = await moveProject(remoteRef.current!, name.trim());
+        if (!mounted.current)
+          return;
         assertAccount();
         remoteRef.current = moved;
         const relocated = relocatedProjectDraft(current, moved);
@@ -250,6 +255,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
       setAction(null);
     }
     catch (e) {
+      if (!mounted.current)
+        return;
       if (e instanceof ProjectWriteError && e.current && draftRef.current) {
         const recovered = relocatedProjectDraft(draftRef.current, e.current);
         remoteRef.current = e.current;
@@ -264,7 +271,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
     }
     finally {
       operation.current = false;
-      setBusy('');
+      if (mounted.current)
+        setBusy('');
     }
   }
   async function save() {
@@ -279,6 +287,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
       checkSourceBudget(current.files, catalogue.data);
       // Browser retention is best effort; an explicit disk save must still run.
       const saved = await saveProject(current);
+      if (!mounted.current)
+        return;
       assertAccount();
       remoteRef.current = saved;
       const next = savedProjectDraft(current, saved);
@@ -287,6 +297,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
       retain(next, true);
     }
     catch (e) {
+      if (!mounted.current)
+        return;
       if (e instanceof ProjectWriteError && e.current && draftRef.current) {
         remoteRef.current = e.current;
         const next = {
@@ -304,7 +316,8 @@ export function ProjectEditor({ identity, manifest, jobId }: {
     }
     finally {
       operation.current = false;
-      setBusy('');
+      if (mounted.current)
+        setBusy('');
     }
   }
   async function run() {
@@ -319,16 +332,20 @@ export function ProjectEditor({ identity, manifest, jobId }: {
       if ([startInput.current, endInput.current].some(input => input?.validity.badInput))
         throw new Error('请选择有效的开始和结束日期。');
       const job = await submitProjectCurrent(draftRef.current, catalogue.data);
+      if (!mounted.current)
+        return;
       assertAccount();
       leaving.current = true;
       navigate('backtest-results.html?job=' + encodeURIComponent(job.job_id));
     }
     catch (e) {
-      setError(errorText(e));
+      if (mounted.current)
+        setError(errorText(e));
     }
     finally {
       operation.current = false;
-      setBusy('');
+      if (mounted.current)
+        setBusy('');
     }
   }
   async function inspectRemote() {
@@ -337,14 +354,19 @@ export function ProjectEditor({ identity, manifest, jobId }: {
     operation.current = true;
     setBusy('review');
     try {
-      setReview(await readProject(draft.strategy_id));
+      const remote = await readProject(draft.strategy_id);
+      if (!mounted.current)
+        return;
+      setReview(remote);
     }
     catch (e) {
-      setError(errorText(e));
+      if (mounted.current)
+        setError(errorText(e));
     }
     finally {
       operation.current = false;
-      setBusy('');
+      if (mounted.current)
+        setBusy('');
     }
   }
   function resolveConflict(keep: boolean) {
@@ -436,16 +458,24 @@ export function ProjectEditor({ identity, manifest, jobId }: {
             setBusy('import');
             try {
               const content = await selected.text();
+              if (!mounted.current || !draftRef.current)
+                return;
+              assertAccount();
               const files = { ...draftRef.current.files, [active]: content };
               checkSourceBudget(files, catalogue.data);
-              edit({ files });
+              const next = editProjectDraft(draftRef.current, { files });
+              show(next);
+              setError('');
+              retain(next);
             }
             catch (err) {
-              setError(errorText(err));
+              if (mounted.current)
+                setError(errorText(err));
             }
             finally {
               operation.current = false;
-              setBusy('');
+              if (mounted.current)
+                setBusy('');
             }
           }} />
         </div>
