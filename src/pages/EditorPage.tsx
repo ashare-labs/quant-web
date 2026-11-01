@@ -63,11 +63,13 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   const [loading, setLoading] = useState(!!(path || draftId));
   const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [loadedPath, setLoadedPath] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const operation = useRef(false);
   const runGuard = useRef(false);
   const leaving = useRef(false);
-  const locked = readOnly || loading || loadFailed || saving || submitting;
+  const locked = readOnly || loading || loadFailed || saving || submitting || importing;
   const [today, setToday] = useState(() => todayInShanghai());
   const [draft, setDraft] = useState<Draft>(() => ({
     ...newDraft(),
@@ -223,41 +225,57 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     catch { /* Keep current input and the leave-page guard. */ }
   }
   async function save() {
-    if (locked)
+    if (locked || operation.current)
       return;
+    operation.current = true;
+    const snapshot = draftRef.current;
     let target = '';
     try {
       if ([startInput.current, endInput.current].some(input => input?.validity.badInput))
         throw new Error('请选择有效的开始和结束日期。');
-      validateDraftConfig(draft);
+      validateDraftConfig(snapshot);
       target = loadedPath
-        && draft.name === displayName(loadedPath)
+        && snapshot.name === displayName(loadedPath)
         ? loadedPath
-        : childPath(draft.folder, draft.name, true);
+        : childPath(snapshot.folder, snapshot.name, true);
       setSaving(true);
       setError('');
       setSaved('保存中…');
-      if (!loadedPath && draftId && draft.folder)
-        await createDirectory(draft.folder);
+      if (!loadedPath && draftId && snapshot.folder)
+        await createDirectory(snapshot.folder);
       assertAccount();
-      const persisted = await saveStrategyFile(target, draft.source, target === loadedPath);
+      const persisted = await saveStrategyFile(target, snapshot.source, target === loadedPath);
       assertAccount();
       const canonical = persisted.path;
-      const next = savedEditorDraft({
-        ...draft,
-        id: loadedPath && canonical !== loadedPath ? randomId() : draft.id,
-        name: displayName(canonical),
-        folder: parentDirectory(canonical),
-        filePath: canonical,
-        capital: unformatCapital(draft.capital),
-        frequency: resolveFrequency(draft.frequency)
-      });
+      const current = draftRef.current;
+      const changedDuringSave = current.source !== snapshot.source;
+      const next = changedDuringSave
+        ? editedDraft({
+          ...current,
+          id: loadedPath && canonical !== loadedPath ? randomId() : current.id,
+          name: displayName(canonical),
+          folder: parentDirectory(canonical),
+          filePath: canonical,
+          capital: unformatCapital(current.capital),
+          frequency: resolveFrequency(current.frequency)
+        }, { source: current.source })
+        : savedEditorDraft({
+          ...snapshot,
+          id: loadedPath && canonical !== loadedPath ? randomId() : snapshot.id,
+          name: displayName(canonical),
+          folder: parentDirectory(canonical),
+          filePath: canonical,
+          capital: unformatCapital(snapshot.capital),
+          frequency: resolveFrequency(snapshot.frequency)
+        });
       setLoadedPath(canonical);
       showDraft(next);
       history.replaceState(null, '', fileHref(canonical));
       try {
-        commitEditorSave(draft, next, fileSource.current, storage);
-        setSaved('已保存');
+        commitEditorSave(snapshot, next, fileSource.current, storage);
+        if (changedDuringSave)
+          retain(next);
+        setSaved(changedDuringSave ? '未保存 · 浏览器已保留' : '已保存');
         setUnretained(false);
         setRetentionError('');
       }
@@ -266,7 +284,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
         setRetentionError('源码已写入服务，但浏览器配置保存失败：' + errorText(e));
         setUnretained(true);
       }
-      fileSource.current = draft.source;
+      fileSource.current = snapshot.source;
     }
     catch (e) {
       if (e instanceof StrategySaveError && e.readbackMatches)
@@ -275,12 +293,14 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       setSaved('未保存');
     }
     finally {
+      operation.current = false;
       setSaving(false);
     }
   }
   async function run() {
-    if (locked || runGuard.current)
+    if (locked || operation.current || runGuard.current)
       return;
+    operation.current = true;
     runGuard.current = true;
     setSubmitting(true);
     setError('');
@@ -303,6 +323,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       setError(errorText(e));
     }
     finally {
+      operation.current = false;
       runGuard.current = false;
       setSubmitting(false);
     }
@@ -363,8 +384,11 @@ function SingleFileEditor({ frozenManifest, historyError }: {
           <button disabled={!draft.source} onClick={() => download(fileName(draft.name), draft.source)}>导出代码</button>
           <input ref={file} type="file" accept=".py,.txt" hidden onChange={async (e) => {
             const selected = e.target.files?.[0];
-            if (!selected)
+            e.target.value = '';
+            if (!selected || locked || operation.current)
               return;
+            operation.current = true;
+            setImporting(true);
             try {
               const source = await selected.text();
               checkSourceBudget({ 'strategy.py': source }, catalogue.data);
@@ -374,7 +398,10 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             catch (err) {
               setError(errorText(err));
             }
-            e.target.value = '';
+            finally {
+              operation.current = false;
+              setImporting(false);
+            }
           }} />
         </div>
         <CodeEditor key={loadedPath

@@ -223,3 +223,11 @@ test('invalid retained metadata leaves old storage untouched; a draft for anothe
   assert.equal(map.get(key), before);
   assert.throws(() => openFileDraft('other.py', 'remote', base), /不一致/);
 });
+
+test('single-file import and save serialize via operation lock and package includes CHANGELOG.md', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  const packScript = readFileSync(new URL('../scripts/package.mjs', import.meta.url), 'utf8');
+  assert(pkg.files.includes('CHANGELOG.md'));
+  assert(packScript.includes("'CHANGELOG.md'"));
+});

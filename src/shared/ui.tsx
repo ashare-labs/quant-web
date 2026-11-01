@@ -165,7 +165,10 @@ export function Modal({ title, children, close, wide = false }: {
     dialog?.showModal();
     return () => dialog?.close();
   }, []);
-  return <dialog ref={ref} className={wide ? 'wide-dialog' : ''} onCancel={close} onClick={e => {
+  return <dialog ref={ref} className={wide ? 'wide-dialog' : ''} onCancel={e => {
+    e.preventDefault();
+    close();
+  }} onClick={e => {
     if (e.target === e.currentTarget)
       close();
   }} aria-label={title}>
