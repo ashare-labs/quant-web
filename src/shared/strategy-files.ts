@@ -1,7 +1,10 @@
 import type { components } from '../generated/api';
 import { api, ApiError, object } from './api.ts';
 import { isProjectId, isStrategyFilePath, isStrategyPath } from './strategy-path.ts';
-export type StrategyDirectory = components['schemas']['StrategyDirectory'];
+type Directory = components['schemas']['StrategyDirectory'];
+export type StrategyDirectory = Omit<Directory, 'entries'> & {
+  entries: (Directory['entries'][number] & { modified_at?: string | null })[];
+};
 type StrategyPath = components['schemas']['StrategyPath'];
 type StrategyFilePath = components['schemas']['StrategyFilePath'];
 type StrategySource = components['schemas']['StrategySource'];
@@ -62,7 +65,7 @@ export function strategyDirectory(value: unknown): StrategyDirectory {
 export async function createDirectory(path: string) {
   if (!isStrategyPath(path))
     throw new Error('文件夹路径无效。');
-  const result = await api<StrategyPath>('/python/directories', { path });
+  const result = await api<StrategyPath>('/python/directories', { path }, undefined, false, undefined, undefined, 30000);
   if (!isStrategyPath(result?.path))
     throw new ApiError('文件夹响应路径无效。', 'INVALID_RESPONSE', true);
   return result;
@@ -70,7 +73,7 @@ export async function createDirectory(path: string) {
 export async function readStrategyFile(path: string, signal?: AbortSignal) {
   if (!isStrategyFilePath(path))
     throw new ApiError('策略文件路径无效。', 'INVALID_PATH', false);
-  const result = await api<StrategySource>('/python/files?path=' + encodeURIComponent(path), undefined, signal);
+  const result = await api<StrategySource>('/python/files?path=' + encodeURIComponent(path), undefined, signal, false, undefined, undefined, 15000);
   fileIdentity(result);
   if (typeof result.source !== 'string')
     throw new ApiError('文件响应源码无法读取。', 'INVALID_RESPONSE', false);
@@ -90,7 +93,7 @@ export async function saveStrategyFile(path: string, source: string, overwrite: 
     throw new ApiError('策略文件路径无效。', 'INVALID_PATH', false);
   const body: StrategySave = { path, source, overwrite };
   try {
-    const result = await api<StrategyFilePath>('/python/files', body, undefined, false, 'PUT');
+    const result = await api<StrategyFilePath>('/python/files', body, undefined, false, 'PUT', undefined, 30000);
     fileIdentity(result, true);
     return result;
   }

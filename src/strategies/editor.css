@@ -164,3 +164,12 @@
 .comparison-code{height:440px;min-width:0;display:flex;background:#272822}
 .comparison-code .python-code-editor{min-height:0}
 .editor-loading{padding:24px;color:#a4a999}
+.editor-run-status{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid #e8ebef;flex-wrap:wrap}
+.editor-run-status p{margin:0;flex:1;min-width:200px;font-size:13px;color:#555}
+.editor-help{padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.editor-help p{margin:0 0 10px}
+.editor-help summary{cursor:pointer;color:var(--accent,#255da8)}
+.editor-help ul{padding-left:20px;margin:10px 0 0}
+.editor-help li+li{margin-top:8px}
+.editor-help code{font-size:12px;white-space:normal}
+.editor-empty .editor-help{padding:12px 0}

@@ -9,6 +9,8 @@ import { ErrorNotice, Modal, useResource } from '../shared/ui';
 import { backtestsHref } from '../backtests/history-model';
 import { createProject } from '../strategies/project-api';
 import { projectHref } from '../strategies/project-model';
+import { editProjectDraft, openProjectDraft, retainProjectDraft } from '../strategies/project-state';
+import { OBSERVATION_TEMPLATE } from '../strategies/starter';
 import { navigate } from '../shared/navigation';
 export function StrategiesPage() {
   const [search, setSearch] = useState('');
@@ -16,8 +18,9 @@ export function StrategiesPage() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
+  const [template, setTemplate] = useState<'observation' | 'blank'>('observation');
   const requestedFolder = new URLSearchParams(location.search).get('folder') || '';
-  const directory = useResource<StrategyDirectory>(directoryQuery(requestedFolder));
+  const directory = useResource<StrategyDirectory>(directoryQuery(requestedFolder), 0, false, { timeoutMs: 15000 });
   let currentDirectory: StrategyDirectory | null = null;
   let directoryError = '';
   try {
@@ -55,6 +58,7 @@ export function StrategiesPage() {
   const legacy = drafts.filter(d => d.folder === folder && matches(d.name));
   const visibleDirectories = directories.filter(path => matches(path.slice(prefix.length)));
   const count = projects.length + files.length + legacy.length + visibleDirectories.length;
+  const modified = (value: unknown) => dateTime(value) === '—' ? '服务未提供' : dateTime(value);
   async function create() {
     setPending(true);
     setError('');
@@ -63,11 +67,23 @@ export function StrategiesPage() {
       if (modal === '新建策略') {
         if (folder)
           await createDirectory(folder);
-        const saved = await saveStrategyFile(path, '', false);
+        const saved = await saveStrategyFile(path, template === 'observation' ? OBSERVATION_TEMPLATE : '', false);
         navigate(fileHref(saved.path));
       }
       else if (modal === '新建项目') {
         const project = await createProject(path);
+        if (template === 'observation') {
+          try {
+            retainProjectDraft(editProjectDraft(openProjectDraft(project).draft, {
+              files: { ...project.files, [project.entrypoint]: OBSERVATION_TEMPLATE }
+            }));
+          }
+          catch {
+            // The project already exists. Open it rather than encouraging duplicate creation.
+            navigate(projectHref(project.strategy_id) + '&starter=observation');
+            return;
+          }
+        }
         navigate(projectHref(project.strategy_id));
       }
       else {
@@ -85,17 +101,19 @@ export function StrategiesPage() {
   return <main>
     <div className="titlebar">
       <h1>策略列表</h1>
-      <input aria-label="策略名称" placeholder="策略名称" value={search} onChange={e => setSearch(e.target.value)} />
+      <input id="strategy-search" name="strategy-search" aria-label="策略名称" placeholder="策略名称" value={search} onChange={e => setSearch(e.target.value)} />
     </div>
     <div className="toolbar">
       <button className="primary" onClick={() => {
         setModal('新建项目');
         setName('');
+        setTemplate('observation');
         setError('');
       }}>新建项目</button>
       <button onClick={() => {
         setModal('新建策略');
         setName('');
+        setTemplate('observation');
         setError('');
       }}>新建单文件策略</button>
       <button onClick={() => {
@@ -111,7 +129,7 @@ export function StrategiesPage() {
       directory.error,
       directoryError,
       storageError
-    ].filter(Boolean).join(' ')} />
+    ].filter(Boolean).join(' ')} retry={directory.error || directoryError ? directory.refresh : undefined} />
     <div className="tablewrap">
       <table>
         <thead>
@@ -129,7 +147,7 @@ export function StrategiesPage() {
               <a href={folderHref(path)}><i className="fa fa-folder-o" aria-hidden="true" /> {path.slice(prefix.length)}</a>
             </td>
             <td>分类文件夹</td>
-            <td>—</td>
+            <td>{modified(currentDirectory?.entries.find(entry => entry.path === path)?.modified_at)}</td>
             <td>—</td>
             <td>—</td>
           </tr>)}
@@ -140,7 +158,7 @@ export function StrategiesPage() {
             <td>
               <span className="badge">策略项目</span>
             </td>
-            <td>—</td>
+            <td>{modified(entry.modified_at)}</td>
             <td>—</td>
             <td>
               <a href={backtestsHref({ strategy: entry.strategy_id! })} aria-label={displayName(entry.path) + '的回测列表'}>回测列表</a>
@@ -156,7 +174,7 @@ export function StrategiesPage() {
             <td>
               <span className="badge">Code</span>
             </td>
-            <td>—</td>
+            <td>{modified(entry.modified_at)}</td>
             <td>—</td>
             <td>
               <a href={backtestsHref({ file: entry.path })} aria-label={displayName(entry.path) + '的回测列表'}>回测列表</a>
@@ -201,12 +219,20 @@ export function StrategiesPage() {
         void create();
     }}><label>
           {modal === '新建文件夹' ? '分类文件夹名称' : '策略名称'}
-          <input autoFocus required value={name} disabled={pending} onChange={e => setName(e.target.value)} />
-        </label><p className="note">
+          <input id="new-strategy-name" name="strategy-name" data-initial-focus autoFocus required maxLength={80} value={name} disabled={pending} onChange={e => setName(e.target.value)} />
+        </label>
+        {modal !== '新建文件夹' && <label htmlFor="new-strategy-template">初始代码
+          <select id="new-strategy-template" name="strategy-template" disabled={pending} value={template}
+            onChange={event => setTemplate(event.target.value === 'blank' ? 'blank' : 'observation')}>
+            <option value="observation">入门观察模板（不下单）</option>
+            <option value="blank">空白 Python</option>
+          </select>
+        </label>}
+        <p className="note">
           {modal === '新建策略'
-            ? '创建空白 Python 文件；同名文件不会覆盖。'
+            ? '创建 Python 文件；同名文件不会覆盖。入门模板记录账户净值，默认关闭基准，不包含交易指令。'
             : modal === '新建项目'
-              ? '创建包含 main.py 入口的策略项目，可添加辅助模块和子目录。'
+              ? '创建包含 main.py 入口的策略项目。所选模板先在浏览器中打开，保存后写入服务；可添加辅助模块和子目录。'
               : '在当前目录创建分类文件夹；分类文件夹内可放置策略和其他分类。'}
         </p><ErrorNotice message={error} /><div className="actions">
           <button type="button" disabled={pending} onClick={() => setModal('')}>取消</button>

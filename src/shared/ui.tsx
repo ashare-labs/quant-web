@@ -80,7 +80,7 @@ export function useResource<T>(path: string | null, poll = 0, paper = false, opt
           totalBytes: null
         });
       if (timeoutMs > 0)
-        deadline = setTimeout(() => cancel(`读取超过 ${timeoutMs / 1000} 秒，已取消本次读取。可以重试或返回回测列表。`), timeoutMs);
+        deadline = setTimeout(() => cancel(`读取超过 ${timeoutMs / 1000} 秒，已取消本次读取。可以重试；已有运行和已保存内容不变。`), timeoutMs);
       let done = false;
       try {
         const value = await api<T>(path, undefined, signal, paper, undefined, trackRead ? progress => {
@@ -162,8 +162,17 @@ export function Modal({ title, children, close, wide = false }: {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialog?.showModal();
-    return () => dialog?.close();
+    // React's autoFocus runs while the dialog is still closed. Apply the
+    // caller's intended initial field after the native modal becomes visible.
+    const field = dialog?.querySelector<HTMLElement>('[data-initial-focus]:not(:disabled), [autofocus]:not(:disabled)');
+    field?.focus({ preventScroll: true });
+    return () => {
+      dialog?.close();
+      if (previous?.isConnected)
+        previous.focus({ preventScroll: true });
+    };
   }, []);
   return <dialog ref={ref} className={wide ? 'wide-dialog' : ''} onCancel={e => {
     e.preventDefault();

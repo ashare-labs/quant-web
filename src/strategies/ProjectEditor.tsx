@@ -3,7 +3,7 @@ import { accountMode, accountSession, accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { ApiError, download, errorText, object } from '../shared/api';
 import { CapitalInput } from '../shared/CapitalInput';
-import { resolveFrequency } from '../shared/drafts';
+import { resolveFrequency, validateConfig } from '../shared/drafts';
 import { todayInShanghai, validDate, validateDateRange } from '../shared/dates';
 import { displayName, folderHref, parentDirectory } from '../shared/strategy-files';
 import { isProjectId } from '../shared/strategy-path';
@@ -12,6 +12,8 @@ import { backtestsHref } from '../backtests/history-model';
 import { checkSourceBudget, environment, submitProjectCurrent } from '../backtests/submission';
 import { CodeEditor } from './CodeEditor';
 import { ProjectFiles } from './ProjectFiles';
+import { EditorHelp } from './EditorHelp';
+import { OBSERVATION_TEMPLATE } from './starter';
 import { moveProject, ProjectWriteError, readProject, saveProject } from './project-api';
 import {
   deleteProjectFile, frozenSource, projectDescriptor, projectFilePath, projectHref,
@@ -60,7 +62,7 @@ export function ProjectEditor({ identity, manifest, jobId }: {
   const operation = useRef(false);
   const leaving = useRef(false);
   const mounted = useRef(true);
-  const catalogue = useResource<Record<string, unknown>>(readOnly ? null : '/python/catalogue');
+  const catalogue = useResource<Record<string, unknown>>(readOnly ? null : '/python/catalogue', 0, false, { timeoutMs: 15000 });
   const locked = readOnly || loading || loadFailed || !!busy || !draft;
   function show(next: ProjectDraft) {
     draftRef.current = next;
@@ -150,9 +152,16 @@ export function ProjectEditor({ identity, manifest, jobId }: {
           localError = errorText(e);
         }
         const opened = openProjectDraft(remote, stored);
+        setRetentionError(localError);
+        if (!stored && !opened.draft.files[opened.draft.entrypoint].trim()
+          && new URLSearchParams(location.search).get('starter') === 'observation') {
+          opened.draft = editProjectDraft(opened.draft, {
+            files: { ...opened.draft.files, [opened.draft.entrypoint]: OBSERVATION_TEMPLATE }
+          });
+          retain(opened.draft);
+        }
         show(opened.draft);
         setConflict(opened.conflict);
-        setRetentionError(localError);
         history.replaceState(null, '', projectHref(remote.strategy_id));
       }
       catch (e) {
@@ -387,6 +396,7 @@ export function ProjectEditor({ identity, manifest, jobId }: {
   }
   let dateError = '';
   let serviceError = '';
+  let configError = '';
   let serviceReady = false;
   if (draft && !readOnly)
     try {
@@ -403,6 +413,24 @@ export function ProjectEditor({ identity, manifest, jobId }: {
     catch (e) {
       serviceError = errorText(e);
     }
+  if (draft && !readOnly) {
+    try {
+      validateConfig(draft);
+    }
+    catch (e) {
+      configError = errorText(e);
+    }
+  }
+  const runReason = readOnly ? '历史源码只读，不能在此重新提交。'
+    : busy === 'run' ? '正在提交当前源码；请求结果尚未返回，请勿重复提交。'
+    : loading ? '正在读取策略项目。'
+    : loadFailed || !draft ? '策略项目读取失败，请重试读取。'
+    : busy ? '请等待当前操作完成。'
+    : catalogue.loading ? '正在核对回测数据与服务，最多等待 15 秒。'
+    : catalogue.error ? '回测服务读取失败，请重试数据检查。'
+    : serviceError || (!serviceReady ? '等待回测数据与服务检查。' : '')
+      || (!draft.files[draft.entrypoint]?.trim() ? '请编写项目入口 Python 策略。' : '')
+      || configError;
   const active = draft?.active ?? '';
   const system = active === 'aquant.toml';
   const source = draft ? (system ? projectDescriptor(draft) : draft.files[active] ?? '') : '';
@@ -516,22 +544,22 @@ export function ProjectEditor({ identity, manifest, jobId }: {
       </div>
       <div className="output">
         <div className="pane-tools config-tools">
-          <label>开始日期<input ref={startInput} type="date" aria-label="开始日期" max={today} value={draft?.start
+          <label>开始日期<input ref={startInput} id="backtest-start-date" name="start_date" type="date" aria-label="开始日期" max={today} value={draft?.start
             ?? ''} readOnly={locked} onChange={e => edit({ start: e.target.value })} /></label>
-          <label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={draft
+          <label>结束日期<input ref={endInput} id="backtest-end-date" name="end_date" type="date" aria-label="结束日期" min={draft
             && validDate(draft.start)
             ? draft.start
             : undefined} max={today} value={draft?.end
               ?? ''} readOnly={locked} onChange={e => edit({ end: e.target.value })} /></label>
           <label>初始资金<CapitalInput value={draft?.capital
             ?? ''} readOnly={locked} onChange={capital => edit({ capital })} /></label>
-          <select aria-label="运行频率" value={draft?.frequency
+          <select id="backtest-frequency" name="frequency" aria-label="运行频率" value={draft?.frequency
             ?? '1m'} disabled={locked} onChange={e => edit({ frequency: resolveFrequency(e.target.value) })}>
             <option value="1m">分钟</option>
             <option value="1d">日</option>
           </select>
           <span className="runtime-label">Python3 · aquant</span>
-          <button className="primary" disabled={locked || !serviceReady} onClick={() => void run()}>
+          <button className="primary" disabled={!!runReason} title={runReason || undefined} aria-describedby={readOnly ? undefined : 'editor-run-reason'} onClick={() => void run()}>
             {busy === 'run' ? '正在提交…' : '开始回测'}
           </button>
         </div>
@@ -543,9 +571,12 @@ export function ProjectEditor({ identity, manifest, jobId }: {
           || catalogue.error
           || serviceError} retry={loadFailed
             ? () => setReload(n => n + 1)
-            : catalogue.error
-              ? catalogue.refresh
-              : undefined} />
+            : undefined} />
+        {!readOnly && <div className="editor-run-status">
+          <p id="editor-run-reason" role="status">{runReason || '配置已填写；实际数据需求将由运行时进一步校验。'}</p>
+          {(catalogue.error || serviceError) && <button disabled={catalogue.loading || !!busy}
+            onClick={catalogue.refresh}>重试数据检查</button>}
+        </div>}
         {conflict
           && <div className="notice" role="status">
             服务中的项目已变化，当前全部编辑仍保留。保存前请核对版本。
@@ -576,6 +607,7 @@ export function ProjectEditor({ identity, manifest, jobId }: {
               : '策略 API：from aquant import *。项目模块使用相对导入，例如 from .signals import signal。'}
           </p>
           {readOnly && <p className="note">可在独立结果页查看对应运行。</p>}
+          {!readOnly && <EditorHelp catalogue={catalogue.data} empty={!draft?.files[draft.entrypoint]?.trim()} />}
           <a href="strategies.html">返回策略列表 <i className="fa fa-long-arrow-right" aria-hidden="true" /></a>
         </div>
         <div className="pane-tools">日志输出</div>
@@ -611,7 +643,7 @@ export function ProjectEditor({ identity, manifest, jobId }: {
           {action.kind === 'delete' ? <p>删除 {action.path}？修改会先保留在浏览器，保存后更新项目。</p> : <>
             <label>
               {action.kind === 'move' ? '项目路径（相对于策略根目录）' : '文件路径（相对于项目目录）'}
-              <input autoFocus required disabled={!!busy} value={name} onChange={e => setName(e.target.value)} placeholder={action.kind === 'move'
+              <input id="project-file-path" name="project-file-path" data-initial-focus autoFocus required disabled={!!busy} value={name} onChange={e => setName(e.target.value)} placeholder={action.kind === 'move'
                 ? '分类/项目名称'
                 : 'signals/momentum.py'} />
             </label>

@@ -47,12 +47,30 @@ export function curves(analysis: Analysis) {
 }
 export const logarithmAvailable = (analysis: Analysis) => curves(analysis).every(line => line.nav.every(v => v === null
   || v > 0));
+export function percentAxisFormatter(values: (number | null)[]) {
+  const valid = values.filter((v): v is number => v !== null && Number.isFinite(v));
+  const low = valid.reduce((a, b) => Math.min(a, b), 0);
+  const high = valid.reduce((a, b) => Math.max(a, b), 0);
+  const span = (high - low) * 100;
+  const scientific = span > 0 && span < 1e-7;
+  const digits = span > 0 ? Math.min(8, Math.max(1, Math.ceil(-Math.log10(span / 5)))) : 1;
+  return (value: number) => {
+    const percent = value * 100;
+    if (!Number.isFinite(percent))
+      return '—';
+    if (scientific && percent !== 0)
+      return percent.toExponential(2) + '%';
+    const rounded = percent.toFixed(digits);
+    return (Number(rounded) === 0 ? (0).toFixed(digits) : rounded) + '%';
+  };
+}
 export function performanceOption(analysis: Analysis, range: [
   number,
   number
 ], visible: Visibility, logarithmic: boolean, drawdown: Drawdown) {
   const rows = analysis.series;
   const lines = curves(analysis);
+  const percentAxis = percentAxisFormatter(lines.filter(line => visible[line.key]).flatMap(line => line.values));
   const labels = ['期初', ...rows.map(r => r.date)];
   const log = logarithmic && logarithmAvailable(analysis);
   const episode = (drawdown === 'excess' ? analysis.excess_drawdowns : analysis.drawdowns)?.[0];
@@ -164,9 +182,9 @@ export function performanceOption(analysis: Analysis, range: [
     yAxis: [{
       type: 'value', gridIndex: 0, scale: log,
       axisLabel: {
-        formatter: (v: number) => ((log
+        formatter: (v: number) => percentAxis(log
           ? Math.expm1(v)
-          : v) * 100).toFixed(1) + '%',
+          : v),
         color: '#667482'
       }, splitLine: { lineStyle: { color: '#edf0f3' } }
     },

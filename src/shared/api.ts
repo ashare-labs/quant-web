@@ -37,6 +37,43 @@ export async function api<T>(
   paper = false,
   method?: 'PUT',
   onRead?: (progress: ReadProgress) => void,
+  timeoutMs = 0,
+): Promise<T> {
+  // Deadlines are opt-in: large result downloads retain their existing policy.
+  // A timed-out write may already have been accepted. Never retry it here.
+  if (!(timeoutMs > 0))
+    return request<T>(path, body, signal, paper, method, onRead);
+  const controller = new AbortController();
+  const abort = () => controller.abort(signal?.reason);
+  if (signal?.aborted)
+    abort();
+  else
+    signal?.addEventListener('abort', abort, { once: true });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new ApiError(body === undefined
+        ? `读取服务超过 ${timeoutMs / 1000} 秒，已停止等待。请重试。`
+        : `提交超过 ${timeoutMs / 1000} 秒，结果尚未确认。请先核对服务中的记录或文件，避免重复操作。`,
+      'REQUEST_TIMEOUT', body !== undefined));
+      controller.abort();
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([request<T>(path, body, controller.signal, paper, method, onRead), deadline]);
+  }
+  finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
+  }
+}
+async function request<T>(
+  path: string,
+  body?: unknown,
+  signal?: AbortSignal,
+  paper = false,
+  method?: 'PUT',
+  onRead?: (progress: ReadProgress) => void,
 ): Promise<T> {
   const authority = accountSession.requireCurrent();
   const current = () => {

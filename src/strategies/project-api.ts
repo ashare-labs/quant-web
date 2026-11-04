@@ -25,7 +25,7 @@ export async function readProject(identity: string, signal?: AbortSignal): Promi
   const query = new URLSearchParams(isProjectId(identity)
     ? { strategy_id: identity }
     : { path: identity });
-  const project = response(await api('/python/projects?' + query, undefined, signal));
+  const project = response(await api('/python/projects?' + query, undefined, signal, false, undefined, undefined, 15000));
   if (isProjectId(identity) && project.strategy_id !== identity)
     throw new ApiError('返回项目与所选策略不一致。', 'INVALID_RESPONSE', false);
   return project;
@@ -34,7 +34,7 @@ export async function createProject(path: string): Promise<StrategyProject> {
   if (!isStrategyPath(path))
     throw new Error('策略项目路径无效。');
   const body: components['schemas']['ProjectCreate'] = { path, entrypoint: 'main.py' };
-  return response(await api('/python/projects', body), true);
+  return response(await api('/python/projects', body, undefined, false, undefined, undefined, 30000), true);
 }
 export async function saveProject(project: StrategyProject): Promise<StrategyProject> {
   const source = projectSource({ ...project, project_id: project.strategy_id });
@@ -46,7 +46,7 @@ export async function saveProject(project: StrategyProject): Promise<StrategyPro
       files: source.files,
       expected_revision: project.revision
     };
-    const saved = response(await api('/python/projects', body, undefined, false, 'PUT'), true);
+    const saved = response(await api('/python/projects', body, undefined, false, 'PUT', undefined, 30000), true);
     if (saved.strategy_id !== project.strategy_id || !sameProjectSource(saved, project))
       throw new ApiError('返回项目与本次保存不一致。', 'INVALID_RESPONSE', true);
     return saved;
@@ -76,7 +76,7 @@ export async function moveProject(project: StrategyProject, destination: string)
       strategy_id: project.strategy_id,
       expected_revision: project.revision
     };
-    const moved = response(await api('/python/projects/move', body), true);
+    const moved = response(await api('/python/projects/move', body, undefined, false, undefined, undefined, 30000), true);
     if (moved.strategy_id !== project.strategy_id || !sameProjectSource(moved, project))
       throw new ApiError('返回项目与移动前不一致。', 'INVALID_RESPONSE', true);
     return moved;

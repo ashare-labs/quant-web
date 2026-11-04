@@ -5,7 +5,7 @@ import { ErrorNotice } from '../shared/ui';
 import { BacktestComparison } from './BacktestComparison';
 import {
   createdTime, durationTitle, recordDuration, frequencyLabel, lastPage, optionalColumns,
-  optionalValue, pageOf, pageSize, recordStatus, resultHref, returnClass, selectRecords,
+  optionalValue, pageOf, pageSize, recordStatus, resultHref, returnClass, selectRecords, unassignedHistoryHref,
   type BacktestRecord, type OptionalColumn, type StrategyBacktests, type StrategyIdentity,
 } from './history-model';
 export function BacktestList({ identity, data, loading, error, refresh, editor }: {
@@ -36,6 +36,8 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
   const latest = selectRecords(data?.records || [], '')[0];
   const strategy = data?.strategy || identity;
   const editorLink = editor || (strategy.id ? strategyEditorHref(strategy.id) : null);
+  const recordHref = (record: BacktestRecord) => resultHref(strategy.unassigned
+    ? { ...record, executionState: 'read_only_history' } : record, strategy.id);
   useEffect(() => {
     if (allCheckbox.current)
       allCheckbox.current.indeterminate = checked > 0 && checked < visible.length;
@@ -78,11 +80,13 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
       </div>
       <nav aria-label="当前策略导航">
         {editorLink && <a href={editorLink}>编辑策略</a>}
-        {latest && <a href={resultHref(latest, strategy.id)}>回测详情</a>}
+        {latest && <a href={recordHref(latest)}>回测详情</a>}
+        {!strategy.unassigned && <a href={unassignedHistoryHref}>未归属历史</a>}
         <span className="current" aria-current="page">回测列表</span>
       </nav>
     </div>
     <main className="backtest-list" aria-label={strategy.name + '的回测列表'}>
+      {strategy.unassigned && <p className="notice">这些记录没有保存策略归属，可只读查看结果、日志和冻结源码；不会按名称自动关联到现有策略。</p>}
       <div className="backtest-controls">
         <div className="backtest-actions">
           <span className="backtest-count" role="status">共有{data
@@ -150,7 +154,7 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
           <tbody>
             {visible.map((record, index) => {
               const created = createdTime(record.createdAt);
-              const href = resultHref(record, strategy.id);
+              const href = recordHref(record);
               return <tr key={record.id} aria-selected={selected.has(record.id)}>
                 <td className="row-check">
                   <input
@@ -207,7 +211,7 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
             })}
             {!visible.length && <tr>
               <td colSpan={columnCount} className="empty">
-                {loading ? '正在读取回测记录…' : error ? '回测记录未能加载。' : search ? '没有匹配的回测。' : '此策略还没有回测记录。'}
+                {loading ? '正在读取回测记录…' : error ? '回测记录未能加载。' : search ? '没有匹配的回测。' : strategy.unassigned ? '没有未归属的历史回测。' : '此策略还没有回测记录。'}
                 {!loading && !error && !search && editorLink && <p>
                   <a href={editorLink}>编辑策略并开始回测</a>
                 </p>}
@@ -237,8 +241,8 @@ export function BacktestList({ identity, data, loading, error, refresh, editor }
           ? '匹配 '
           : ''}{filtered.length} 条 · 每页 {pageSize} 条</span>
       </div>}
-      {!!data?.unassociatedCount
-        && <p className="notice">另有 {data.unassociatedCount} 条历史回测尚未关联策略，不计入当前列表。</p>}
+      {!strategy.unassigned && !!data?.unassociatedCount
+        && <p className="notice">另有 {data.unassociatedCount} 条历史回测尚未关联策略，不计入当前列表。<a href={unassignedHistoryHref}>查看未归属历史</a></p>}
     </main>
     {comparison
       && <BacktestComparison records={comparison.records} mode={comparison.mode} close={() => setComparison(null)} />}

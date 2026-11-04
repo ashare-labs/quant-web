@@ -22,3 +22,5 @@
 @media(max-width:800px){.header-actions{gap:12px}}
 @media(max-width:420px){.header-actions{gap:8px}}
 @media(max-width:360px){header{padding:0 8px;gap:6px}header .brand{font-size:13px}header .brand img{width:24px;height:24px}header nav{gap:6px}header nav a{font-size:11px}.header-actions{gap:6px}}
+.skip-link:not(:focus){clip-path:inset(50%);pointer-events:none}
+.skip-link:focus{clip-path:none;pointer-events:auto}

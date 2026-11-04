@@ -3,6 +3,7 @@ export interface StrategyIdentity {
   id: string;
   name: string;
   path: string | null;
+  unassigned?: boolean;
 }
 export interface BacktestRecord {
   id: string;
@@ -40,6 +41,7 @@ export const backtestsHref = (context: {
       params.set(key, context[key]!);
   return 'backtests.html' + (params.size ? '?' + params.toString() : '');
 };
+export const unassignedHistoryHref = 'backtests.html?unassigned=1';
 export function resultHref(record: Pick<BacktestRecord, 'id' | 'executionState'>, strategy?: string) {
   const params = new URLSearchParams({ job: record.id });
   if (record.executionState !== 'current_runtime')

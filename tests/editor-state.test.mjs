@@ -348,6 +348,7 @@ test('single-file import and save serialize via operation lock and unmounted imp
       ErrorNotice: 'ErrorNotice',
       JsonDetails: 'JsonDetails',
       ProjectEditor: 'ProjectEditor',
+      EditorHelp: 'EditorHelp',
       ...drafts,
       ...state
     };

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { active, api, download, errorText, num, object, pct, rows, shownStatus, type HistoryJob, type JobLogs, type PythonJob, type Row } from '../shared/api';
 import { DataTable } from '../shared/DataTable';
 import { Empty, ErrorNotice, JsonDetails, Reason, Status, useResource } from '../shared/ui';
-import { backtestsHref } from '../backtests/history-model';
+import { backtestsHref, unassignedHistoryHref } from '../backtests/history-model';
 import { requestStrategy } from '../backtests/history-api';
 import { strategyEditorHref } from '../strategies/project-model';
 import { editorHref } from '../shared/drafts';
@@ -11,20 +11,14 @@ import { ResultOverview } from '../results/ResultOverview';
 import { RunProgress } from '../results/RunProgress';
 import { ReadStatus } from '../results/ReadStatus';
 import { stopJobPolling } from '../results/progress';
+import { resultTarget } from '../results/routing';
 import '../results/results.css';
 export function ResultsPage() {
   const q = new URLSearchParams(location.search);
   const id = q.get('job');
-  const family = q.get('family') || 'python';
-  const history = q.get('history') === '1';
+  const requestedFamily = q.get('family');
   const valid = id && /^m2job-[a-f0-9]{32}$/.test(id);
-  const path = valid
-    ? (history
-      ? '/history/jobs/'
-      : family === 'factors'
-        ? '/factors/jobs/'
-        : '/python/jobs/') + id
-    : null;
+  const path = valid ? '/history/jobs/' + id : null;
   const [tab, setTab] = useState('收益概述');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -48,10 +42,11 @@ export function ResultsPage() {
     timeoutMs: 60000,
     trackRead: true
   });
-  const j = job.data?.job_id === id ? job.data : null;
-  const log = useResource<JobLogs>(path
+  const target = resultTarget(job.data, id || '', requestedFamily, q.get('history') === '1');
+  const { job: j, path: resultPath, history, family } = target;
+  const log = useResource<JobLogs>(resultPath
     && tab === '运行日志'
-    ? path + '/logs'
+    ? resultPath + '/logs'
     : null, j
       && active(j)
     ? 5000
@@ -66,11 +61,11 @@ export function ResultsPage() {
       && strategyLogs)
     || (tab === '收益概述'
       && fallback);
-  const result = useResource<Row>(path
+  const result = useResource<Row>(resultPath
     && j?.result
     && family !== 'factors'
     && needsDetails
-    ? path + '/result'
+    ? resultPath + '/result'
     : null, 0, false, {
     timeoutMs: 60000,
     trackRead: true
@@ -88,7 +83,7 @@ export function ResultsPage() {
       || diagnostics)
     ? { job_id: id }
     : null;
-  const derived = useResource<Row>(analysisPath(path, analysisReference, inline, family, benchmark), 0, false, {
+  const derived = useResource<Row>(analysisPath(resultPath, analysisReference, inline, family, benchmark), 0, false, {
     timeoutMs: 60000,
     trackRead: true
   });
@@ -119,8 +114,8 @@ export function ResultsPage() {
   const strategyId = requestStrategy(request);
   const listHref = strategyId
     ? backtestsHref({ strategy: strategyId })
-    : id
-      ? backtestsHref({ job: id })
+    : j && family === 'python'
+      ? unassignedHistoryHref
       : null;
   const editHref = strategyId
     ? strategyEditorHref(strategyId)
@@ -135,11 +130,11 @@ export function ResultsPage() {
   };
   const dailyReturns = new Map(analysis?.series.map(point => [point.date, point]) ?? []);
   async function cancel() {
-    if (!path || !j || history || !active(j))
+    if (!resultPath || !j || history || !active(j))
       return;
     setBusy(true);
     try {
-      await api(path + '/cancel', {});
+      await api(resultPath + '/cancel', {});
       job.refresh();
       setError('');
     }
@@ -203,7 +198,7 @@ export function ResultsPage() {
             <a href="strategies.html">前往策略列表</a>
           </p>
         </Empty>}
-        <ErrorNotice message={error || job.error} retry={job.refresh} />
+        <ErrorNotice message={error || job.error || target.error} retry={job.refresh} />
         {job.loading && <ReadStatus label="运行状态" progress={job.readProgress} cancel={job.cancel} />}
         {j && <>
           {[
@@ -351,11 +346,13 @@ export function ResultsPage() {
           </>}
           {tab === '运行日志' && <><ErrorNotice message={log.error} retry={log.refresh} />
             {log.loading && <ReadStatus label="任务日志" progress={log.readProgress} cancel={log.cancel} />}
-            {log.data
-              && <DataTable name="任务日志" data={rows(log.data.items)} exportable={false} columns={[
+            {log.data && log.data.job_id !== id && <ErrorNotice message="返回的日志与所选任务不一致，已停止显示。" />}
+            {log.data?.job_id === id
+              && <div className="result-job-logs"><DataTable name="任务日志" data={rows(log.data.items)} exportable={false} columns={[
                 {
                   key: 'at',
-                  label: '时间'
+                  label: '时间',
+                  value: row => typeof row.at === 'string' ? row.at.replace('T', '\n') : row.at
                 },
                 {
                   key: 'event',
@@ -365,7 +362,7 @@ export function ResultsPage() {
                   key: 'details',
                   label: '详情'
                 }
-              ]} />}
+              ]} /></div>}
             {j.result
               && <details className="diagnostics" onToggle={e => setStrategyLogs(e.currentTarget.open)}>
                 <summary>策略日志</summary>

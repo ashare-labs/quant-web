@@ -9,6 +9,7 @@ import type { BacktestRecord, StrategyBacktests, StrategyIdentity } from './hist
 type Response = components['schemas']['StrategyBacktests'];
 type Item = components['schemas']['StrategyBacktest'];
 const jobPattern = /^m2job-[a-f0-9]{32}$/;
+export const unassignedIdentity = (): StrategyIdentity => ({ id: '', name: '未归属历史回测', path: null, unassigned: true });
 export function requestStrategy(request: unknown) {
   const id = object(request).strategy_id;
   return isStrategyId(id) ? id : null;
@@ -30,13 +31,21 @@ export function backtestQuery(strategyId: string, offset = 0) {
     analysis_version: 'returns-v2'
   }).toString();
 }
+export const unassignedBacktestQuery = (offset = 0) => '/python/backtests?' + new URLSearchParams({
+  limit: '100', offset: String(offset), analysis_version: 'returns-v2'
+}).toString();
 export async function resolveStrategy(params: URLSearchParams, signal?: AbortSignal): Promise<StrategyIdentity> {
-  for (const key of ['strategy', 'file', 'job', 'draft'])
+  for (const key of ['strategy', 'file', 'job', 'draft', 'unassigned'])
     if (params.getAll(key).length > 1)
       throw new Error('策略上下文不明确，请从策略文件重新打开回测列表。');
   const explicit = params.get('strategy');
   const file = params.get('file');
   const job = params.get('job');
+  const scoped = ['strategy', 'file', 'job', 'draft'].some(key => params.has(key));
+  if (params.has('unassigned') && (params.get('unassigned') !== '1' || scoped))
+    throw new Error('未归属历史入口不能同时指定策略或任务，请重新打开回测列表。');
+  if (!scoped)
+    return unassignedIdentity();
   // A file entry is current filesystem context. An explicit strategy/job is a
   // frozen identity and must stay exact, including old alias identities.
   const resolvedFile = file ? (await readStrategyFile(file, signal)).strategy_id : null;
@@ -50,8 +59,11 @@ export async function resolveStrategy(params: URLSearchParams, signal?: AbortSig
     if (record.job_id !== job || record.family !== 'python')
       throw new Error('此记录不是所选 Python 策略的回测。');
     const recorded = requestStrategy(record.request);
-    if (!recorded)
+    if (!recorded) {
+      if (!identity && !params.has('draft'))
+        return unassignedIdentity();
       throw new Error('这条历史回测未记录策略归属，暂不能确定所属策略。原记录和冻结源码仍保留，不会按同名策略自动归类。');
+    }
     if (identity && identity !== recorded)
       throw new Error('回测记录与所选策略不一致。');
     identity = recorded;
@@ -78,7 +90,7 @@ export async function resolveStrategy(params: URLSearchParams, signal?: AbortSig
   }
   return strategyIdentity(identity);
 }
-export function normalizeBacktest(item: Item, strategyId: string): BacktestRecord {
+export function normalizeBacktest(item: Item, strategyId: string | null): BacktestRecord {
   if (!item
     || item.strategy_id !== strategyId
     || !jobPattern.test(item.job_id)
@@ -141,16 +153,19 @@ export function normalizeBacktest(item: Item, strategyId: string): BacktestRecor
   };
 }
 export async function readStrategyBacktests(identity: StrategyIdentity, signal?: AbortSignal): Promise<StrategyBacktests> {
+  const strategyId = identity.unassigned === true && identity.id === '' ? null : identity.id;
   const records: BacktestRecord[] = [];
   const ids = new Set<string>();
   let total: number | undefined;
   let unassociatedCount = 0;
   for (let offset = 0; total === undefined || offset < total; offset += 100) {
-    const response = await api<Response>(backtestQuery(identity.id, offset), undefined, signal);
+    const response = await api<Response>(strategyId === null
+      ? unassignedBacktestQuery(offset)
+      : backtestQuery(strategyId, offset), undefined, signal);
     if (!response
       || response.analysis_version !== 'returns-v2'
-      || response.strategy_id !== identity.id
-      || String(response.identity_model) !== (isProjectId(identity.id)
+      || response.strategy_id !== strategyId
+      || String(response.identity_model) !== (isProjectId(strategyId)
         ? 'stable_project_id'
         : 'saved_relative_path')
       || !Array.isArray(response.items)
@@ -168,7 +183,7 @@ export async function readStrategyBacktests(identity: StrategyIdentity, signal?:
     if (response.items.length !== Math.min(100, total - offset))
       throw new Error('回测列表返回不完整，请刷新后重试。');
     for (const item of response.items) {
-      const record = normalizeBacktest(item, identity.id);
+      const record = normalizeBacktest(item, strategyId);
       if (ids.has(record.id))
         throw new Error('回测列表在读取时发生变化，请刷新后重试。');
       ids.add(record.id);

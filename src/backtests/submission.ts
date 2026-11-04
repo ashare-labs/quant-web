@@ -25,6 +25,9 @@ export function environment(catalogue: unknown): string {
     || !/^[a-f0-9]{64}$/.test(value.environment_id)) {
     throw new Error('当前服务尚未提供策略按需取数接口，请检查连接的研究服务。');
   }
+  const dataStatus = object(value.data_status);
+  if (dataStatus.status === 'unavailable')
+    throw new Error('当前回测数据尚未就绪：' + String(object(dataStatus.error).message || '无法核对数据来源。') + ' 请重试数据检查。');
   return value.environment_id;
 }
 export function submission(draft: Pick<Draft, 'name' | 'source' | 'start' | 'end' | 'capital' | 'filePath'> & {
@@ -154,6 +157,8 @@ async function submitAttempt(identity: string, request: Submission): Promise<Pyt
   catch (error) {
     if (error instanceof ApiError && !error.uncertain)
       forget();
+    if (error instanceof ApiError && error.code === 'REQUEST_TIMEOUT')
+      error.message += ' 本页不会自动重试；保持当前源码和配置不变后再次提交，将沿用原请求查找结果。';
     throw error;
   }
 }
@@ -185,7 +190,7 @@ export function matchesCanonicalRequest(job: unknown, request: Submission, manif
     }, canonical);
 }
 export async function submit(request: Submission): Promise<PythonJob> {
-  const job = await api<PythonJob>('/python/jobs', request);
+  const job = await api<PythonJob>('/python/jobs', request, undefined, false, undefined, undefined, 60000);
   if (!matchesRequest(job, request)) {
     // A submitted request may contain an alias. Verify the frozen alias
     // evidence, not today's file lookup: the file may since have disappeared.

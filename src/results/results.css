@@ -35,6 +35,11 @@
 .result-analysis .result-subheading{margin:22px 0 12px}
 .result-analysis .side .result-side-secondary{margin-top:24px;color:var(--muted);font-size:12px}
 .result-analysis .result-attribution-note{margin-bottom:20px}
+.result-analysis .result-job-logs table{table-layout:fixed;min-width:700px}
+.result-analysis .result-job-logs th:nth-child(1),.result-analysis .result-job-logs td:nth-child(1){width:230px;white-space:pre;overflow-wrap:normal;font-variant-numeric:tabular-nums}
+.result-analysis .result-job-logs th:nth-child(2),.result-analysis .result-job-logs td:nth-child(2){width:190px;overflow-wrap:anywhere}
+.result-analysis .result-job-logs td{vertical-align:top}
+.result-analysis .result-job-logs td:nth-child(3){white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;font:12px/1.8 Menlo,Consolas,monospace}
 .run-progress{padding:28px 0;color:var(--fg);font-size:13px}
 .run-progress-heading{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .run-progress-heading strong{font-weight:500}

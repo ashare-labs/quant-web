@@ -1,7 +1,7 @@
 import { accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { randomId } from '../shared/random-id';
-import { active, api, ApiError, csv, download, errorText, num, type JobLogs } from '../shared/api';
+import { active, api, ApiError, csv, download, errorText, num, object, type JobLogs } from '../shared/api';
 import { Empty, ErrorNotice, JsonDetails, Modal, Reason, Status, useResource } from '../shared/ui';
 import type { Catalogue, Factor, Job, Result, Source, Submission } from '../factors/api';
 import { compatible, containsRequest, draftKey, emptyDraft, pendingKey, readDraft, submission, type Draft } from '../factors/model';
@@ -36,16 +36,16 @@ export function FactorsPage() {
     }
   });
   const guard = useRef(false);
-  const catalogue = useResource<Catalogue>('/factors/catalogue');
+  const catalogue = useResource<Catalogue>('/factors/catalogue', 0, false, { timeoutMs: 15000 });
   const sources = useResource<{
     items: Source[];
     environment_id: string;
-  }>('/factors/sources');
+  }>('/factors/sources', 0, false, { timeoutMs: 15000 });
   const jobs = useResource<{
     items: Job[];
-  }>('/factors/jobs', 7000);
+  }>('/factors/jobs', 7000, false, { timeoutMs: 15000 });
   const validJob = /^m2job-[a-f0-9]{32}$/.test(jobId);
-  const job = useResource<Job>(validJob ? '/factors/jobs/' + jobId : null, 3000);
+  const job = useResource<Job>(validJob ? '/factors/jobs/' + jobId : null, 3000, false, { timeoutMs: 15000 });
   const result = useResource<Result>(validJob
     && job.data?.result
     ? '/factors/jobs/' + jobId + '/result'
@@ -72,8 +72,20 @@ export function FactorsPage() {
     });
   const pages = Math.max(1, Math.ceil(filtered.length / 25));
   const current = Math.min(page, pages - 1);
+  const catalogueStatus = object(object(catalogue.data).data_status);
+  const sourcesStatus = object(object(sources.data).data_status);
+  const dataError = [catalogueStatus, sourcesStatus].filter(status => status.status === 'unavailable')
+    .map(status => String(object(status.error).message || '当前数据来源尚未就绪，请重试数据检查。')).join(' ');
   const environmentReady = !!catalogue.data
-    && catalogue.data.environment_id === sources.data?.environment_id;
+    && typeof catalogue.data.environment_id === 'string'
+    && /^[a-f0-9]{64}$/.test(catalogue.data.environment_id)
+    && catalogue.data.environment_id === sources.data?.environment_id
+    && !dataError && !catalogue.loading && !sources.loading && !catalogue.error && !sources.error;
+  const runReason = busy ? '正在提交，请勿重复操作。'
+    : pending ? '有一条提交尚未确认，请先按原请求找回。'
+    : catalogue.loading || sources.loading ? '正在读取因子目录和数据来源，最多等待 15 秒。'
+    : dataError || (!environmentReady ? '数据来源未就绪或目录版本不一致，请重试数据检查。' : '')
+      || (factor && factor.availability !== 'IMPLEMENTED' ? '当前因子尚未提供计算实现。' : '');
   const scrolledJob = useRef('');
   useEffect(() => {
     if (jobId && catalogue.data && jobs.data && scrolledJob.current !== jobId) {
@@ -128,7 +140,7 @@ export function FactorsPage() {
         : submission(draft, selected, catalogue.data.environment_id, randomId());
       storage.setItem(pendingKey, JSON.stringify(request));
       setPending(request);
-      const accepted = await api<Job>('/factors/jobs', request);
+      const accepted = await api<Job>('/factors/jobs', request, undefined, false, undefined, undefined, 60000);
       if (accepted.contract_version !== 'factor-jobs.v1'
         || !/^m2job-[a-f0-9]{32}$/.test(accepted.job_id)
         || !containsRequest(accepted.request, request))
@@ -247,7 +259,7 @@ export function FactorsPage() {
       </div>
     </div>
     <div className="toolbar factor-toolbar">
-      <input aria-label="搜索因子" placeholder="搜索因子名称" value={search} onChange={e => {
+      <input id="factor-search" name="factor-search" aria-label="搜索因子" placeholder="搜索因子名称" value={search} onChange={e => {
         setSearch(e.target.value);
         setPage(0);
       }} />
@@ -259,7 +271,7 @@ export function FactorsPage() {
         setPage(0);
       }}>重置筛选</button>
     </div>
-    <ErrorNotice message={catalogue.error || sources.error || error} retry={() => {
+    <ErrorNotice message={catalogue.error || sources.error || dataError || error} retry={() => {
       catalogue.refresh();
       sources.refresh();
       setError('');
@@ -434,6 +446,13 @@ export function FactorsPage() {
         <FactorForm factor={factor} sources={sources.data?.items
           || []} draft={draft} edit={edit} evaluationAvailable={!!catalogue.data?.evaluation_available} />
         <ErrorNotice message={error} />
+        {runReason && <div className="notice" role="status">
+          <span id="factor-run-reason">{runReason}</span>
+          {!environmentReady && !catalogue.loading && !sources.loading && <button type="button" onClick={() => {
+            catalogue.refresh();
+            sources.refresh();
+          }}>重试数据检查</button>}
+        </div>}
         <details>
           <summary>定义与限制</summary>
           <p className="note">
@@ -447,10 +466,8 @@ export function FactorsPage() {
         </details>
         <div className="actions">
           <button type="button" onClick={() => setShowForm(false)}>取消</button>
-          <button className="primary" disabled={busy
-            || !!pending
-            || !environmentReady
-            || factor.availability !== 'IMPLEMENTED'}>
+          <button className="primary" disabled={!!runReason} title={runReason || undefined}
+            aria-describedby={runReason ? 'factor-run-reason' : undefined}>
             {busy ? '正在提交…' : draft.evaluate ? '计算并评价' : '计算因子'}
           </button>
         </div>

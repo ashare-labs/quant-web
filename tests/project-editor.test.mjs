@@ -16,6 +16,7 @@ for (const [name, path] of Object.entries({
   '../shared/strategy-files': 'shared/strategy-files', '../shared/strategy-path': 'shared/strategy-path',
   '../backtests/history-model': 'backtests/history-model', '../backtests/submission': 'backtests/submission',
   './project-api': 'strategies/project-api', './project-model': 'strategies/project-model', './project-state': 'strategies/project-state',
+  './starter': 'strategies/starter',
 })) modules[name] = await import(new URL('../src/' + path + '.ts', import.meta.url));
 const authDefaults = { ...modules['../auth/session'] };
 modules['../auth/session'] = { ...authDefaults };
@@ -23,7 +24,8 @@ const stub = name => ({ [name]: Object.defineProperty(() => null, 'name', { valu
 Object.assign(modules, {
   '../shared/CapitalInput': stub('CapitalInput'),
   './CodeEditor': stub('CodeEditor'),
-  './ProjectFiles': stub('ProjectFiles')
+  './ProjectFiles': stub('ProjectFiles'),
+  './EditorHelp': stub('EditorHelp')
 });
 const catalogue = {
   environment_id: 'c'.repeat(64),

@@ -5,7 +5,8 @@ import { setImmediate } from 'node:timers/promises';
 import ts from 'typescript';
 import * as apiModule from '../src/shared/api.ts';
 import * as model from '../src/results/model.ts';
-import { backtestsHref } from '../src/backtests/history-model.ts';
+import { backtestsHref, unassignedHistoryHref } from '../src/backtests/history-model.ts';
+import { resultTarget } from '../src/results/routing.ts';
 import { requestStrategy } from '../src/backtests/history-api.ts';
 import { readResponse } from '../src/shared/response-read.ts';
 
@@ -266,7 +267,7 @@ function page(job = {
   r.data = new Map([
     [
       path,
-      job
+      { family: 'python', read_only: true, execution_state: 'runtime_unavailable', ...job }
     ],
     [
       path + '/result/analysis?analysis_version=returns-v2&benchmark=frozen',
@@ -308,10 +309,11 @@ function page(job = {
     };
     if (name === '../shared/api') return apiModule;
     if (name === '../shared/ui') return ui;
-    if (name === '../backtests/history-model') return { backtestsHref };
+    if (name === '../backtests/history-model') return { backtestsHref, unassignedHistoryHref };
     if (name === '../backtests/history-api') return { requestStrategy };
     if (name === '../strategies/project-model') return { strategyEditorHref: id => 'strategy-editor.html?project=' + id };
     if (name === '../results/model') return model;
+    if (name === '../results/routing') return { resultTarget };
     if (name === '../results/ResultOverview') return { ResultOverview: r.overview };
     if (name === '../shared/DataTable') return { DataTable: r.table };
     if (name === '../results/ReadStatus') return { ReadStatus: r.status };
@@ -380,14 +382,17 @@ test('trades/holdings request frozen detail on demand; returning to overview rel
     assert(r.requests.some(r => r.path === path + '/result'));
   } finally { r.close(); }
 });
-test('unpublished and factor jobs do not request analysis or frozen Python details; unassociated history stays job-scoped', () => {
+test('unpublished and factor jobs do not request analysis or frozen Python details; unassociated history has a read-only list', () => {
   const r = page({ job_id: id, status: 'failed', request: { name: 'old' }, result: null });
   try {
     assert(!r.requests.some(r => r.path?.includes('/result')));
-    assert.equal(nodes(r.value).find(n => n.type === 'a').props.href, backtestsHref({ job: id }));
+    assert.equal(nodes(r.value).find(n => n.type === 'a').props.href, unassignedHistoryHref);
     globalThis.location.search += '&family=factors';
     r.data.set(path, {
       job_id: id,
+      family: 'factors',
+      read_only: true,
+      execution_state: 'runtime_unavailable',
       status: 'succeeded',
       request: { factor_id: 'test' },
       result: { snapshot_sha256: analysis.source_sha256 }
@@ -407,5 +412,28 @@ test('wrong result identity is not rendered and full result failure cannot hide 
     assert(!nodes(r.value).some(n => n.type === r.table));
     click(r, '收益概述');
     assert.equal(nodes(r.value).find(n => n.type === r.overview).props.analysis, analysis);
+  } finally { r.close(); }
+});
+test('plain old result links start with verified history and never send a live result request', () => {
+  const r = page();
+  try {
+    globalThis.location.search = '?job=' + id;
+    r.render();
+    assert(r.requests.some(r => r.path === path));
+    assert(r.requests.some(r => r.path === path + '/result/analysis?analysis_version=returns-v2&benchmark=frozen'));
+    assert(!r.requests.some(r => r.path?.startsWith('/python/jobs/')));
+    assert.equal(nodes(r.value).find(n => n.type === r.overview).props.analysis, analysis);
+  } finally { r.close(); }
+});
+test('a mismatched history identity stops dependent reads and mismatched logs are never rendered', () => {
+  const r = page();
+  try {
+    r.data.set(path + '/logs', { job_id: 'other', items: [{ at: 'wrong time' }] });
+    click(r, '运行日志');
+    assert(!nodes(r.value).some(n => n.type === r.table));
+    r.data.set(path, { ...r.data.get(path), job_id: 'other' });
+    r.render();
+    assert(!r.requests.some(r => r.path?.endsWith('/logs') || r.path?.includes('/result')));
+    assert(!nodes(r.value).some(n => n.type === r.overview));
   } finally { r.close(); }
 });

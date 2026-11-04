@@ -3,7 +3,7 @@ import { accountMode, accountSession, accountStorage } from '../auth/session';
 import { useEffect, useRef, useState } from 'react';
 import { randomId } from '../shared/random-id';
 import { download, errorText, object } from '../shared/api';
-import { DEFAULT_FREQUENCY, editorHref, newDraft, resolveFrequency, validateDraftConfig, type Draft } from '../shared/drafts';
+import { DEFAULT_FREQUENCY, editorHref, newDraft, resolveFrequency, validateConfig, validateDraftConfig, type Draft } from '../shared/drafts';
 import { todayInShanghai, validDate, validateDateRange } from '../shared/dates';
 import { unformatCapital } from '../shared/capital';
 import {
@@ -22,17 +22,20 @@ import {
 import { CodeEditor } from '../strategies/CodeEditor';
 import { ProjectEditor } from '../strategies/ProjectEditor';
 import { strategyEditorHref } from '../strategies/project-model';
+import { EditorHelp } from '../strategies/EditorHelp';
 export function EditorPage() {
   const params = new URLSearchParams(location.search);
   const jobId = params.get('job');
   const project = params.get('project');
   const manifest = useResource<Record<string, unknown>>(jobId
     ? '/history/jobs/' + encodeURIComponent(jobId) + '/manifest'
-    : null);
+    : null, 0, false, { timeoutMs: 15000 });
   if (project && !jobId)
     return <ProjectEditor identity={project} />;
   if (jobId && manifest.loading)
     return <p className="empty" role="status">正在读取历史源码…</p>;
+  if (jobId && manifest.error)
+    return <main><ErrorNotice message={manifest.error} retry={manifest.refresh} /><a href="strategies.html">返回策略列表</a></main>;
   if (jobId && object(manifest.data?.request).project)
     return <ProjectEditor manifest={manifest.data!} jobId={jobId} />;
   return <SingleFileEditor frozenManifest={manifest.data ?? undefined} historyError={manifest.error} />;
@@ -62,6 +65,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   const [aliasBackup, setAliasBackup] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(!!(path || draftId));
   const [loadFailed, setLoadFailed] = useState(false);
+  const [reload, setReload] = useState(0);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
   const [loadedPath, setLoadedPath] = useState('');
@@ -88,11 +92,14 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     setDraft(next);
   }
   const manifest = { data: frozenManifest, error: historyError };
-  const catalogue = useResource<Record<string, unknown>>(readOnly ? null : '/python/catalogue');
+  const catalogue = useResource<Record<string, unknown>>(readOnly ? null : '/python/catalogue', 0, false, { timeoutMs: 15000 });
   useEffect(() => {
     if (readOnly || (!path && !draftId))
       return;
     const controller = new AbortController();
+    setLoading(true);
+    setLoadFailed(false);
+    setError('');
     async function open() {
       try {
         let stored: Draft | undefined;
@@ -150,7 +157,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     }
     void open();
     return () => controller.abort();
-  }, [path, draftId, readOnly]);
+  }, [path, draftId, readOnly, reload]);
   useEffect(() => {
     if (manifest.data) {
       const request = object(manifest.data.request);
@@ -345,6 +352,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
   }
   let dateError = '';
   let serviceError = '';
+  let configError = '';
   let serviceReady = false;
   if (!readOnly)
     try {
@@ -361,7 +369,26 @@ function SingleFileEditor({ frozenManifest, historyError }: {
     catch (e) {
       serviceError = errorText(e);
     }
+  if (!readOnly) {
+    try {
+      validateConfig(draft);
+    }
+    catch (e) {
+      configError = errorText(e);
+    }
+  }
   const frequency = draft.frequency ?? (readOnly ? '' : DEFAULT_FREQUENCY);
+  const runReason = readOnly ? '历史源码只读，不能在此重新提交。'
+    : submitting ? '正在提交当前源码；请求结果尚未返回，请勿重复提交。'
+    : loading ? '正在读取策略文件。'
+    : loadFailed ? '策略文件读取失败，请重试读取。'
+    : saving || importing ? '请等待当前保存或导入完成。'
+    : catalogue.loading ? '正在核对回测数据与服务，最多等待 15 秒。'
+    : catalogue.error ? '回测服务读取失败，请重试数据检查。'
+    : serviceError || (!serviceReady ? '等待回测数据与服务检查。' : '')
+      || (!draft.name.trim() ? '请填写策略名称。' : '')
+      || (!draft.source.trim() ? '请编写或导入 Python 策略。' : '')
+      || configError;
   const recordedStrategy = requestStrategy(manifest.data?.request);
   const savedPath = loadedPath || draft.filePath;
   const listHref = jobId
@@ -376,7 +403,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
       <div><a href="strategies.html" aria-label="返回策略列表">
         <i className="fa fa-angle-left" aria-hidden="true" />
       </a>
-      <input className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e => edit({ name: e.target.value })} />
+      <input id="strategy-name" name="strategy-name" className="strategy-name" aria-label="策略名称" maxLength={80} value={draft.name} readOnly={locked} onChange={e => edit({ name: e.target.value })} />
     </div>
       <nav>
         {readOnly
@@ -436,6 +463,8 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             开始日期
             <input
               ref={startInput}
+              id="backtest-start-date"
+              name="start_date"
               type="date"
               aria-label="开始日期"
               max={today}
@@ -444,17 +473,17 @@ function SingleFileEditor({ frozenManifest, historyError }: {
               onChange={e => edit({ start: e.target.value })}
             />
           </label>
-          <label>结束日期<input ref={endInput} type="date" aria-label="结束日期" min={validDate(draft.start)
+          <label>结束日期<input ref={endInput} id="backtest-end-date" name="end_date" type="date" aria-label="结束日期" min={validDate(draft.start)
             ? draft.start
             : undefined} max={today} value={draft.end} readOnly={locked} onChange={e => edit({ end: e.target.value })} /></label>
           <label>初始资金<CapitalInput value={draft.capital} readOnly={locked} onChange={capital => edit({ capital })} /></label>
-          <select aria-label="运行频率" value={frequency} disabled={locked} onChange={e => edit({ frequency: resolveFrequency(e.target.value) })}>
+          <select id="backtest-frequency" name="frequency" aria-label="运行频率" value={frequency} disabled={locked} onChange={e => edit({ frequency: resolveFrequency(e.target.value) })}>
             {readOnly && !frequency && <option value="" disabled>未记录</option>}
             <option value="1m">分钟</option>
             <option value="1d">日</option>
           </select>
           <span className="runtime-label">Python3 · aquant</span>
-          <button className="primary" disabled={locked || !serviceReady} onClick={() => void run()}>
+          <button className="primary" disabled={!!runReason} title={runReason || undefined} aria-describedby={readOnly ? undefined : 'editor-run-reason'} onClick={() => void run()}>
             {submitting ? '正在提交…' : '开始回测'}
           </button>
         </div>
@@ -463,9 +492,14 @@ function SingleFileEditor({ frozenManifest, historyError }: {
           || dateError
           || manifest.error
           || catalogue.error
-          || serviceError} retry={catalogue.error
-            ? catalogue.refresh
+          || serviceError} retry={loadFailed
+            ? () => setReload(value => value + 1)
             : undefined} />
+        {!readOnly && <div className="editor-run-status">
+          <p id="editor-run-reason" role="status">{runReason || '配置已填写；实际数据需求将由运行时进一步校验。'}</p>
+          {(catalogue.error || serviceError) && <button disabled={catalogue.loading || submitting}
+            onClick={catalogue.refresh}>重试数据检查</button>}
+        </div>}
         {aliasBackup
           && <div className="notice" role="status">
             已打开规范路径的编辑。原别名 {aliasBackup.aliasSourcePath} 的源码和参数已保留为独立浏览器草稿。
@@ -494,6 +528,7 @@ function SingleFileEditor({ frozenManifest, historyError }: {
             {readOnly ? '此页不修改已冻结的研究记录。' : '策略 API：from aquant import *。证券和字段需求由 Python 取数接口表达。'}
           </p>
           {readOnly && <p className="note">可在独立结果页查看对应运行。</p>}
+          {!readOnly && <EditorHelp catalogue={catalogue.data} empty={!draft.source.trim()} />}
           <a href="strategies.html">返回策略列表 <i className="fa fa-long-arrow-right" aria-hidden="true" /></a>
         </div>
         <div className="pane-tools">日志输出</div>
