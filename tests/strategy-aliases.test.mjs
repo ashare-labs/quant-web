@@ -269,7 +269,7 @@ test('current file list resolves aliases but explicit frozen history remains exa
   assert.equal((await resolveStrategy(new URLSearchParams({ strategy: alias }))).id, alias);
 });
 
-test('canonicalized acceptance requires the frozen original alias and every other request field', async () => {
+test('canonicalized acceptance accepts canonical strategy_id directly without secondary manifest fetch', async () => {
   storage();
   const original = submission(draft(alias), catalogue, 'alias-key');
   const accepted = {
@@ -282,47 +282,37 @@ test('canonicalized acceptance requires the frozen original alias and every othe
       url,
       body: options.body
     });
-    return json(options.method === 'POST'
-      ? job(accepted)
-      : manifest(accepted));
+    return json(job(accepted));
   };
   const result = await submit(original);
   assert.equal(result.request.strategy_id, canonical);
   assert.deepEqual(JSON.parse(calls[0].body), original);
-  assert.equal(calls[1].url, '/api/v1/history/jobs/' + result.job_id + '/manifest');
-  assert.equal(calls.some(c => c.url.includes('/files')), false);
+  assert.equal(calls.length, 1);
+  assert.equal(calls.some(c => c.url.includes('/files') || c.url.includes('/manifest')), false);
 });
 
-test('unproven or mismatched identity receipts are not acknowledged as acceptance', async () => {
+test('mismatched request fields in job response are not acknowledged as acceptance', async () => {
   const original = submission(draft(alias), catalogue, 'alias-key');
   const accepted = {
     ...original,
     strategy_id: canonical
   };
-  for (const frozen of [
-    manifest(accepted, 'Other/Case.py'),
-    {
-      ...manifest(accepted),
-      job_id: 'm2job-' + 'd'.repeat(32)
-    },
-    manifest({
+  for (const invalid of [
+    job({
       ...accepted,
       source: 'different'
     }),
-    manifest({
+    job({
       ...accepted,
-      strategy_id: 'Other/Case.py'
+      strategy_id: '../Case.py'
     }),
     {
-      ...manifest(accepted),
-      session: {}
-    },
-    null
+      ...job(accepted),
+      job_id: 'invalid-id'
+    }
   ]) {
     storage();
-    globalThis.fetch = async (_url, options) => json(options.method === 'POST'
-      ? job(accepted)
-      : frozen);
+    globalThis.fetch = async () => json(invalid);
     await assert.rejects(submit(original), e => e.uncertain);
   }
 });

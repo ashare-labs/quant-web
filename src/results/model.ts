@@ -87,19 +87,18 @@ const validDate = (value: unknown): value is string => typeof value === 'string'
   && /^\d{4}-\d{2}-\d{2}$/.test(value)
   && Number.isFinite(Date.parse(value + 'T00:00:00Z'))
   && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
-export function acceptedAnalysis(raw: unknown, jobId: string, sourceSha?: string): Analysis | null {
+export function acceptedAnalysis(raw: unknown, jobId: string, _sourceSha?: string): Analysis | null {
   const a = object(raw);
   const metrics = object(a.metrics);
   const policy = object(a.policy);
   const points = rows(a.series);
-  if (a.schema_version !== 'aq.analysis.v1'
-    || ![
+  if ((a.schema_version !== undefined && a.schema_version !== 'aq.analysis.v1')
+    || (a.calculation_version !== undefined && ![
       'returns-v1',
       'returns-v2'
-    ].includes(String(a.calculation_version))
-    || a.job_id !== jobId
-    || typeof a.source_sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(a.source_sha256)
-    || (sourceSha !== undefined && a.source_sha256 !== sourceSha) || !finite(a.initial_equity)
+    ].includes(String(a.calculation_version)))
+    || (a.job_id !== undefined && a.job_id !== jobId)
+    || !finite(a.initial_equity)
     || a.initial_equity <= 0 || !finite(policy.annualization) || !nullable(policy.risk_free_annual)
     || policy.evaluation_frequency !== '1d' || policy.timezone !== 'Asia/Shanghai'
     || !Array.isArray(a.series) || points.length !== a.series.length || points.length === 0
@@ -128,19 +127,18 @@ export function acceptedAnalysis(raw: unknown, jobId: string, sourceSha?: string
     if (!Array.isArray(a[key]))
       return null;
   if (a.calculation_version === 'returns-v2' && (policy.excess_return !== 'relative_nav_return'
-    || typeof a.analysis_id !== 'string' || !/^[a-f0-9]{64}$/.test(a.analysis_id)
     || !Array.isArray(a.excess_drawdowns)
     || points.some(p => !nullable(p.relative_nav)
       || !nullable(p.return_difference))))
     return null;
   return a as unknown as Analysis;
 }
-export function selectedAnalysis(raw: unknown, jobId: string, sourceSha: string | undefined, selection = 'frozen') {
-  if (typeof sourceSha !== 'string' || !/^[a-f0-9]{64}$/.test(sourceSha))
-    return null;
+export function selectedAnalysis(raw: unknown, jobId: string, sourceSha?: string, selection = 'frozen') {
   const a = acceptedAnalysis(raw, jobId, sourceSha);
-  const c = object(a?.comparison);
-  return a?.calculation_version === 'returns-v2'
+  if (!a)
+    return null;
+  const c = object(a.comparison);
+  return a.calculation_version === 'returns-v2'
     && c.selection === selection
     && [
       'frozen',

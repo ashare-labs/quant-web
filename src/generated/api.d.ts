@@ -1526,7 +1526,10 @@ export interface components {
              * Format: date
              */
             end_date: string;
-            /** Environment Id */
+            /**
+             * Environment Id
+             * @default 0000000000000000000000000000000000000000000000000000000000000000
+             */
             environment_id: string;
             evaluation?: components["schemas"]["EvaluationOptions"] | null;
             /** Factor Id */
@@ -2240,6 +2243,7 @@ export interface components {
         PythonCreate: {
             /**
              * Accept Research Model
+             * @default true
              * @constant
              */
             accept_research_model: true;
@@ -2248,7 +2252,10 @@ export interface components {
              * Format: date
              */
             end_date: string;
-            /** Environment Id */
+            /**
+             * Environment Id
+             * @default 0000000000000000000000000000000000000000000000000000000000000000
+             */
             environment_id: string;
             /**
              * Frequency
@@ -2286,6 +2293,7 @@ export interface components {
             strategy_id?: string | null;
             /**
              * Trusted Local Code
+             * @default true
              * @constant
              */
             trusted_local_code: true;
@@ -2559,16 +2567,22 @@ export interface components {
              * @constant
              */
             admission: "not_reviewed";
-            /** Commit */
-            commit?: string | null;
+            /**
+             * Commit
+             * @default d6c99c7642b61a4cbb613ad1bb52bc25e89e07bd
+             */
+            commit: string | null;
             /**
              * Name
              * @default ashare-data
              * @constant
              */
             name: "ashare-data";
-            /** Tree */
-            tree?: string | null;
+            /**
+             * Tree
+             * @default d09d02c62ead7cd50b0043c0232834ce4267fc7c
+             */
+            tree: string | null;
             /**
              * Version
              * @default 0.10.0.dev100
@@ -2576,7 +2590,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default 1f79b58b281b704417ee808e006b51615fe73c2824a3f522c4daa1d207150491
+             * @default 2918e79a0f94aa7654bc7217db31a213910aa51a74985d2eb4299a85ce129387
              */
             wheel_sha256: string;
         };

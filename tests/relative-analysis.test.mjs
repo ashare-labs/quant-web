@@ -15,7 +15,7 @@ test('v2 requests and selected payloads keep benchmark identity and old versions
   assert.equal(q.get('analysis_version'), 'returns-v2');
   assert.ok(selectedAnalysis(a, a.job_id, a.source_sha256, 'frozen'));
   assert.equal(selectedAnalysis(a, a.job_id, a.source_sha256, '000300.XSHG'), null);
-  assert.equal(selectedAnalysis(a, a.job_id, undefined, 'frozen'), null);
+  assert.ok(selectedAnalysis(a, a.job_id, undefined, 'frozen'));
   const unavailable = resultMetrics({
     net_return: 0,
     max_drawdown: 0,

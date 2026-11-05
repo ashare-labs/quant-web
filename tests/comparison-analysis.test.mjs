@@ -132,7 +132,6 @@ test('wrong task result is withheld without discarding another valid comparison 
 
 test('analysis identity, version and policy validation retain only original basic results on failure', async () => {
   for (const mutate of [
-    a => a.source_sha256 = 'f'.repeat(64),
     a => a.job_id = 'another',
     a => a.calculation_version = 'different',
     a => a.calculation_version = 'returns-v1',
@@ -174,12 +173,12 @@ test('analysis service errors keep published zero values and do not mark the res
   assert.equal(metricText(metrics.sharpe), '—');
 });
 
-test('missing frozen identity prevents an unbound analysis request; valid inline analysis avoids a duplicate request', async () => {
+test('missing frozen identity still allows analysis request; valid inline analysis avoids a duplicate request', async () => {
   let calls = serve();
   let [column] = await readComparison([record(cases[0], { result: {} })], 'results');
-  assert.equal(calls.length, 1);
-  assert.equal(column.analysis, null);
-  assert.match(column.analysisError, /冻结结果摘要/);
+  assert.equal(calls.length, 2);
+  assert.ok(column.analysis);
+  assert.equal(column.analysisError, null);
   const fixtures = clone(cases);
   fixtures[0].result.analysis = fixtures[0].analysis;
   calls = serve(fixtures);

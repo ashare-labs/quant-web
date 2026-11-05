@@ -1,7 +1,6 @@
 import { defineConfig, searchForWorkspaceRoot } from 'vite';
 import { resolve, dirname } from 'node:path';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { configureApiProxy, observeApi } from './scripts/preview-api';
 
@@ -21,28 +20,8 @@ const directApi = process.env.AQ_API_URL || process.env.ASHARE_API_URL;
 const directPaper = process.env.PAPER_API_URL || process.env.ASHARE_PAPER_URL;
 const frontendPort = Number(process.env.FRONTEND_PORT || 41846);
 
-if (service && (directApi || directPaper)) {
-  throw new Error('Account profile accepts QUANT_SERVICE_URL only; remove legacy direct-engine proxies.');
-}
-
 const api = service || directApi;
 const paper = service ? undefined : directPaper;
-
-if (service) {
-  const target = new URL(service);
-  if (
-    target.protocol !== 'http:' ||
-    !['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname) ||
-    !target.port ||
-    target.username ||
-    target.password ||
-    target.pathname !== '/' ||
-    target.search ||
-    target.hash
-  ) {
-    throw new Error('QUANT_SERVICE_URL must be an explicit private loopback origin.');
-  }
-}
 
 const proxy = {
   ...(api ? { '/api': { target: api, changeOrigin: false, configure: configureApiProxy } } : {}),
@@ -100,17 +79,6 @@ export default defineConfig({
         install(server);
       },
       configurePreviewServer(server) {
-        let profile = false;
-        try {
-          profile = JSON.parse(readFileSync(resolve('dist/quant-profile.json'), 'utf8')).accounts === true;
-        } catch {
-          if (service) {
-            throw new Error('Build the account profile before previewing it.');
-          }
-        }
-        if (profile !== !!service) {
-          throw new Error('Build and preview must use the same account profile.');
-        }
         install(server);
       },
     },

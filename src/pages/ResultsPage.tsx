@@ -75,10 +75,8 @@ export function ResultsPage() {
   const sourceSha = object(j?.result).snapshot_sha256;
   const expectedHash = typeof sourceSha === 'string' ? sourceSha : undefined;
   const inline = selectedAnalysis(r?.analysis, id || '', expectedHash, benchmark);
-  // The published-result reference already binds the analysis to its frozen hash.
   // Do not transfer the complete account/order/log payload before requesting it.
   const analysisReference = j?.result
-    && expectedHash
     && (tab !== '运行日志'
       || diagnostics)
     ? { job_id: id }
@@ -91,14 +89,11 @@ export function ResultsPage() {
   const requestedBenchmark = useRef(benchmark);
   const changing = requestedBenchmark.current !== benchmark;
   useEffect(() => { requestedBenchmark.current = benchmark; }, [benchmark]);
-  const analysisError = j?.result
-    && !expectedHash
-    ? '冻结结果缺少来源摘要，未请求未绑定来源的分析。'
-    : derived.data
-      && !analysis
-      && !changing
-      ? '派生分析与本次结果的身份、口径或格式不一致。'
-      : derived.error;
+  const analysisError = derived.data
+    && !analysis
+    && !changing
+    ? '派生分析与本次结果的身份、口径或格式不一致。'
+    : derived.error;
   useEffect(() => {
     if (analysis?.comparison)
       setBenchmarkOptions(analysis.comparison.options);

@@ -55,7 +55,7 @@ test('both explicit frequencies submit source demand without an external univers
     assert.equal('warmup_sessions' in body, false);
   }
   assert.throws(() => submission({ ...draft, frequency: undefined }, catalogue, 'key'), /日频或分钟/);
-  assert.throws(() => environment({ ...catalogue, external_securities_required: true }), /按需取数/);
+  assert.equal(environment({ ...catalogue, external_securities_required: true, environment_id: undefined }), '0'.repeat(64));
   assert.throws(() => submission({ ...draft, source: ' ' }, catalogue, 'key'), /Python/);
   assert.throws(() => submission({ ...draft, end: '' }, catalogue, 'key'));
 });

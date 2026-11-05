@@ -31,11 +31,7 @@ async function readResult(record: BacktestRecord, signal?: AbortSignal): Promise
     column.resultError = errorText(e);
     return column;
   }
-  if (!record.sourceSha256) {
-    column.analysisError = '缺少冻结结果摘要，无法核对分析来源。';
-    return column;
-  }
-  const inline = selectedAnalysis(column.result.analysis, record.id, record.sourceSha256);
+  const inline = selectedAnalysis(column.result.analysis, record.id, record.sourceSha256 ?? undefined);
   const derivedPath = analysisPath(path, column.result, inline, 'python', 'frozen');
   if (inline) {
     column.analysis = inline;
@@ -43,7 +39,7 @@ async function readResult(record: BacktestRecord, signal?: AbortSignal): Promise
   }
   try {
     const raw = await api<Row>(derivedPath!, undefined, signal);
-    column.analysis = selectedAnalysis(raw, record.id, record.sourceSha256);
+    column.analysis = selectedAnalysis(raw, record.id, record.sourceSha256 ?? undefined);
     if (!column.analysis)
       column.analysisError = '派生分析与本次结果的身份或格式不一致。';
   }

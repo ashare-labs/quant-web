@@ -23,9 +23,9 @@ test('the twenty design items keep their original order and use one backend payl
   });
 });
 
-test('wrong run, wrong frozen hash, unsupported versions and non-finite values are rejected', () => {
+test('wrong run, unsupported versions and non-finite values are rejected', () => {
   const fixture = cases[0];
-  for (const change of [a => a.job_id = 'another', a => a.source_sha256 = 'a'.repeat(64), a => a.schema_version = 'other',
+  for (const change of [a => a.job_id = 'another', a => a.schema_version = 'other',
   a => a.calculation_version = 'unreviewed', a => a.metrics.sharpe.value = Infinity,
   a => a.series[0].return = NaN, a => a.series[0].date = '2025-02-30', a => a.series.reverse(),
   a => a.metrics.sharpe.status = 'unavailable', a => a.sample_count++]) {

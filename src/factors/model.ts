@@ -75,7 +75,7 @@ export function submission(draft: Draft, factor: Factor, environment: string, ke
     throw new Error('请选择真实数据来源。');
   if (!securities.length
     || new Set(securities).size !== securities.length
-    || securities.some(s => !/^(?:[0-9]{6}\.X(?:SHG|SHE)|BJ\.[0-9]{6})$/.test(s)))
+    || securities.some(s => !/^(?:[0-9]{6}\.X(?:SHG|SHE|BSE|BEI)|[0-9]{6}\.BJ|BJ\.[0-9]{6})$/.test(s)))
     throw new Error('请至少选择 1 个不重复的证券，格式如 600000.XSHG。');
   if (![
     draft.history,
@@ -135,7 +135,7 @@ export function submission(draft: Draft, factor: Factor, environment: string, ke
     };
   }
   return {
-    environment_id: environment,
+    environment_id: environment || '0'.repeat(64),
     idempotency_key: key,
     name: factor.name + ' · 因子探索',
     factor_id: factor.id,

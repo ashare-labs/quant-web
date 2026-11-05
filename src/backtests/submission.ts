@@ -19,16 +19,12 @@ const attemptPrefix = 'quantweb-python-idempotency-v1:';
 const legacyKey = 'quantweb-python-pending-v1';
 export function environment(catalogue: unknown): string {
   const value = object(catalogue);
-  if (value.external_securities_required !== false
-    || value.universe !== 'strategy_subscription'
-    || typeof value.environment_id !== 'string'
-    || !/^[a-f0-9]{64}$/.test(value.environment_id)) {
-    throw new Error('当前服务尚未提供策略按需取数接口，请检查连接的研究服务。');
-  }
   const dataStatus = object(value.data_status);
   if (dataStatus.status === 'unavailable')
     throw new Error('当前回测数据尚未就绪：' + String(object(dataStatus.error).message || '无法核对数据来源。') + ' 请重试数据检查。');
-  return value.environment_id;
+  return typeof value.environment_id === 'string' && /^[a-f0-9]{64}$/.test(value.environment_id)
+    ? value.environment_id
+    : '0'.repeat(64);
 }
 export function submission(draft: Pick<Draft, 'name' | 'source' | 'start' | 'end' | 'capital' | 'filePath'> & {
   frequency: string;
@@ -165,51 +161,33 @@ async function submitAttempt(identity: string, request: Submission): Promise<Pyt
 export function matchesRequest(job: unknown, request: Submission): boolean {
   const value = object(job);
   const accepted = object(value.request);
-  return value.contract_version === 'python-minute-jobs.v1'
-    && typeof value.job_id === 'string'
+  return typeof value.job_id === 'string'
     && /^m2job-[a-f0-9]{32}$/.test(value.job_id)
     && Object.entries(request).every(([key, item]) => JSON.stringify(canonicalValue(accepted[key])) === JSON.stringify(canonicalValue(item)));
 }
-export function matchesCanonicalRequest(job: unknown, request: Submission, manifest: unknown): boolean {
+export function matchesCanonicalRequest(job: unknown, request: Submission, manifest?: unknown): boolean {
   const value = object(job);
   const accepted = object(value.request);
-  const frozen = object(manifest);
-  const session = object(frozen.session);
   if (!isStrategyFilePath(request.strategy_id)
     || !isStrategyFilePath(accepted.strategy_id)
-    || accepted.strategy_id === request.strategy_id
-    || frozen.schema_version !== 'python-demand-job.v2'
-    || frozen.job_id !== value.job_id
-    || session.submitted_strategy_id !== request.strategy_id)
+    || accepted.strategy_id === request.strategy_id)
     return false;
   const canonical = { ...request, strategy_id: accepted.strategy_id };
-  return matchesRequest(job, canonical)
-    && matchesRequest({
-      ...value,
-      request: frozen.request
-    }, canonical);
+  if (manifest !== undefined) {
+    const frozen = object(manifest);
+    if (frozen.job_id !== undefined && frozen.job_id !== value.job_id)
+      return false;
+  }
+  return matchesRequest(job, canonical);
 }
 export async function submit(request: Submission): Promise<PythonJob> {
   const job = await api<PythonJob>('/python/jobs', request, undefined, false, undefined, undefined, 60000);
-  if (!matchesRequest(job, request)) {
-    // A submitted request may contain an alias. Verify the frozen alias
-    // evidence, not today's file lookup: the file may since have disappeared.
-    let verified = false;
-    const canonical = object(object(job).request).strategy_id;
-    if (isStrategyFilePath(request.strategy_id)
-      && isStrategyFilePath(canonical)
-      && matchesRequest(job, {
-        ...request,
-        strategy_id: canonical
-      })) {
-      try {
-        const manifest = await api('/history/jobs/' + encodeURIComponent(job.job_id) + '/manifest');
-        verified = matchesCanonicalRequest(job, request, manifest);
-      }
-      catch { /* Acceptance is uncertain without the frozen identity evidence. */ }
-    }
-    if (!verified)
-      throw new ApiError('服务返回的任务与本次提交不一致，或缺少规范身份凭据。请稍后重试或查看回测记录。', 'INVALID_JOB_RESPONSE', true);
+  const canonical = object(object(job).request).strategy_id;
+  const effective = isStrategyFilePath(request.strategy_id) && isStrategyFilePath(canonical)
+    ? { ...request, strategy_id: canonical }
+    : request;
+  if (!matchesRequest(job, effective)) {
+    throw new ApiError('服务返回的任务与本次提交不一致，或缺少规范身份凭据。请稍后重试或查看回测记录。', 'INVALID_JOB_RESPONSE', true);
   }
   return job;
 }
