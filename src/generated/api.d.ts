@@ -2569,7 +2569,7 @@ export interface components {
             admission: "not_reviewed";
             /**
              * Commit
-             * @default d6c99c7642b61a4cbb613ad1bb52bc25e89e07bd
+             * @default 5a07a73c49253c66bdda9c0294f1186124133f1d
              */
             commit: string | null;
             /**
@@ -2580,7 +2580,7 @@ export interface components {
             name: "ashare-data";
             /**
              * Tree
-             * @default d09d02c62ead7cd50b0043c0232834ce4267fc7c
+             * @default 465770e4eaf9f3e34404e2753a305c0e30dbcd36
              */
             tree: string | null;
             /**
@@ -2590,7 +2590,7 @@ export interface components {
             version: string;
             /**
              * Wheel Sha256
-             * @default 2918e79a0f94aa7654bc7217db31a213910aa51a74985d2eb4299a85ce129387
+             * @default 82ce6db0c6f71af15e247080e26edd5472a4a1a90f920acd63af871672a4ee54
              */
             wheel_sha256: string;
         };
