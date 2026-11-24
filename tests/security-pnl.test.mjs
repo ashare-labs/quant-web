@@ -492,6 +492,39 @@ test('external cash flows leave contribution cells blank with reason, and ledger
     const errText = textContent(errTree);
     assert.match(errText, /归因对账异常/);
     assert.ok(!errText.includes('待核对差额'));
+
+    // Defense-in-depth: even if a payload had status='ok' on a 10B account with +0.05 drift, UI rejects unclosed cents
+    const unclosed10B = {
+      status: 'ok',
+      reason: null,
+      contribution_status: 'ok',
+      contribution_reason: null,
+      initial_equity: 10000000000,
+      final_equity: 10000000000.05,
+      external_cash_flow: 0,
+      total_pnl: 0.05,
+      total_contribution_pp: 0.0000005,
+      security_count: 0,
+      win_count: 0,
+      loss_count: 0,
+      flat_count: 0,
+      securities_pnl: 0,
+      securities_contribution_pp: 0,
+      items: [],
+      account_items: [],
+    };
+    const driftTree = r.renderWith(() => ResultSecurityPnl({
+      resultName: '百亿差额测试',
+      jobId: 'm2job-' + '7'.repeat(32),
+      securities: unclosed10B,
+      loading: false,
+      error: '',
+      onViewTrades: () => {},
+    }));
+    const driftText = textContent(driftTree);
+    assert.match(driftText, /归因对账异常/);
+    assert.ok(!driftText.includes('+0.05'));
+    assert.ok(!driftText.includes('待核对差额'));
   } finally {
     r.close();
   }

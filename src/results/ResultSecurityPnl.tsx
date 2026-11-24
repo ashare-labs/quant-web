@@ -6,6 +6,7 @@ import {
   contributionBar,
   contributionUnavailableText,
   filterSecurities,
+  hasClosureMismatch,
   holdingStatusText,
   maxContributionAbs,
   reconciliationErrorText,
@@ -150,9 +151,9 @@ export function ResultSecurityPnl({ resultName, jobId, securities, loading, erro
     return <p className="note" role="status">正在读取标的盈亏归因…</p>;
   if (!securities)
     return <p className="note" role="status">{error ? '派生分析不可用，暂无法展示标的盈亏。' : '当前记录尚未提供标的盈亏归因。'}</p>;
-  if (securities.status === 'reconciliation_error')
+  if (securities.status === 'reconciliation_error' || hasClosureMismatch(securities))
     return <div className="notice error security-reconcile-error" role="alert">
-      <span>{reconciliationErrorText(securities.reason)}</span>
+      <span>{reconciliationErrorText(securities.reason || 'equity_reconciliation_mismatch')}</span>
     </div>;
 
   const contribAvailable = securities.contribution_status === 'ok';

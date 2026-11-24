@@ -259,6 +259,15 @@ export function reconciliationErrorText(reason: string | null): string {
   return `归因对账异常：${detail}，无法与账户总盈亏闭合，已停止展示归因明细。`;
 }
 
+export function hasClosureMismatch(sec: SecurityPnl): boolean {
+  if (sec.status !== 'ok' || !finite(sec.securities_pnl))
+    return true;
+  const itemSum = sec.items.reduce((sum, item) => sum + item.net_pnl, 0);
+  const accountSum = sec.account_items.reduce((sum, item) => sum + item.pnl, 0);
+  return Math.abs(itemSum - sec.securities_pnl) >= 0.005
+    || Math.abs(sec.securities_pnl + accountSum - sec.total_pnl) >= 0.005;
+}
+
 export function filterSecurities(items: SecurityPnlItem[], query: string): SecurityPnlItem[] {
   const q = query.trim().toLowerCase();
   if (!q)
