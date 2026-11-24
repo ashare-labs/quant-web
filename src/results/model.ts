@@ -1,4 +1,5 @@
 import { num, object, pct, rows, type Row } from '../shared/api.ts';
+import { acceptedSecurityPnl, securityDisplayTitle, type SecurityPnl } from './security-pnl.ts';
 export const metricDefinitions = [
   ['net_return', '策略收益', '期末权益相对期初资金的净收益，已包含账本费用。', 'percent'],
   ['annual_return', '策略年化收益', '按已声明的交易观察值年化；短样本保留空值。', 'percent'],
@@ -76,6 +77,7 @@ export interface Analysis {
   rolling: Row[];
   costs: Row;
   trading: Row;
+  securities?: SecurityPnl;
   quality: Row;
   comparison?: Comparison;
   excess_drawdowns?: Row[];
@@ -130,6 +132,8 @@ export function acceptedAnalysis(raw: unknown, jobId: string, _sourceSha?: strin
     || !Array.isArray(a.excess_drawdowns)
     || points.some(p => !nullable(p.relative_nav)
       || !nullable(p.return_difference))))
+    return null;
+  if (a.securities !== undefined && !acceptedSecurityPnl(a.securities))
     return null;
   return a as unknown as Analysis;
 }
@@ -303,6 +307,14 @@ export function timeParts(value: unknown): [
 export function tradeRows(native: Row, analysis: Analysis | null): Row[] {
   const orders = new Map(rows(native.orders).map(r => [String(r.order_id), r]));
   const pnls = new Map(rows(analysis?.trading.fill_pnl).map(r => [String(r.trade_id), r]));
+  const names = new Map<string, string>();
+  const nativeNames = object(native.security_names);
+  for (const [code, raw] of Object.entries(nativeNames))
+    if (typeof raw === 'string' && raw.trim() && raw.trim() !== code)
+      names.set(code, raw.trim());
+  for (const item of analysis?.securities?.items ?? [])
+    if (item.name && item.name !== item.security)
+      names.set(item.security, item.name);
   return rows(native.trades).map(trade => {
     const order = orders.get(String(trade.order_id)) ?? {};
     const [date, time] = timeParts(trade.at);
@@ -311,9 +323,16 @@ export function tradeRows(native: Row, analysis: Analysis | null): Row[] {
       ? trade.commission + trade.tax
       : null;
     const kind = order.order_type ?? order.type;
+    const code = String(trade.security ?? trade.order_book_id ?? '');
+    const inlineName = typeof trade.name === 'string' && trade.name.trim() && trade.name.trim() !== code
+      ? trade.name.trim()
+      : null;
+    const name = names.get(code) ?? inlineName;
     return {
-      date, time, order_time: timeParts(order.add_time)[1], security: trade.security
-        ?? trade.order_book_id,
+      date, time, order_time: timeParts(order.add_time)[1],
+      security_code: code,
+      security_name: name,
+      security: code ? securityDisplayTitle(code, name) : '—',
       side: trade.side === 'BUY' ? '买' : trade.side === 'SELL' ? '卖' : '—',
       order_type: kind === 'MARKET' ? '市价单' : kind === 'LIMIT' ? '限价单' : '—',
       quantity: finite(qty) ? num(qty, 0) : '—', price: priceText(trade.price),

@@ -3716,6 +3716,45 @@
         ],
         "definition": "flat_to_flat; moving_average_including_buy_fees; cash_dividend_separate"
       },
+      "securities": {
+        "status": "ok",
+        "reason": null,
+        "contribution_status": "ok",
+        "contribution_reason": null,
+        "initial_equity": 100000,
+        "final_equity": 102582.97217577671,
+        "external_cash_flow": 0,
+        "total_pnl": 2582.97217577671,
+        "total_contribution_pp": 2.58297217577671,
+        "security_count": 1,
+        "win_count": 1,
+        "loss_count": 0,
+        "flat_count": 0,
+        "securities_pnl": 2582.972175776705,
+        "securities_contribution_pp": 2.582972175776705,
+        "items": [
+          {
+            "security": "SYNTHETIC_STOCK",
+            "name": null,
+            "position_status": "holding",
+            "ending_quantity": 1000,
+            "pending_shares": 0,
+            "ending_value": 11860.372175776705,
+            "trade_count": 6,
+            "buy_amount": 57000,
+            "sell_amount": 47400,
+            "net_pnl": 2582.972175776705,
+            "contribution_pp": 2.582972175776705,
+            "breakdown_status": "ok",
+            "breakdown_reason": null,
+            "realized_spread": 3400,
+            "unrealized_spread": -1139.627824223295,
+            "dividend_cash": 400,
+            "fees": 77.4
+          }
+        ],
+        "account_items": []
+      },
       "return_difference": {
         "value": 0.48453271491291083,
         "unit": "percentage_points",
@@ -7485,6 +7524,45 @@
         ],
         "definition": "flat_to_flat; moving_average_including_buy_fees; cash_dividend_separate"
       },
+      "securities": {
+        "status": "ok",
+        "reason": null,
+        "contribution_status": "ok",
+        "contribution_reason": null,
+        "initial_equity": 100000,
+        "final_equity": 102582.97217577671,
+        "external_cash_flow": 0,
+        "total_pnl": 2582.97217577671,
+        "total_contribution_pp": 2.58297217577671,
+        "security_count": 1,
+        "win_count": 1,
+        "loss_count": 0,
+        "flat_count": 0,
+        "securities_pnl": 2582.972175776705,
+        "securities_contribution_pp": 2.582972175776705,
+        "items": [
+          {
+            "security": "SYNTHETIC_STOCK",
+            "name": null,
+            "position_status": "holding",
+            "ending_quantity": 1000,
+            "pending_shares": 0,
+            "ending_value": 11860.372175776705,
+            "trade_count": 6,
+            "buy_amount": 57000,
+            "sell_amount": 47400,
+            "net_pnl": 2582.972175776705,
+            "contribution_pp": 2.582972175776705,
+            "breakdown_status": "ok",
+            "breakdown_reason": null,
+            "realized_spread": 3400,
+            "unrealized_spread": -1139.627824223295,
+            "dividend_cash": 400,
+            "fees": 77.4
+          }
+        ],
+        "account_items": []
+      },
       "return_difference": {
         "value": null,
         "unit": "percentage_points",
@@ -7912,6 +7990,45 @@
           }
         ],
         "definition": "flat_to_flat; moving_average_including_buy_fees; cash_dividend_separate"
+      },
+      "securities": {
+        "status": "ok",
+        "reason": null,
+        "contribution_status": "ok",
+        "contribution_reason": null,
+        "initial_equity": 100000,
+        "final_equity": 100520.32712665814,
+        "external_cash_flow": 0,
+        "total_pnl": 520.32712665814,
+        "total_contribution_pp": 0.52032712665814,
+        "security_count": 1,
+        "win_count": 1,
+        "loss_count": 0,
+        "flat_count": 0,
+        "securities_pnl": 520.32712665814,
+        "securities_contribution_pp": 0.52032712665814,
+        "items": [
+          {
+            "security": "SYNTHETIC_STOCK",
+            "name": null,
+            "position_status": "holding",
+            "ending_quantity": 2000,
+            "pending_shares": 0,
+            "ending_value": 20525.32712665814,
+            "trade_count": 1,
+            "buy_amount": 20000,
+            "sell_amount": 0,
+            "net_pnl": 520.32712665814,
+            "contribution_pp": 0.52032712665814,
+            "breakdown_status": "ok",
+            "breakdown_reason": null,
+            "realized_spread": 0,
+            "unrealized_spread": 525.32712665814,
+            "dividend_cash": 0,
+            "fees": 5
+          }
+        ],
+        "account_items": []
       },
       "return_difference": {
         "value": 0.29192293803195213,

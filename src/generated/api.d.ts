@@ -2764,6 +2764,10 @@ export interface components {
              * @constant
              */
             schema_version: "aq.analysis.v1";
+            /** Securities */
+            securities: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
             /** Series */
             series: {
                 [key: string]: components["schemas"]["JsonValue"];
