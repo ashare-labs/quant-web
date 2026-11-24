@@ -2567,32 +2567,20 @@ export interface components {
              * @constant
              */
             admission: "not_reviewed";
-            /**
-             * Commit
-             * @default 5a07a73c49253c66bdda9c0294f1186124133f1d
-             */
-            commit: string | null;
+            /** Commit */
+            commit?: string | null;
             /**
              * Name
              * @default ashare-data
              * @constant
              */
             name: "ashare-data";
-            /**
-             * Tree
-             * @default 465770e4eaf9f3e34404e2753a305c0e30dbcd36
-             */
-            tree: string | null;
-            /**
-             * Version
-             * @default 0.10.0.dev100
-             */
-            version: string;
-            /**
-             * Wheel Sha256
-             * @default 82ce6db0c6f71af15e247080e26edd5472a4a1a90f920acd63af871672a4ee54
-             */
-            wheel_sha256: string;
+            /** Tree */
+            tree?: string | null;
+            /** Version */
+            version?: string;
+            /** Wheel Sha256 */
+            wheel_sha256?: string;
         };
         /** ResearchQuery */
         ResearchQuery: {
