@@ -8,6 +8,8 @@ import { strategyEditorHref } from '../strategies/project-model';
 import { editorHref } from '../shared/drafts';
 import { selectedAnalysis, analysisPath, holdingRows, money, reasonText, timeParts, tradeRows, type BenchmarkOption } from '../results/model';
 import { ResultOverview } from '../results/ResultOverview';
+import { ResultSecurityPnl } from '../results/ResultSecurityPnl';
+import { describeTradeFilter, filterTradeRows, tradeSecurityOptions } from '../results/security-pnl';
 import { RunProgress } from '../results/RunProgress';
 import { ReadStatus } from '../results/ReadStatus';
 import { stopJobPolling } from '../results/progress';
@@ -20,6 +22,7 @@ export function ResultsPage() {
   const valid = id && /^m2job-[a-f0-9]{32}$/.test(id);
   const path = valid ? '/history/jobs/' + id : null;
   const [tab, setTab] = useState('收益概述');
+  const [tradeFilter, setTradeFilter] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [diagnostics, setDiagnostics] = useState(false);
@@ -55,7 +58,7 @@ export function ResultsPage() {
     trackRead: true
   });
   const needsDetails = tab === '交易详情'
-    || tab === '每日持仓与收益'
+    || tab === '每日持仓'
     || diagnostics
     || (tab === '运行日志'
       && strategyLogs)
@@ -89,6 +92,11 @@ export function ResultsPage() {
   const requestedBenchmark = useRef(benchmark);
   const changing = requestedBenchmark.current !== benchmark;
   useEffect(() => { requestedBenchmark.current = benchmark; }, [benchmark]);
+  useEffect(() => { setTradeFilter(''); }, [id]);
+  const openSecurityTrades = (security: string) => {
+    setTradeFilter(security);
+    setTab('交易详情');
+  };
   const analysisError = derived.data
     && !analysis
     && !changing
@@ -163,8 +171,9 @@ export function ResultsPage() {
     <div className="result result-analysis"><aside className="side" aria-label="结果视图">
       {[
         '收益概述',
+        '标的盈亏',
         '交易详情',
-        '每日持仓与收益'
+        '每日持仓'
       ].map(view => <button key={view} className={tab === view
         ? 'active'
         : ''} aria-pressed={tab === view} onClick={() => setTab(view)}>
@@ -239,47 +248,95 @@ export function ResultsPage() {
                 && !fallback
                 && <button onClick={() => setFallback(true)}>读取原始冻结汇总</button>}
             </>}
-            {tab === '交易详情' && r && <>
-              <DataTable name="交易明细" data={tradeRows(native, analysis)} columns={[
-                {
-                  key: 'date',
-                  label: '日期'
-                }, {
-                  key: 'order_time',
-                  label: '委托时间'
-                }, {
-                  key: 'security',
-                  label: '标的'
-                },
-                {
-                  key: 'side',
-                  label: '交易类型'
-                }, {
-                  key: 'order_type',
-                  label: '下单类型'
-                }, {
-                  key: 'quantity',
-                  label: '成交数量'
-                },
-                {
-                  key: 'price',
-                  label: '成交价'
-                }, {
-                  key: 'notional',
-                  label: '成交额'
-                }, {
-                  key: 'pnl',
-                  label: '平仓盈亏'
-                }, {
-                  key: 'fees',
-                  label: '手续费'
-                },
-              ]} />
-              <p className="note result-attribution-note">平仓盈亏按移动平均成本分摊成交费用，现金分红另列；买入成交不记平仓盈亏。
-                {analysis?.trading.status === 'unavailable'
-                  && <> {reasonText(analysis.trading.reason)}，盈亏保留为空。</>}</p>
-            </>}
-            {tab === '每日持仓与收益' && r && <>
+            {tab === '标的盈亏' && <ResultSecurityPnl
+              resultName={name}
+              jobId={id || ''}
+              securities={analysis?.securities}
+              loading={derived.loading || changing}
+              error={analysisError}
+              onViewTrades={openSecurityTrades}
+            />}
+            {tab === '交易详情' && r && (() => {
+              const allTrades = tradeRows(native, analysis);
+              const tradeOptions = tradeSecurityOptions(allTrades, analysis?.securities);
+              const filteredTrades = filterTradeRows(allTrades, tradeFilter);
+              const hasTradeFilter = tradeFilter.trim().length > 0;
+              const activeFilterLabel = describeTradeFilter(tradeFilter, tradeOptions);
+              const datalistId = 'trade-securities-' + (id || 'list');
+              return <>
+                <div className="result-trade-toolbar">
+                  <label className="result-trade-filter">
+                    <span>标的筛选</span>
+                    <input
+                      type="search"
+                      list={datalistId}
+                      aria-label="按标的名称或代码筛选成交"
+                      placeholder="输入标的名称或代码…"
+                      value={tradeFilter}
+                      onChange={e => setTradeFilter(e.target.value)}
+                    />
+                  </label>
+                  <datalist id={datalistId}>
+                    {tradeOptions.map(opt => <option key={opt.code} value={opt.code}>{opt.label}</option>)}
+                  </datalist>
+                  <button
+                    type="button"
+                    className={'result-trade-all' + (!hasTradeFilter ? ' selected' : '')}
+                    aria-pressed={!hasTradeFilter}
+                    onClick={() => setTradeFilter('')}
+                  >全部标的</button>
+                </div>
+                {hasTradeFilter && <div className="result-trade-filter-banner" role="status">
+                  <span>当前筛选：<strong>{activeFilterLabel}</strong> · 显示 {filteredTrades.length} / {allTrades.length} 笔成交</span>
+                  <button type="button" onClick={() => setTradeFilter('')}>全部标的</button>
+                </div>}
+                <DataTable
+                  name="交易明细"
+                  data={filteredTrades}
+                  resetKey={tradeFilter}
+                  emptyText={hasTradeFilter && allTrades.length > 0 ? `未找到匹配「${activeFilterLabel}」的成交记录。` : undefined}
+                  columns={[
+                    {
+                      key: 'date',
+                      label: '日期'
+                    }, {
+                      key: 'order_time',
+                      label: '委托时间'
+                    }, {
+                      key: 'security',
+                      label: '标的'
+                    },
+                    {
+                      key: 'side',
+                      label: '交易类型'
+                    }, {
+                      key: 'order_type',
+                      label: '下单类型'
+                    }, {
+                      key: 'quantity',
+                      label: '成交数量'
+                    },
+                    {
+                      key: 'price',
+                      label: '成交价'
+                    }, {
+                      key: 'notional',
+                      label: '成交额'
+                    }, {
+                      key: 'pnl',
+                      label: '平仓盈亏'
+                    }, {
+                      key: 'fees',
+                      label: '手续费'
+                    },
+                  ]}
+                />
+                <p className="note result-attribution-note">平仓盈亏按移动平均成本分摊成交费用，现金分红另列；买入成交不记平仓盈亏。
+                  {analysis?.trading.status === 'unavailable'
+                    && <> {reasonText(analysis.trading.reason)}，盈亏保留为空。</>}</p>
+              </>;
+            })()}
+            {tab === '每日持仓' && r && <>
               <h2 className="result-subheading">每日账户</h2><DataTable name="每日账户" data={rows(native.accounts)} columns={[
                 { key: 'at', label: '日期', value: r => timeParts(r.at)[0] },
                 {

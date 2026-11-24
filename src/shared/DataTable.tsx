@@ -1,17 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { csv, download, num, type Row } from './api';
 export type Column = {
   key: string;
   label: string;
   value?: (row: Row) => unknown;
 };
-export function DataTable({ data, columns, name, exportable = true }: {
+export function DataTable({ data, columns, name, exportable = true, emptyText, resetKey }: {
   data: Row[];
   columns: Column[];
   name: string;
   exportable?: boolean;
+  emptyText?: string;
+  resetKey?: string;
 }) {
   const [page, setPage] = useState(0);
+  useEffect(() => {
+    if (resetKey !== undefined)
+      setPage(0);
+  }, [resetKey]);
   const limit = 50;
   const pages = Math.max(1, Math.ceil(data.length / limit));
   const current = Math.min(page, pages - 1);
@@ -45,7 +51,7 @@ export function DataTable({ data, columns, name, exportable = true }: {
         </tbody>
       </table>
     </div>
-    {!data.length && <div className="empty">此结果未包含{name}记录。</div>}
+    {!data.length && <div className="empty">{emptyText || `此结果未包含${name}记录。`}</div>}
     <div className="pagination">
       <button disabled={!current} onClick={() => setPage(current - 1)}>上一页</button>
       <span>{current + 1} / {pages} · {data.length} 条</span>

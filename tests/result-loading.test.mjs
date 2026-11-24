@@ -5,6 +5,7 @@ import { setImmediate } from 'node:timers/promises';
 import ts from 'typescript';
 import * as apiModule from '../src/shared/api.ts';
 import * as model from '../src/results/model.ts';
+import * as securityPnlModule from '../src/results/security-pnl.ts';
 import { backtestsHref, unassignedHistoryHref } from '../src/backtests/history-model.ts';
 import { resultTarget } from '../src/results/routing.ts';
 import { requestStrategy } from '../src/backtests/history-api.ts';
@@ -279,6 +280,7 @@ function page(job = {
     props
   });
   r.overview = () => null;
+  r.securityPnl = () => null;
   r.table = () => null;
   r.status = () => null;
   const ui = {
@@ -313,8 +315,10 @@ function page(job = {
     if (name === '../backtests/history-api') return { requestStrategy };
     if (name === '../strategies/project-model') return { strategyEditorHref: id => 'strategy-editor.html?project=' + id };
     if (name === '../results/model') return model;
+    if (name === '../results/security-pnl') return securityPnlModule;
     if (name === '../results/routing') return { resultTarget };
     if (name === '../results/ResultOverview') return { ResultOverview: r.overview };
+    if (name === '../results/ResultSecurityPnl') return { ResultSecurityPnl: r.securityPnl };
     if (name === '../shared/DataTable') return { DataTable: r.table };
     if (name === '../results/ReadStatus') return { ReadStatus: r.status };
     return {};
@@ -357,12 +361,23 @@ test('overview reads analysis directly from the published identity, without fetc
     assert.equal(back.props.href, backtestsHref({ strategy }));
   } finally { r.close(); }
 });
-test('trades/holdings request frozen detail on demand; returning to overview releases that request path', () => {
+test('trades/holdings request frozen detail on demand; security PnL and overview do not fetch raw details', () => {
   const r = page();
   try {
+    const side = nodes(r.value).find(n => n.type === 'aside');
+    assert.deepEqual(nodes(side).filter(n => n.type === 'button').map(n => n.props.children), [
+      '收益概述',
+      '标的盈亏',
+      '交易详情',
+      '每日持仓',
+      '运行日志'
+    ]);
+    click(r, '标的盈亏');
+    assert(!r.requests.some(r => r.path === path + '/result'));
+    assert.equal(nodes(r.value).find(n => n.type === r.securityPnl).props.securities, analysis.securities);
     for (const view of [
       '交易详情',
-      '每日持仓与收益'
+      '每日持仓'
     ]) {
       click(r, view);
       assert(r.requests.some(r => r.path === path + '/result'));
@@ -408,7 +423,7 @@ test('wrong result identity is not rendered and full result failure cannot hide 
       job_id: 'other',
       native: { accounts: [{ total_value: 999 }] }
     });
-    click(r, '每日持仓与收益');
+    click(r, '每日持仓');
     assert(!nodes(r.value).some(n => n.type === r.table));
     click(r, '收益概述');
     assert.equal(nodes(r.value).find(n => n.type === r.overview).props.analysis, analysis);
